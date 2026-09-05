@@ -311,8 +311,9 @@
         if (contentType.includes('application/json')) {
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || 'Failed to launch');
-          // Open the Render Application in a new tab with the generated SSO Token
-          window.open(data.launchUrl, '_blank');
+          // Directly open clean URL without SSO token params
+          const urlToOpen = data.directUrl || data.launchUrl;
+          window.open(urlToOpen, '_blank');
         } else {
           const text = await res.text();
           throw new Error(`Server returned HTTP ${res.status}: ${text.slice(0, 80)}`);
