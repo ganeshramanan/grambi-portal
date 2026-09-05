@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grambi.in — Intelligent Business Automations</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-white">
+
+  <!-- Navigation -->
+  <header class="border-b border-slate-800/80 sticky top-0 bg-slate-950/80 backdrop-blur-md z-40">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-bold text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
+          G
+        </div>
+        <span class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+          Grambi<span class="text-emerald-400">.in</span>
+        </span>
+      </div>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+        <a href="#products" class="hover:text-emerald-400 transition-colors">Products</a>
+        <a href="#how-it-works" class="hover:text-emerald-400 transition-colors">How It Works</a>
+        <a href="#security" class="hover:text-emerald-400 transition-colors">Enterprise Access</a>
+      </nav>
+
+      <div class="flex items-center gap-3" id="auth-buttons">
+        <button onclick="openModal('loginModal')" class="px-5 py-2.5 text-sm font-semibold text-slate-200 hover:text-white transition">
+          Sign In
+        </button>
+        <button onclick="openModal('registerModal')" class="px-5 py-2.5 text-sm font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg shadow-md shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95">
+          Request Access
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="flex-grow">
+    <section class="relative pt-24 pb-20 overflow-hidden">
+      <!-- Glow background circles -->
+      <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-semibold mb-8 uppercase tracking-wider">
+          <i class="ri-shield-check-line text-sm"></i> Unified Portal & Multi-App Access
+        </div>
+        
+        <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
+          Scale your business with <br/>
+          <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+            Automated Customer Ecosystems
+          </span>
+        </h1>
+        
+        <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+          One unified access hub. Manage WhatsApp campaigns, bulk messaging, custom web portals, and client workflows seamlessly from your dedicated Grambi account.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <button onclick="openModal('registerModal')" class="w-full sm:w-auto px-8 py-3.5 text-base font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl shadow-lg shadow-emerald-500/25 transition-all hover:scale-105">
+            Get Started <i class="ri-arrow-right-line ml-1"></i>
+          </button>
+          <button onclick="openModal('loginModal')" class="w-full sm:w-auto px-8 py-3.5 text-base font-medium text-slate-300 border border-slate-700 hover:border-slate-500 hover:bg-slate-900 rounded-xl transition">
+            Launch Existing App
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Grid Section -->
+    <section id="products" class="py-20 border-t border-slate-900 bg-slate-950/60">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl font-bold text-white mb-3">Our Core Product Suite</h2>
+          <p class="text-slate-400">Admin-controlled, secure launch points for all Grambi applications.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto" id="publicProductGrid">
+          <!-- WhatsApp Card -->
+          <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/40 hover:border-emerald-500/50 hover:bg-slate-900/80 transition-all group">
+            <div class="w-14 h-14 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-3xl mb-6 group-hover:scale-110 transition-transform">
+              <i class="ri-whatsapp-line"></i>
+            </div>
+            <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Application 01</span>
+            <h3 class="text-2xl font-bold text-white mt-1 mb-3">WhatsApp Automator & Bulk Messenger</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-6">
+              Broadcast high-volume bulk notifications, trigger transactional alerts, and configure automated chat journeys directly on WhatsApp.
+            </p>
+            <button onclick="openModal('loginModal')" class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-400 hover:text-emerald-300">
+              Launch via Portal <i class="ri-external-link-line"></i>
+            </button>
+          </div>
+
+          <!-- Website Builder Card -->
+          <div class="p-8 rounded-2xl border border-slate-800 bg-slate-900/40 hover:border-blue-500/50 hover:bg-slate-900/80 transition-all group">
+            <div class="w-14 h-14 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-3xl mb-6 group-hover:scale-110 transition-transform">
+              <i class="ri-global-line"></i>
+            </div>
+            <span class="text-xs font-semibold uppercase tracking-wider text-blue-400">Application 02</span>
+            <h3 class="text-2xl font-bold text-white mt-1 mb-3">Website & Customer Portal</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-6">
+              Custom branded client portals, real-time client management, and automated website deployment pipelines tailored for your clients.
+            </p>
+            <button onclick="openModal('loginModal')" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 hover:text-blue-300">
+              Launch via Portal <i class="ri-external-link-line"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-20 border-t border-slate-900">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl font-bold text-white mb-3">How Granular Access Works</h2>
+          <p class="text-slate-400">You control which client can access which Render application.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="p-6 rounded-xl border border-slate-800/80 bg-slate-900/20">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-emerald-400 mb-4">1</div>
+            <h4 class="text-lg font-bold text-white mb-2">User Registers</h4>
+            <p class="text-sm text-slate-400">Client submits a request on Grambi.in choosing their desired products.</p>
+          </div>
+          <div class="p-6 rounded-xl border border-slate-800/80 bg-slate-900/20">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-emerald-400 mb-4">2</div>
+            <h4 class="text-lg font-bold text-white mb-2">Admin Approves</h4>
+            <p class="text-sm text-slate-400">You review the request in your Admin Dashboard and toggle product permissions.</p>
+          </div>
+          <div class="p-6 rounded-xl border border-slate-800/80 bg-slate-900/20">
+            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center font-bold text-emerald-400 mb-4">3</div>
+            <h4 class="text-lg font-bold text-white mb-2">1-Click Launch</h4>
+            <p class="text-sm text-slate-400">Client logs in and is securely routed to their approved Render applications.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-900 py-10 bg-slate-950 text-slate-500 text-xs">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p>© 2026 Grambi.in. All rights reserved.</p>
+      <div class="flex items-center gap-6">
+        <a href="#" class="hover:text-slate-400">Privacy Policy</a>
+        <a href="#" class="hover:text-slate-400">Terms of Service</a>
+        <a href="#" class="hover:text-slate-400">Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Sign In Modal -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+      <button onclick="closeModal('loginModal')" class="absolute top-5 right-5 text-slate-400 hover:text-white">
+        <i class="ri-close-line text-xl"></i>
+      </button>
+
+      <h3 class="text-2xl font-bold text-white mb-1">Sign In to Grambi</h3>
+      <p class="text-sm text-slate-400 mb-6">Enter your credentials to access your dashboard</p>
+
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+          <input type="email" id="loginEmail" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="name@company.com" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+          <input type="password" id="loginPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="••••••••" />
+        </div>
+
+        <div id="loginError" class="text-xs text-rose-400 hidden"></div>
+
+        <button type="submit" class="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold rounded-lg transition">
+          Sign In
+        </button>
+      </form>
+
+      <div class="mt-4 pt-4 border-t border-slate-800 text-center text-xs text-slate-400">
+        Default Demo Admin: <span class="text-slate-200">admin@grambi.in / admin123</span><br/>
+        Default Demo User: <span class="text-slate-200">client@example.com / client123</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="registerModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+      <button onclick="closeModal('registerModal')" class="absolute top-5 right-5 text-slate-400 hover:text-white">
+        <i class="ri-close-line text-xl"></i>
+      </button>
+
+      <h3 class="text-2xl font-bold text-white mb-1">Request Product Access</h3>
+      <p class="text-sm text-slate-400 mb-6">Create an account. Admin will review and activate access.</p>
+
+      <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name</label>
+          <input type="text" id="regName" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="Your Name or Business" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+          <input type="email" id="regEmail" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="name@company.com" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp / Phone Number</label>
+          <input type="tel" id="regPhone" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="+91 9876543210" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+          <input type="password" id="regPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="Create a password" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-2">Select Products You Need Access To:</label>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" value="whatsapp_automator" checked class="reg-prod rounded bg-slate-950 border-slate-800 text-emerald-500 focus:ring-0" />
+              <span>WhatsApp Automator & Bulk Messenger</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" value="website_builder" class="reg-prod rounded bg-slate-950 border-slate-800 text-emerald-500 focus:ring-0" />
+              <span>Website & Customer Portal</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="registerMsg" class="text-xs hidden"></div>
+
+        <button type="submit" class="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold rounded-lg transition">
+          Submit Access Request
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const errEl = document.getElementById('loginError');
+
+      errEl.classList.add('hidden');
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+
+        window.location.href = '/dashboard.html';
+      } catch (err) {
+        errEl.innerText = err.message;
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value;
+      const email = document.getElementById('regEmail').value;
+      const phone = document.getElementById('regPhone').value;
+      const password = document.getElementById('regPassword').value;
+      const checkboxes = document.querySelectorAll('.reg-prod:checked');
+      const requestedProducts = Array.from(checkboxes).map(c => c.value);
+      const msgEl = document.getElementById('registerMsg');
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, password, requestedProducts })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Registration failed');
+
+        msgEl.className = "text-xs text-emerald-400 block";
+        msgEl.innerText = "Request submitted! Once approved by admin, you can log in.";
+        setTimeout(() => closeModal('registerModal'), 2500);
+      } catch (err) {
+        msgEl.className = "text-xs text-rose-400 block";
+        msgEl.innerText = err.message;
+      }
+    }
+  </script>
+</body>
+</html>
