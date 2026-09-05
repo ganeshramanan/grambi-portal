@@ -253,23 +253,26 @@ app.get('/api/products/launch/:productKey', authenticate, (req, res) => {
   // Get user's product-specific configuration/credentials (e.g. phoneId, token, etc.)
   const userConfig = (user.productConfigs && user.productConfigs[productKey]) || {};
 
-  // Generate an SSO Token containing customer info + their product credentials
-  const ssoToken = jwt.sign(
-    { 
-      userId: user.id, 
-      email: user.email, 
-      name: user.name, 
-      product: productKey,
-      config: userConfig 
-    },
-    JWT_SECRET,
-    { expiresIn: '15m' }
-  );
+  // Build direct parameter URL so Render app receives credentials automatically
+  const params = new URLSearchParams();
+  Object.keys(userConfig).forEach(k => {
+    if (userConfig[k]) params.append(k, userConfig[k]);
+  });
+  
+  // Also pass customer details if useful
+  params.append('customer_email', user.email);
+  params.append('customer_name', user.name);
 
-  // If target app does not yet have an SSO handler endpoint, launch clean URL or append ?sso_token=
+  const queryString = params.toString();
   const separator = product.renderUrl.includes('?') ? '&' : '?';
-  const targetUrl = `${product.renderUrl}${separator}sso_token=${ssoToken}`;
-  res.json({ success: true, launchUrl: targetUrl, directUrl: product.renderUrl, hasConfig: Object.keys(userConfig).length > 0 });
+  const autoFillUrl = queryString ? `${product.renderUrl}${separator}${queryString}` : product.renderUrl;
+
+  res.json({ 
+    success: true, 
+    launchUrl: autoFillUrl, 
+    directUrl: autoFillUrl, 
+    hasConfig: Object.keys(userConfig).length > 0 
+  });
 });
 
 // 6b. Get / Save Product-Specific Configuration for current user
