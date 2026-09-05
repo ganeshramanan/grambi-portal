@@ -47,3 +47,20 @@ Visit `http://localhost:3000`.
 * `public/index.html` — Public landing page & registration modal.
 * `public/dashboard.html` — Customer dashboard with product launch cards.
 * `public/admin.html` — Admin user management and granular product permission toggles.
+* `public/grambi-auto-receiver.js` — Universal auto-receiver script to drop into any child Render app to auto-populate credentials.
+
+---
+
+## 🔗 How to Connect Child Render Apps (WhatsApp Automator, Website Builder, etc.)
+
+Add this single line inside the `<head>` or before `</body>` of your child application's HTML page (or paste the contents of `public/grambi-auto-receiver.js`):
+
+```html
+<script src="https://grambi.in/grambi-auto-receiver.js"></script>
+```
+*(Or if testing locally: `<script src="http://localhost:3000/grambi-auto-receiver.js"></script>`)*
+
+When Grambi opens your app, this script automatically:
+1. Reads `phone_number_id`, `waba_id`, and `access_token` from URL parameters.
+2. Auto-populates the input fields in your app.
+3. Automatically cleans up the address bar URL using `history.replaceState` so tokens aren't visible in the URL.
