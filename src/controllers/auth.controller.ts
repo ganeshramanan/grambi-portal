@@ -9,9 +9,9 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'grambi_unified_secret_key_2026';
 
 const RegisterSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  businessName: z.string().min(1),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+  businessName: z.string().min(1, 'Business name is required'),
   phone: z.string().optional(),
   phoneNumberId: z.string().optional(),
   wabaId: z.string().optional(),

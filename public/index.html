@@ -235,9 +235,9 @@
 
     async function handleRegister(e) {
       e.preventDefault();
-      const businessName = document.getElementById('regBusinessName').value;
-      const email = document.getElementById('regEmail').value;
-      const phone = document.getElementById('regPhone').value;
+      const businessName = document.getElementById('regBusinessName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
       const password = document.getElementById('regPassword').value;
       const requestedProducts = Array.from(document.querySelectorAll('.reg-prod:checked')).map(c => c.value);
       const msgEl = document.getElementById('registerMsg');
@@ -249,7 +249,22 @@
           body: JSON.stringify({ businessName, email, phone, password, requestedProducts })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Registration failed');
+        
+        if (!res.ok) {
+          let errMsg = 'Registration failed';
+          if (typeof data.error === 'string') {
+            errMsg = data.error;
+          } else if (typeof data.error === 'object' && data.error !== null) {
+            // Flatten Zod validation error messages (e.g. password min length)
+            const fields = Object.keys(data.error).filter(k => k !== '_errors');
+            if (fields.length > 0 && data.error[fields[0]]?._errors?.length) {
+              errMsg = `${fields[0]}: ${data.error[fields[0]]._errors.join(', ')}`;
+            } else if (data.error._errors?.length) {
+              errMsg = data.error._errors.join(', ');
+            }
+          }
+          throw new Error(errMsg);
+        }
 
         msgEl.className = "text-xs text-emerald-400 block";
         msgEl.innerText = data.message;
