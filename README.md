@@ -5,7 +5,18 @@ A single, clean, modular Node.js & TypeScript application that unifies:
 2. **Central Customer Launchpad** (View and launch active vs locked products)
 3. **Super Admin Access Hub** (Approve customers & assign product permissions)
 4. **WhatsApp Bulk Broadcast Engine** (High-volume broadcasts, Meta Cloud API, templates, delivery reports)
-5. **Website & Customer Portal Module** (Product 2)
+5. **Workshop Website Customizer & Booking Engine** (Integrated from `workshop-customizer`)
+
+---
+
+## 🚀 What Features Are Live in the Unified Platform?
+
+* **Landing Page (`/`)**: Main Grambi marketing website with unified signup/login.
+* **Launchpad (`/portal.html`)**: Lists all authorized applications with 1-click launch.
+* **Admin Hub (`/admin.html`)**: Toggle access to WhatsApp and Website Customizer per customer.
+* **WhatsApp Broadcaster (`/apps/whatsapp.html`)**: Send bulk campaigns, manage Meta templates, view delivery receipts.
+* **Website Customizer (`/apps/website-customizer.html`)**: Edit business details, services, hours, with a live responsive mobile preview.
+* **Public Client Websites (`/site/:slug`)**: Live customer-facing workshop pages with real-time service booking appointment forms.
 
 ---
 

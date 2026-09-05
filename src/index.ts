@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { register, login, getProfile, updateCredentials, logout } from './controllers/auth.controller';
 import { listAllUsers, updateUserAccess, deleteUser } from './controllers/admin.controller';
 import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates } from './controllers/whatsapp.controller';
+import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking } from './controllers/website.controller';
 import { verifyWebhook, handleWebhookEvents } from './controllers/webhook.controller';
 import { authMiddleware, requireAdmin } from './middlewares/auth.middleware';
 import './queues/message.worker';
@@ -40,14 +41,15 @@ app.get('/api/whatsapp/templates', authMiddleware, getCustomerTemplates);
 app.post('/api/whatsapp/broadcast', authMiddleware, sendBulkMessages);
 app.get('/api/whatsapp/campaigns', authMiddleware, listCustomerCampaigns);
 
-// --- PRODUCT 2: WEBSITE BUILDER MOCK ROUTE ---
-app.get('/api/website-builder/projects', authMiddleware, (req, res) => {
-  res.json({
-    projects: [
-      { id: 'proj_1', name: 'Main Brand Portal', domain: 'portal.grambi.in', status: 'LIVE' },
-      { id: 'proj_2', name: 'Campaign Landing Page', domain: 'promo.grambi.in', status: 'DRAFT' }
-    ]
-  });
+// --- PRODUCT 2: WEBSITE CUSTOMIZER ROUTES ---
+app.get('/api/website/my-website', authMiddleware, getMyWebsite);
+app.put('/api/website/my-website', authMiddleware, updateMyWebsite);
+app.get('/api/website/public/:slug', getPublicWebsite);
+app.post('/api/website/public/:slug/book', submitPublicBooking);
+
+// Direct Public Website View: /site/:slug
+app.get('/site/:slug', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/site.html'));
 });
 
 // --- META WEBHOOK ROUTES ---

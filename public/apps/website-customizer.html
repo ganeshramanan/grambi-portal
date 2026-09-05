@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grambi — Workshop Website Customizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/portal.html" class="text-slate-400 hover:text-white flex items-center gap-1 text-xs border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2">
+          <i class="ri-arrow-left-line"></i> Launchpad
+        </a>
+        <div class="w-8 h-8 rounded-lg bg-blue-500 text-slate-950 flex items-center justify-center font-bold text-lg">
+          <i class="ri-layout-masonry-line"></i>
+        </div>
+        <span class="font-bold text-base">Workshop Website Customizer</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a id="publicSiteLink" href="#" target="_blank" class="px-3 py-1.5 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 flex items-center gap-1 transition">
+          <i class="ri-external-link-line"></i> View Live Site
+        </a>
+        <span id="userBadge" class="text-xs text-slate-400 px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Loading...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Workspace Grid (Editor Left, Live Preview Right) -->
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Left: Customizer Form (6 Cols) -->
+    <div class="lg:col-span-6 space-y-6">
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="ri-edit-2-line text-blue-400"></i> Business & Branding Details
+          </h2>
+          <span id="saveBadge" class="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Synced</span>
+        </div>
+
+        <form onsubmit="handleSaveWebsite(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Business Name</label>
+            <input type="text" id="siteBusinessName" oninput="updateLivePreview()" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Tagline / Headline</label>
+            <input type="text" id="siteTagline" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">About the Workshop</label>
+            <textarea id="siteAbout" rows="3" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500"></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Contact Phone</label>
+              <input type="text" id="sitePhone" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp Number</label>
+              <input type="text" id="siteWhatsapp" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Workshop Address & Location</label>
+            <input type="text" id="siteAddress" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Working Hours</label>
+              <input type="text" id="siteHours" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Custom Website URL Slug</label>
+              <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs">
+                <span class="text-slate-500 font-mono">/site/</span>
+                <input type="text" id="siteSlug" class="bg-transparent text-white font-mono focus:outline-none w-full" />
+              </div>
+            </div>
+          </div>
+
+          <div id="saveMsg" class="text-xs hidden"></div>
+
+          <button type="submit" id="saveBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-blue-500/20">
+            <i class="ri-save-line"></i> Save & Publish Changes
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right: Responsive Live Mobile Preview (6 Cols) -->
+    <div class="lg:col-span-6 space-y-4">
+      <div class="flex justify-between items-center px-2">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Customer Website Preview</h3>
+        <span class="text-[11px] text-blue-400 font-mono">Auto-Updating</span>
+      </div>
+
+      <!-- Phone Frame Container -->
+      <div class="border-4 border-slate-800 bg-slate-900 rounded-[32px] overflow-hidden shadow-2xl max-w-[420px] mx-auto min-h-[620px] flex flex-col text-slate-900">
+        
+        <!-- Preview Hero Section -->
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 text-white text-center space-y-2">
+          <div class="w-10 h-10 bg-white/20 rounded-xl mx-auto flex items-center justify-center text-xl font-bold">
+            <i class="ri-car-washing-line"></i>
+          </div>
+          <h1 id="prevTitle" class="text-xl font-extrabold tracking-tight">Auto Care Workshop</h1>
+          <p id="prevTagline" class="text-xs text-blue-100">Quality Car & Bike Service Specialist</p>
+          
+          <div class="pt-3 flex justify-center gap-2">
+            <a id="prevCallBtn" href="#" class="px-3 py-1.5 bg-white text-blue-900 text-[11px] font-bold rounded-lg shadow flex items-center gap-1">
+              <i class="ri-phone-fill"></i> Call
+            </a>
+            <a id="prevWaBtn" href="#" class="px-3 py-1.5 bg-emerald-500 text-white text-[11px] font-bold rounded-lg shadow flex items-center gap-1">
+              <i class="ri-whatsapp-fill"></i> WhatsApp
+            </a>
+          </div>
+        </div>
+
+        <!-- Preview Body Content -->
+        <div class="p-5 bg-white space-y-5 flex-grow text-slate-800">
+          <div>
+            <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1">About Us</h4>
+            <p id="prevAbout" class="text-xs text-slate-600 leading-relaxed">
+              We provide expert automotive maintenance, periodic servicing, diagnostics, and repairs with certified mechanics.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Popular Services</h4>
+            <div class="space-y-2" id="prevServicesList">
+              <div class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 flex justify-between items-center text-xs">
+                <span class="font-semibold text-slate-800">General Periodic Service</span>
+                <span class="font-bold text-blue-600">₹1,499</span>
+              </div>
+              <div class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 flex justify-between items-center text-xs">
+                <span class="font-semibold text-slate-800">Brake Overhaul & Fluid</span>
+                <span class="font-bold text-blue-600">₹999</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] space-y-1">
+            <div class="flex items-center gap-1.5 text-slate-600">
+              <i class="ri-map-pin-line text-blue-600"></i>
+              <span id="prevAddress">Main Highway Road, Industrial Area</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-slate-600">
+              <i class="ri-time-line text-blue-600"></i>
+              <span id="prevHours">Mon - Sat: 9:00 AM - 7:00 PM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentWebsite = null;
+
+    async function loadWebsiteData() {
+      const token = localStorage.getItem('grambi_token');
+      try {
+        const res = await fetch('/api/website/my-website', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error('Failed to load');
+        currentWebsite = await res.json();
+
+        document.getElementById('siteBusinessName').value = currentWebsite.businessName || '';
+        document.getElementById('siteTagline').value = currentWebsite.tagline || '';
+        document.getElementById('siteAbout').value = currentWebsite.about || '';
+        document.getElementById('sitePhone').value = currentWebsite.phone || '';
+        document.getElementById('siteWhatsapp').value = currentWebsite.whatsapp || '';
+        document.getElementById('siteAddress').value = currentWebsite.address || '';
+        document.getElementById('siteHours').value = currentWebsite.hours || '';
+        document.getElementById('siteSlug').value = currentWebsite.slug || '';
+
+        document.getElementById('userBadge').innerText = currentWebsite.businessName;
+        document.getElementById('publicSiteLink').href = `/site/${currentWebsite.slug}`;
+
+        updateLivePreview();
+      } catch (err) {
+        window.location.href = '/index.html';
+      }
+    }
+
+    function updateLivePreview() {
+      const name = document.getElementById('siteBusinessName').value || 'My Workshop';
+      const tagline = document.getElementById('siteTagline').value || 'Automotive Service Specialist';
+      const about = document.getElementById('siteAbout').value || 'We provide expert automotive maintenance.';
+      const phone = document.getElementById('sitePhone').value || '+91 9876543210';
+      const whatsapp = document.getElementById('siteWhatsapp').value || '+91 9876543210';
+      const address = document.getElementById('siteAddress').value || 'Main Highway Road';
+      const hours = document.getElementById('siteHours').value || 'Mon - Sat: 9:00 AM - 7:00 PM';
+
+      document.getElementById('prevTitle').innerText = name;
+      document.getElementById('prevTagline').innerText = tagline;
+      document.getElementById('prevAbout').innerText = about;
+      document.getElementById('prevAddress').innerText = address;
+      document.getElementById('prevHours').innerText = hours;
+      document.getElementById('prevCallBtn').href = `tel:${phone}`;
+      document.getElementById('prevWaBtn').href = `https://wa.me/${whatsapp.replace(/\D/g, '')}`;
+    }
+
+    async function handleSaveWebsite(e) {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveBtn');
+      const msg = document.getElementById('saveMsg');
+      const saveBadge = document.getElementById('saveBadge');
+
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Publishing Changes...';
+
+      const payload = {
+        businessName: document.getElementById('siteBusinessName').value.trim(),
+        tagline: document.getElementById('siteTagline').value.trim(),
+        about: document.getElementById('siteAbout').value.trim(),
+        phone: document.getElementById('sitePhone').value.trim(),
+        whatsapp: document.getElementById('siteWhatsapp').value.trim(),
+        address: document.getElementById('siteAddress').value.trim(),
+        hours: document.getElementById('siteHours').value.trim(),
+        slug: document.getElementById('siteSlug').value.trim()
+      };
+
+      try {
+        const res = await fetch('/api/website/my-website', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update');
+
+        msg.className = "text-xs text-emerald-400 block p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl";
+        msg.innerText = "✅ Website updated and live!";
+        document.getElementById('publicSiteLink').href = `/site/${data.website.slug}`;
+        saveBadge.innerText = 'Live & Published';
+      } catch (err) {
+        msg.className = "text-xs text-rose-400 block p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl";
+        msg.innerText = `❌ ${err.message}`;
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="ri-save-line"></i> Save & Publish Changes';
+      }
+    }
+
+    loadWebsiteData();
+  </script>
+</body>
+</html>

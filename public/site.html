@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workshop Website</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+
+  <!-- Navigation Bar -->
+  <header class="bg-white/90 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-500/20">
+          <i class="ri-car-washing-line"></i>
+        </div>
+        <div>
+          <h1 id="siteName" class="font-bold text-lg text-slate-900 leading-tight">Workshop Name</h1>
+          <p id="siteTag" class="text-xs text-slate-500">Auto Care Specialists</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a id="callBtn" href="#" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+          <i class="ri-phone-fill text-blue-600"></i> <span class="hidden sm:inline">Call Us</span>
+        </a>
+        <a id="waBtn" href="#" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5">
+          <i class="ri-whatsapp-fill"></i> <span class="hidden sm:inline">WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow">
+    <!-- Hero Banner -->
+    <section class="bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-950 text-white py-20 px-6 text-center relative overflow-hidden">
+      <div class="max-w-4xl mx-auto space-y-6 relative z-10">
+        <span class="px-3.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-semibold uppercase tracking-wider">
+          Trusted Auto Service Center
+        </span>
+        <h2 id="heroTitle" class="text-3xl sm:text-5xl font-extrabold tracking-tight">Professional Auto Care & Maintenance</h2>
+        <p id="heroAbout" class="text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          Certified multi-brand car & bike maintenance, high-precision diagnostics, periodic servicing, and genuine parts.
+        </p>
+
+        <div class="pt-4 flex justify-center gap-4">
+          <a href="#bookSection" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/30 transition">
+            Book Service Appointment
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Grid -->
+    <section class="py-16 max-w-6xl mx-auto px-6">
+      <div class="text-center mb-12">
+        <h3 class="text-2xl font-bold text-slate-900">Our Core Workshop Services</h3>
+        <p class="text-sm text-slate-500 mt-1">Transparent pricing with quality guarantee.</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" id="servicesContainer">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- Appointment Booking Section -->
+    <section id="bookSection" class="py-16 bg-slate-100 border-t border-slate-200">
+      <div class="max-w-xl mx-auto px-6">
+        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl space-y-6">
+          <div class="text-center">
+            <h3 class="text-xl font-bold text-slate-900">Book a Service Slot</h3>
+            <p class="text-xs text-slate-500 mt-1">Leave your details and we will confirm your appointment.</p>
+          </div>
+
+          <form onsubmit="handlePublicBooking(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Your Name</label>
+              <input type="text" id="custName" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="John Doe" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+                <input type="tel" id="custPhone" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="+91 9876543210" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Vehicle Model</label>
+                <input type="text" id="custVehicle" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="e.g. Swift / Honda City" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Select Service</label>
+              <select id="custService" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600">
+                <option value="General Periodic Maintenance">General Periodic Maintenance</option>
+                <option value="Brake Overhaul & Fluid">Brake Overhaul & Fluid</option>
+                <option value="AC Gas Refill & Service">AC Gas Refill & Service</option>
+                <option value="Engine Diagnosis & Electrical">Engine Diagnosis & Electrical</option>
+              </select>
+            </div>
+
+            <div id="bookingMsg" class="text-xs hidden"></div>
+
+            <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-blue-500/25">
+              Confirm Appointment Request
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workshop Details & Hours -->
+    <section class="py-12 max-w-6xl mx-auto px-6 grid sm:grid-cols-2 gap-6 text-sm text-slate-600">
+      <div class="p-6 rounded-2xl bg-white border border-slate-200 space-y-2">
+        <h4 class="font-bold text-slate-900 flex items-center gap-2"><i class="ri-map-pin-line text-blue-600"></i> Workshop Address</h4>
+        <p id="siteAddress" class="text-xs leading-relaxed">Loading address...</p>
+      </div>
+      <div class="p-6 rounded-2xl bg-white border border-slate-200 space-y-2">
+        <h4 class="font-bold text-slate-900 flex items-center gap-2"><i class="ri-time-line text-blue-600"></i> Business Hours</h4>
+        <p id="siteHours" class="text-xs leading-relaxed">Loading hours...</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
+    <p>Powered by <span class="font-bold text-slate-700">Grambi Platform</span> &copy; 2026</p>
+  </footer>
+
+  <script>
+    const slug = window.location.pathname.split('/site/')[1] || 'my-workshop';
+
+    async function loadPublicSite() {
+      try {
+        const res = await fetch(`/api/website/public/${encodeURIComponent(slug)}`);
+        if (!res.ok) throw new Error('Site not found');
+        const data = await res.json();
+
+        document.title = data.businessName;
+        document.getElementById('siteName').innerText = data.businessName;
+        document.getElementById('siteTag').innerText = data.tagline || 'Auto Service Specialist';
+        document.getElementById('heroTitle').innerText = data.tagline || data.businessName;
+        document.getElementById('heroAbout').innerText = data.about || 'Certified multi-brand car & bike maintenance specialist.';
+        document.getElementById('siteAddress').innerText = data.address || 'Location provided upon appointment confirmation.';
+        document.getElementById('siteHours').innerText = data.hours || 'Mon - Sat: 9:00 AM - 7:00 PM';
+
+        document.getElementById('callBtn').href = `tel:${data.phone}`;
+        document.getElementById('waBtn').href = `https://wa.me/${data.whatsapp ? data.whatsapp.replace(/\D/g, '') : ''}`;
+
+        // Render Services
+        const container = document.getElementById('servicesContainer');
+        container.innerHTML = (data.services || []).map(s => `
+          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-3">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold mb-3">
+                <i class="ri-shield-check-line"></i>
+              </div>
+              <h4 class="font-bold text-slate-900 text-sm">${s.name}</h4>
+              <p class="text-xs text-slate-500 mt-1">${s.description || 'Expert mechanics and genuine replacement parts.'}</p>
+            </div>
+            <div class="text-sm font-extrabold text-blue-600 border-t border-slate-100 pt-3">${s.price || 'Contact for Quote'}</div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        document.body.innerHTML = `
+          <div class="min-h-screen flex items-center justify-center text-center p-6 bg-slate-950 text-white">
+            <div>
+              <h2 class="text-2xl font-bold mb-2">Workshop Website Not Found</h2>
+              <p class="text-xs text-slate-400 mb-6">This site does not exist or has been removed.</p>
+              <a href="/" class="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg">Return to Grambi.in</a>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    async function handlePublicBooking(e) {
+      e.preventDefault();
+      const msg = document.getElementById('bookingMsg');
+      const payload = {
+        name: document.getElementById('custName').value.trim(),
+        phone: document.getElementById('custPhone').value.trim(),
+        vehicle: document.getElementById('custVehicle').value.trim(),
+        service: document.getElementById('custService').value
+      };
+
+      try {
+        const res = await fetch(`/api/website/public/${encodeURIComponent(slug)}/book`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to submit booking');
+
+        msg.className = "text-xs text-emerald-600 block p-3 bg-emerald-50 border border-emerald-200 rounded-xl";
+        msg.innerText = "✅ " + data.message;
+        e.target.reset();
+      } catch (err) {
+        msg.className = "text-xs text-rose-600 block p-3 bg-rose-50 border border-rose-200 rounded-xl";
+        msg.innerText = "❌ " + err.message;
+      }
+    }
+
+    loadPublicSite();
+  </script>
+</body>
+</html>

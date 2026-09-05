@@ -24,6 +24,41 @@ model User {
   createdAt     DateTime              @default(now())
   campaigns     Campaign[]
   subscriptions ProductSubscription[]
+  website       Website?
+}
+
+model Website {
+  id              String            @id @default(uuid())
+  userId          String            @unique
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug            String            @unique
+  businessName    String
+  tagline         String?
+  about           String?
+  phone           String?
+  whatsapp        String?
+  address         String?
+  hours           String?
+  theme           String            @default("blue")
+  logo            String?
+  servicesJson    String            @default("[]")
+  galleryJson     String            @default("[]")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  serviceRequests ServiceRequest[]
+}
+
+model ServiceRequest {
+  id          String    @id @default(uuid())
+  websiteId   String
+  website     Website   @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String
+  vehicle     String?
+  service     String?
+  notes       String?
+  status      String    @default("NEW") // "NEW", "IN_PROGRESS", "COMPLETED"
+  createdAt   DateTime  @default(now())
 }
 
 model ProductSubscription {
