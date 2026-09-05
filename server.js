@@ -77,8 +77,23 @@ function loadData() {
   }
 
   const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
-  // Ensure productConfigs container exists for all users
+  
+  // Dynamic sync: Always update product renderUrl from .env if defined
   let modified = false;
+  if (data.products) {
+    const wa = data.products.find(p => p.key === 'whatsapp_automator');
+    if (wa && process.env.WHATSAPP_APP_URL && wa.renderUrl !== process.env.WHATSAPP_APP_URL) {
+      wa.renderUrl = process.env.WHATSAPP_APP_URL;
+      modified = true;
+    }
+    const wb = data.products.find(p => p.key === 'website_builder');
+    if (wb && process.env.WEBSITE_BUILDER_APP_URL && wb.renderUrl !== process.env.WEBSITE_BUILDER_APP_URL) {
+      wb.renderUrl = process.env.WEBSITE_BUILDER_APP_URL;
+      modified = true;
+    }
+  }
+
+  // Ensure productConfigs container exists for all users
   data.users.forEach(u => {
     if (!u.productConfigs) {
       u.productConfigs = {};
@@ -251,8 +266,10 @@ app.get('/api/products/launch/:productKey', authenticate, (req, res) => {
     { expiresIn: '15m' }
   );
 
-  const targetUrl = `${product.renderUrl}?sso_token=${ssoToken}`;
-  res.json({ success: true, launchUrl: targetUrl, hasConfig: Object.keys(userConfig).length > 0 });
+  // If target app does not yet have an SSO handler endpoint, launch clean URL or append ?sso_token=
+  const separator = product.renderUrl.includes('?') ? '&' : '?';
+  const targetUrl = `${product.renderUrl}${separator}sso_token=${ssoToken}`;
+  res.json({ success: true, launchUrl: targetUrl, directUrl: product.renderUrl, hasConfig: Object.keys(userConfig).length > 0 });
 });
 
 // 6b. Get / Save Product-Specific Configuration for current user
