@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grambi Launchpad — Select Application</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-400 text-slate-950 flex items-center justify-center font-bold">G</div>
+        <span class="font-bold text-lg">Grambi Launchpad</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="text-right">
+          <div id="userName" class="text-sm font-semibold text-white">Loading...</div>
+          <div id="userRole" class="text-xs text-slate-400 capitalize">Member</div>
+        </div>
+        <a id="adminLink" href="/admin.html" class="hidden px-3 py-1.5 text-xs bg-purple-500/20 border border-purple-500/40 text-purple-300 rounded-lg hover:bg-purple-500/30">
+          Admin Hub
+        </a>
+        <button onclick="handleLogout()" class="text-slate-400 hover:text-white text-sm px-3 py-1.5 border border-slate-800 rounded-lg hover:bg-slate-800">
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-10 flex-grow w-full">
+    <div class="mb-10">
+      <h1 class="text-3xl font-bold text-white mb-2">Available Products & Modules</h1>
+      <p class="text-slate-400 text-sm">Select any authorized module below. Access is unified under your current session.</p>
+    </div>
+
+    <!-- Product Cards -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="productGrid">
+      <!-- Injected by JavaScript -->
+    </div>
+  </main>
+
+  <script>
+    const PRODUCTS = [
+      {
+        key: 'WHATSAPP_BROADCAST',
+        name: 'WhatsApp Bulk Broadcaster',
+        description: 'Send high-volume WhatsApp campaigns, upload contact CSVs, and inspect real-time delivery reports.',
+        icon: 'ri-whatsapp-line',
+        url: '/apps/whatsapp.html',
+        color: 'emerald'
+      },
+      {
+        key: 'WEBSITE_BUILDER',
+        name: 'Website & Customer Portal',
+        description: 'Custom client management portal, branded subdomain pipelines, and client project management.',
+        icon: 'ri-global-line',
+        url: '/apps/website-builder.html',
+        color: 'blue'
+      }
+    ];
+
+    async function loadPortal() {
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/auth/me', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+
+        if (!res.ok) {
+          window.location.href = '/index.html';
+          return;
+        }
+
+        const user = await res.json();
+        document.getElementById('userName').innerText = user.businessName || user.email;
+        document.getElementById('userRole').innerText = user.role === 'ADMIN' ? 'Super Admin' : 'Customer Account';
+
+        if (user.role === 'ADMIN') {
+          document.getElementById('adminLink').classList.remove('hidden');
+        }
+
+        renderProducts(user);
+      } catch (err) {
+        window.location.href = '/index.html';
+      }
+    }
+
+    function renderProducts(user) {
+      const container = document.getElementById('productGrid');
+      container.innerHTML = '';
+
+      PRODUCTS.forEach(p => {
+        const hasAccess = user.role === 'ADMIN' || (user.subscriptions && user.subscriptions.includes(p.key));
+
+        const card = document.createElement('div');
+        card.className = `p-6 rounded-2xl border ${hasAccess ? 'border-slate-800 bg-slate-900/60' : 'border-slate-800/40 bg-slate-900/20 opacity-70'} flex flex-col justify-between`;
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="w-12 h-12 rounded-xl bg-${p.color}-500/10 text-${p.color}-400 flex items-center justify-center text-2xl border border-${p.color}-500/20">
+                <i class="${p.icon}"></i>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded-full ${hasAccess ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}">
+                ${hasAccess ? 'Active Access' : 'Locked'}
+              </span>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">${p.name}</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-6">${p.description}</p>
+          </div>
+
+          <div>
+            ${hasAccess 
+              ? `<a href="${p.url}" class="w-full py-2.5 px-4 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition">
+                   Open Application <i class="ri-arrow-right-line"></i>
+                 </a>`
+              : `<button disabled class="w-full py-2.5 px-4 bg-slate-800 text-slate-500 font-semibold rounded-xl text-sm cursor-not-allowed">
+                   Contact Admin for Access
+                 </button>`
+            }
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function handleLogout() {
+      localStorage.removeItem('grambi_token');
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/index.html';
+    }
+
+    loadPortal();
+  </script>
+</body>
+</html>

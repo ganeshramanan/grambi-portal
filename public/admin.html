@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grambi Admin — User Access & Product Router</title>
+  <title>Grambi Admin — Customer Product Access</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
 </head>
@@ -14,38 +14,30 @@
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-lg bg-purple-500 text-white flex items-center justify-center font-bold">A</div>
-        <span class="font-bold text-lg">Grambi Admin Panel</span>
+        <span class="font-bold text-lg">Grambi Super Admin Hub</span>
       </div>
 
-      <div class="flex items-center gap-4">
-        <a href="/dashboard.html" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 border border-slate-800 rounded-lg">
-          ← Back to User Launchpad
-        </a>
-      </div>
+      <a href="/portal.html" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 border border-slate-800 rounded-lg">
+        ← Back to Launchpad
+      </a>
     </div>
   </header>
 
   <main class="max-w-7xl mx-auto px-6 py-10">
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-white">Client Product Permissions</h1>
-        <p class="text-sm text-slate-400">Approve new customer signups and toggle individual product access.</p>
-      </div>
-
-      <button onclick="openNewProductModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded-lg flex items-center gap-2">
-        <i class="ri-add-line"></i> Add 3rd/4th Product
-      </button>
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-white">Customer Product Permissions</h1>
+      <p class="text-sm text-slate-400">Approve new signups and toggle which products each customer can access.</p>
     </div>
 
     <!-- Users Table -->
-    <div class="border border-slate-800 bg-slate-900/40 rounded-2xl overflow-hidden shadow-xl mb-12">
+    <div class="border border-slate-800 bg-slate-900/40 rounded-2xl overflow-hidden shadow-xl">
       <table class="w-full text-left text-sm">
         <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
           <tr>
             <th class="px-6 py-4">Customer</th>
-            <th class="px-6 py-4">Contact</th>
-            <th class="px-6 py-4">Status</th>
-            <th class="px-6 py-4">Product Access Allowed</th>
+            <th class="px-6 py-4">Phone / Contact</th>
+            <th class="px-6 py-4">Account Status</th>
+            <th class="px-6 py-4">Product Subscriptions</th>
             <th class="px-6 py-4 text-right">Actions</th>
           </tr>
         </thead>
@@ -54,108 +46,29 @@
         </tbody>
       </table>
     </div>
-
-    <!-- Active Products Catalog Management -->
-    <div>
-      <div class="mb-4">
-        <h2 class="text-xl font-bold text-white">Configured Products / Render Routes</h2>
-        <p class="text-xs text-slate-400">Manage, launch, or delete connected Render applications.</p>
-      </div>
-
-      <div id="adminProductList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Rendered via JS -->
-      </div>
-    </div>
   </main>
 
   <script>
-    let globalProducts = [];
-
-    function getAuthHeaders() {
-      const token = localStorage.getItem('grambi_token');
-      return token ? { 'Authorization': `Bearer ${token}` } : {};
-    }
-
-    async function loadAdminData() {
+    async function loadAdmin() {
       try {
+        const token = localStorage.getItem('grambi_token');
         const res = await fetch('/api/admin/users', {
-          headers: {
-            'Accept': 'application/json',
-            ...getAuthHeaders()
-          }
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
+
         if (!res.ok) {
-          window.location.href = '/dashboard.html';
+          window.location.href = '/portal.html';
           return;
         }
 
         const data = await res.json();
-        globalProducts = data.products;
-        renderUsers(data.users, data.products);
-        renderProductsList(data.products);
+        renderUsers(data.users || []);
       } catch (err) {
-        alert('Failed to load admin dashboard');
+        alert('Failed to load admin panel');
       }
     }
 
-    function renderProductsList(products) {
-      const container = document.getElementById('adminProductList');
-      container.innerHTML = '';
-
-      products.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'p-5 rounded-xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between';
-        div.innerHTML = `
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">${p.key}</span>
-              <button onclick="deleteProduct('${p.key}')" class="text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 p-1 rounded transition" title="Delete Product">
-                <i class="ri-delete-bin-line text-sm"></i> Delete
-              </button>
-            </div>
-            <h4 class="font-bold text-white text-base mb-1">${p.name}</h4>
-            <div class="text-xs font-mono text-slate-400 truncate bg-slate-950 p-2 rounded border border-slate-800/80 mb-4" title="${p.renderUrl}">
-              ${p.renderUrl}
-            </div>
-          </div>
-          <div class="text-[11px] text-slate-500 flex justify-between items-center border-t border-slate-800/60 pt-3">
-            <span>Render microservice</span>
-            <a href="${p.renderUrl}" target="_blank" class="text-emerald-400 hover:underline inline-flex items-center gap-1">Test URL <i class="ri-arrow-right-up-line"></i></a>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    async function deleteProduct(productKey) {
-      if (!confirm(`Are you sure you want to delete the product '${productKey}'? All customers will lose access immediately.`)) {
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/admin/products/${encodeURIComponent(productKey)}`, {
-          method: 'DELETE',
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Failed to delete');
-        } else {
-          const text = await res.text();
-          if (!res.ok) throw new Error(`Server returned HTTP ${res.status}: ${text.slice(0, 80)}`);
-        }
-
-        loadAdminData();
-      } catch (err) {
-        alert(err.message);
-      }
-    }
-
-    function renderUsers(users, products) {
+    function renderUsers(users) {
       const tbody = document.getElementById('usersTableBody');
       tbody.innerHTML = '';
 
@@ -163,36 +76,40 @@
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/30 transition';
 
-        const statusBadge = u.status === 'approved' 
+        const statusBadge = u.status === 'APPROVED' 
           ? '<span class="px-2.5 py-1 text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full">Approved</span>'
-          : u.status === 'pending'
+          : u.status === 'PENDING'
           ? '<span class="px-2.5 py-1 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full">Pending Approval</span>'
           : '<span class="px-2.5 py-1 text-xs bg-rose-500/10 text-rose-400 border border-rose-500/30 rounded-full">Rejected</span>';
 
-        const productCheckboxes = products.map(p => {
-          const checked = u.allowedProducts.includes(p.key) ? 'checked' : '';
-          return `
-            <label class="inline-flex items-center gap-1.5 mr-3 text-xs cursor-pointer">
-              <input type="checkbox" ${checked} onchange="toggleAccess('${u.id}', '${p.key}', this.checked)" class="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-0">
-              <span class="text-slate-300">${p.name.split('&')[0]}</span>
-            </label>
-          `;
-        }).join('');
+        const subs = (u.subscriptions || []).map(s => s.productKey);
+
+        const waChecked = subs.includes('WHATSAPP_BROADCAST') ? 'checked' : '';
+        const wbChecked = subs.includes('WEBSITE_BUILDER') ? 'checked' : '';
 
         tr.innerHTML = `
           <td class="px-6 py-4">
-            <div class="font-semibold text-white">${u.name}</div>
+            <div class="font-semibold text-white">${u.businessName || u.email}</div>
             <div class="text-xs text-slate-500">${u.email}</div>
           </td>
           <td class="px-6 py-4 text-xs text-slate-300">${u.phone || 'N/A'}</td>
           <td class="px-6 py-4">${statusBadge}</td>
-          <td class="px-6 py-4">${productCheckboxes}</td>
+          <td class="px-6 py-4 space-x-3">
+            <label class="inline-flex items-center gap-1.5 text-xs cursor-pointer">
+              <input type="checkbox" ${waChecked} onchange="toggleAccess('${u.id}', 'WHATSAPP_BROADCAST', this.checked)" class="rounded bg-slate-950 border-slate-700 text-emerald-500">
+              <span class="text-slate-300">WhatsApp</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 text-xs cursor-pointer">
+              <input type="checkbox" ${wbChecked} onchange="toggleAccess('${u.id}', 'WEBSITE_BUILDER', this.checked)" class="rounded bg-slate-950 border-slate-700 text-blue-500">
+              <span class="text-slate-300">Website Portal</span>
+            </label>
+          </td>
           <td class="px-6 py-4 text-right space-x-2">
-            ${u.status === 'pending' ? `
-              <button onclick="updateStatus('${u.id}', 'approved')" class="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg">Approve</button>
-              <button onclick="updateStatus('${u.id}', 'rejected')" class="px-3 py-1 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 text-xs rounded-lg">Reject</button>
+            ${u.status === 'PENDING' ? `
+              <button onclick="updateStatus('${u.id}', 'APPROVED')" class="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg">Approve</button>
+              <button onclick="updateStatus('${u.id}', 'REJECTED')" class="px-3 py-1 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 text-xs rounded-lg">Reject</button>
             ` : `
-              <button onclick="deleteUser('${u.id}', '${u.name}')" class="px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 rounded-lg transition inline-flex items-center gap-1" title="Delete customer">
+              <button onclick="deleteCustomer('${u.id}', '${u.businessName || u.email}')" class="px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 rounded-lg transition" title="Delete customer">
                 <i class="ri-delete-bin-line"></i> Delete
               </button>
             `}
@@ -202,73 +119,39 @@
       });
     }
 
-    async function updateStatus(userId, status) {
-      await fetch(`/api/admin/users/${userId}/access`, {
-        method: 'POST',
+    async function updateStatus(id, status) {
+      await fetch(`/api/admin/users/${id}/access`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
       });
-      loadAdminData();
+      loadAdmin();
     }
 
-    async function toggleAccess(userId, productKey, isAllowed) {
-      // Fetch current allowed list
+    async function toggleAccess(id, productKey, isChecked) {
       const res = await fetch('/api/admin/users');
       const data = await res.json();
-      const user = data.users.find(u => u.id === userId);
-      let allowed = new Set(user.allowedProducts || []);
+      const user = data.users.find(u => u.id === id);
+      let subs = new Set((user.subscriptions || []).map(s => s.productKey));
 
-      if (isAllowed) allowed.add(productKey);
-      else allowed.delete(productKey);
+      if (isChecked) subs.add(productKey);
+      else subs.delete(productKey);
 
-      await fetch(`/api/admin/users/${userId}/access`, {
-        method: 'POST',
+      await fetch(`/api/admin/users/${id}/access`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ allowedProducts: Array.from(allowed), status: 'approved' })
+        body: JSON.stringify({ allowedProducts: Array.from(subs) })
       });
-      loadAdminData();
+      loadAdmin();
     }
 
-    async function deleteUser(userId, userName) {
-      if (!confirm(`Are you sure you want to completely delete customer "${userName}"? They will no longer be able to log in.`)) {
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
-          method: 'DELETE',
-          headers: { 'Accept': 'application/json' }
-        });
-
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Failed to delete user');
-        } else {
-          const text = await res.text();
-          if (!res.ok) throw new Error(`Server error (${res.status}): ${text.slice(0, 80)}`);
-        }
-
-        loadAdminData();
-      } catch (err) {
-        alert(err.message);
-      }
+    async function deleteCustomer(id, name) {
+      if (!confirm(`Are you sure you want to delete customer "${name}"?`)) return;
+      await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+      loadAdmin();
     }
 
-    function openNewProductModal() {
-      const key = prompt('Enter product unique key (e.g., ai_chatbot):');
-      if (!key) return;
-      const name = prompt('Enter Product Display Name:');
-      const renderUrl = prompt('Enter Render Application URL:');
-
-      fetch('/api/admin/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, name, description: 'New automated business module', renderUrl })
-      }).then(() => loadAdminData());
-    }
-
-    loadAdminData();
+    loadAdmin();
   </script>
 </body>
 </html>

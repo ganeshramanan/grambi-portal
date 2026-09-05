@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grambi — Website & Customer Portal Builder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/portal.html" class="text-slate-400 hover:text-white flex items-center gap-1 text-xs border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2">
+          <i class="ri-arrow-left-line"></i> Launchpad
+        </a>
+        <div class="w-8 h-8 rounded-lg bg-blue-500 text-slate-950 flex items-center justify-center font-bold text-lg">
+          <i class="ri-global-line"></i>
+        </div>
+        <span class="font-bold text-base">Website & Portal Management</span>
+      </div>
+      <span class="text-xs text-slate-400 px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Module 02 Active</span>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-10 flex-grow w-full">
+    <div class="mb-8 flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-white">Your Custom Portals & Sites</h1>
+        <p class="text-xs text-slate-400">Deployed customer portals connected to your account.</p>
+      </div>
+      <button class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center gap-2">
+        <i class="ri-add-line"></i> Create New Web Portal
+      </button>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-4">
+        <div class="flex justify-between items-center">
+          <span class="px-2.5 py-1 rounded-full text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE</span>
+          <span class="text-xs font-mono text-slate-500">Custom Domain</span>
+        </div>
+        <h3 class="text-lg font-bold text-white">Main Business Client Portal</h3>
+        <p class="text-xs text-slate-400 font-mono">https://portal.grambi.in</p>
+        <div class="pt-2 border-t border-slate-800/80 flex justify-between items-center text-xs">
+          <span class="text-slate-400">SSL Active</span>
+          <a href="#" class="text-blue-400 hover:underline">Manage Pages →</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grambi — WhatsApp Broadcast Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/portal.html" class="text-slate-400 hover:text-white flex items-center gap-1 text-xs border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2">
+          <i class="ri-arrow-left-line"></i> Launchpad
+        </a>
+        <div class="w-8 h-8 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-bold text-lg">
+          <i class="ri-whatsapp-line"></i>
+        </div>
+        <span class="font-bold text-base">WhatsApp Broadcast Engine</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="openSettingsModal()" class="px-3 py-1.5 text-xs border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg flex items-center gap-1.5">
+          <i class="ri-settings-4-line text-emerald-400"></i> API Settings
+        </button>
+        <span id="userBadge" class="text-xs text-slate-400 px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Loading...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Left: Broadcast Sender Form (7 Cols) -->
+    <div class="lg:col-span-7 space-y-6">
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="ri-send-plane-line text-emerald-400"></i> New WhatsApp Broadcast
+          </h2>
+          <span class="text-xs text-emerald-400 font-mono bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20">Meta Cloud API</span>
+        </div>
+
+        <form onsubmit="handleSendBroadcast(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Campaign Title</label>
+            <input type="text" id="campName" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. Diwali Offer / Clinic Reminder" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Meta Approved Template</label>
+              <input type="text" id="campTemplate" value="general_broadcast" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500" placeholder="Template Name" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Language Code</label>
+              <input type="text" id="campLang" value="en_US" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-emerald-500" />
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="block text-xs font-semibold text-slate-300">Recipient Phone Numbers (1 per line with country code)</label>
+              <span id="recipientCountBadge" class="text-[11px] text-emerald-400">0 recipients</span>
+            </div>
+            <textarea id="campRecipients" rows="6" oninput="updateRecipientCount()" required class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="919876543210&#10;919999988888&#10;918888877777"></textarea>
+          </div>
+
+          <div id="broadcastStatus" class="text-xs hidden"></div>
+
+          <button type="submit" id="sendBtn" class="w-full py-3 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition">
+            <i class="ri-rocket-line"></i> Launch Broadcast Campaign
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right: Recent Campaign History & Analytics (5 Cols) -->
+    <div class="lg:col-span-5 space-y-6">
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 flex flex-col h-full">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="ri-history-line text-slate-400"></i> Broadcast Reports
+          </h3>
+          <button onclick="loadCampaigns()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
+            <i class="ri-refresh-line"></i> Refresh
+          </button>
+        </div>
+
+        <div id="campaignList" class="space-y-3 overflow-y-auto max-h-[550px] flex-grow pr-1">
+          <div class="text-center py-10 text-xs text-slate-500">Loading campaign analytics...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings Modal (Phone ID / Token) -->
+  <div id="settingsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
+      <button onclick="closeSettingsModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white">
+        <i class="ri-close-line text-xl"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl">
+          <i class="ri-key-2-line"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-white">Meta API Credentials</h3>
+          <p class="text-xs text-slate-400">Stored directly in your Grambi profile</p>
+        </div>
+      </div>
+
+      <form onsubmit="handleSaveSettings(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp Phone Number ID</label>
+          <input type="text" id="cfgPhoneId" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. 1278829868653290" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp Business Account (WABA) ID</label>
+          <input type="text" id="cfgWabaId" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. 1063255519739985" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Permanent Meta Access Token</label>
+          <textarea id="cfgToken" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs font-mono text-white focus:outline-none focus:border-emerald-500" placeholder="EAAYoY..."></textarea>
+        </div>
+
+        <div id="cfgMsg" class="text-xs hidden"></div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeSettingsModal()" class="px-4 py-2 text-xs text-slate-400 hover:text-white border border-slate-800 rounded-lg">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 text-xs bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold rounded-lg transition">
+            Save Settings
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden'); }
+    function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden'); }
+
+    function updateRecipientCount() {
+      const text = document.getElementById('campRecipients').value.trim();
+      const count = text ? text.split('\n').filter(s => s.trim().length > 0).length : 0;
+      document.getElementById('recipientCountBadge').innerText = `${count} recipient${count === 1 ? '' : 's'}`;
+    }
+
+    async function initApp() {
+      const token = localStorage.getItem('grambi_token');
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error();
+        const user = await res.json();
+        document.getElementById('userBadge').innerText = user.businessName || user.email;
+
+        // Pre-fill settings modal
+        if (user.phoneNumberId) document.getElementById('cfgPhoneId').value = user.phoneNumberId;
+        if (user.wabaId) document.getElementById('cfgWabaId').value = user.wabaId;
+
+        loadCampaigns();
+      } catch (e) {
+        window.location.href = '/index.html';
+      }
+    }
+
+    async function handleSaveSettings(e) {
+      e.preventDefault();
+      const phoneNumberId = document.getElementById('cfgPhoneId').value.trim();
+      const wabaId = document.getElementById('cfgWabaId').value.trim();
+      const accessToken = document.getElementById('cfgToken').value.trim();
+      const msg = document.getElementById('cfgMsg');
+
+      try {
+        const res = await fetch('/api/auth/credentials', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumberId, wabaId, accessToken })
+        });
+        if (!res.ok) throw new Error('Failed to update credentials');
+
+        msg.className = "text-xs text-emerald-400 block";
+        msg.innerText = "Settings saved successfully!";
+        setTimeout(() => closeSettingsModal(), 1200);
+      } catch (err) {
+        msg.className = "text-xs text-rose-400 block";
+        msg.innerText = err.message;
+      }
+    }
+
+    async function handleSendBroadcast(e) {
+      e.preventDefault();
+      const campaignName = document.getElementById('campName').value.trim();
+      const templateName = document.getElementById('campTemplate').value.trim();
+      const languageCode = document.getElementById('campLang').value.trim();
+      const rawRecipients = document.getElementById('campRecipients').value.trim();
+      const recipients = rawRecipients.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      const statusEl = document.getElementById('broadcastStatus');
+      const btn = document.getElementById('sendBtn');
+
+      btn.disabled = true;
+      btn.innerText = 'Dispatching Broadcast...';
+
+      try {
+        const res = await fetch('/api/whatsapp/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ campaignName, templateName, languageCode, recipients })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to dispatch campaign');
+
+        statusEl.className = "text-xs text-emerald-400 block p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl";
+        statusEl.innerText = `✅ ${data.message}`;
+        document.getElementById('campRecipients').value = '';
+        updateRecipientCount();
+        loadCampaigns();
+      } catch (err) {
+        statusEl.className = "text-xs text-rose-400 block p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl";
+        statusEl.innerText = `❌ ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-rocket-line"></i> Launch Broadcast Campaign';
+      }
+    }
+
+    async function loadCampaigns() {
+      try {
+        const res = await fetch('/api/whatsapp/campaigns');
+        const data = await res.json();
+        const list = document.getElementById('campaignList');
+
+        if (!data.campaigns || data.campaigns.length === 0) {
+          list.innerHTML = '<div class="text-center py-10 text-xs text-slate-500">No campaigns sent yet.</div>';
+          return;
+        }
+
+        list.innerHTML = data.campaigns.map(c => `
+          <div class="p-4 rounded-xl border border-slate-800 bg-slate-950/60 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-white text-xs truncate max-w-[200px]">${c.name}</span>
+              <span class="text-[10px] font-mono text-slate-500">${new Date(c.createdAt).toLocaleTimeString()}</span>
+            </div>
+            <div class="flex gap-2 text-[11px]">
+              <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${c.templateName}</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${c.stats.sent} Sent</span>
+              ${c.stats.delivered ? `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">${c.stats.delivered} Delivered</span>` : ''}
+              ${c.stats.failed ? `<span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">${c.stats.failed} Failed</span>` : ''}
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {}
+    }
+
+    initApp();
+    setInterval(loadCampaigns, 6000);
+  </script>
+</body>
+</html>

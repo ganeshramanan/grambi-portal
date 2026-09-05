@@ -1,66 +1,43 @@
-# Grambi.in — Multi-Product Launchpad & Central Auth Hub
+# Grambi.in — Unified Multi-Product Platform & WhatsApp Broadcaster
 
-A Node.js & Express centralized portal for **Grambi.in** to manage client onboarding, admin approval, and single-sign-on routing to microservices hosted on Render (such as WhatsApp Automator, Website Builder, and future products).
+A single, clean, modular Node.js & TypeScript application that unifies:
+1. **Public Marketing Landing Page** (`grambi.in`)
+2. **Central Customer Launchpad** (View and launch active vs locked products)
+3. **Super Admin Access Hub** (Approve customers & assign product permissions)
+4. **WhatsApp Bulk Broadcast Engine** (High-volume broadcasts, Meta Cloud API, templates, delivery reports)
+5. **Website & Customer Portal Module** (Product 2)
 
 ---
 
-## 🚀 Quick Start (Windows / Mac / Linux)
+## ⚡ Quick Start on Windows / Mac
 
-### 1. Clone & Install
+### 1. Clone & Install Dependencies
 ```bash
-git clone <YOUR_REPO_URL>
+git clone https://github.com/ganeshramanan/grambi-portal.git
 cd grambi-portal
 npm install
 ```
 
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-Update your Render URLs in `.env`:
+### 2. Configure Environment
+Create `.env`:
 ```env
 PORT=3000
-JWT_SECRET=your_custom_secret_key_here
-WHATSAPP_APP_URL=https://your-whatsapp-app.onrender.com
-WEBSITE_BUILDER_APP_URL=https://your-website-builder.onrender.com
+DATABASE_URL="file:./dev.db"
+REDIS_URL="redis://127.0.0.1:6379"
+JWT_SECRET="grambi_unified_secret_key_2026"
 ```
 
-### 3. Run the App
+### 3. Initialize Prisma Database & Run
 ```bash
-node server.js
+npx prisma db push
+npm run dev
 ```
-Visit `http://localhost:3000`.
+Open **`http://localhost:3000`** in your browser.
 
 ---
 
-## 🔑 Default Accounts (Initial Demo)
+## 🔑 Default Roles & Flow
 
-* **Admin Portal**: `admin@grambi.in` / `admin123` (Access `/admin.html` to approve users and assign product permissions)
-* **Demo Customer**: `client@example.com` / `client123` (Access `/dashboard.html` to launch allowed products)
-
----
-
-## 📁 Project Structure
-
-* `server.js` — Core Express backend, JWT auth, dynamic product routing & admin APIs.
-* `public/index.html` — Public landing page & registration modal.
-* `public/dashboard.html` — Customer dashboard with product launch cards.
-* `public/admin.html` — Admin user management and granular product permission toggles.
-* `public/grambi-auto-receiver.js` — Universal auto-receiver script to drop into any child Render app to auto-populate credentials.
-
----
-
-## 🔗 How to Connect Child Render Apps (WhatsApp Automator, Website Builder, etc.)
-
-Add this single line inside the `<head>` or before `</body>` of your child application's HTML page (or paste the contents of `public/grambi-auto-receiver.js`):
-
-```html
-<script src="https://grambi.in/grambi-auto-receiver.js"></script>
-```
-*(Or if testing locally: `<script src="http://localhost:3000/grambi-auto-receiver.js"></script>`)*
-
-When Grambi opens your app, this script automatically:
-1. Reads `phone_number_id`, `waba_id`, and `access_token` from URL parameters.
-2. Auto-populates the input fields in your app.
-3. Automatically cleans up the address bar URL using `history.replaceState` so tokens aren't visible in the URL.
+* **First Account Created**: Automatically becomes the **Super Admin** (`ADMIN`) with instant approval and access to all products.
+* **Customer Accounts**: Sign up via the public landing page $\rightarrow$ Admin approves them and toggles product checkboxes in `/admin.html`.
+* **Zero Redirect Issues**: Everything runs on the exact same domain & authentication cookie. No cross-site tokens or URL query parameters needed!
