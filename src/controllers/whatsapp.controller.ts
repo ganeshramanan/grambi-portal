@@ -85,6 +85,83 @@ export const sendBulkMessages = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Send a Single Sandbox Test Message
+export const sendSandboxTestMessage = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { recipientNumber, templateName = 'hello_world', languageCode = 'en_US' } = req.body;
+
+  if (!recipientNumber) {
+    return res.status(400).json({ error: 'Recipient phone number is required.' });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || !user.phoneNumberId || !user.accessToken) {
+    return res.status(400).json({
+      error: 'WhatsApp Meta Credentials not configured. Please add your Phone ID and Access Token in Settings.',
+    });
+  }
+
+  try {
+    const result = await waService.sendTemplateMessage({
+      phoneNumberId: user.phoneNumberId,
+      accessToken: user.accessToken,
+      to: recipientNumber,
+      templateName,
+      languageCode,
+    });
+
+    if (result.success) {
+      return res.json({
+        success: true,
+        message: `Test message dispatched successfully to ${recipientNumber}!`,
+        wamid: result.wamid,
+      });
+    } else {
+      return res.status(400).json({
+        error: result.error || 'Meta rejected the test message.',
+      });
+    }
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to send test message: ' + err.message });
+  }
+};
+
+// Export Campaign Message Records to CSV
+export const exportCampaignCSV = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { id } = req.params;
+
+  try {
+    const campaign = await prisma.campaign.findFirst({
+      where: { id, userId },
+      include: { messages: true },
+    });
+
+    if (!campaign) {
+      return res.status(404).json({ error: 'Campaign not found.' });
+    }
+
+    const headers = ['Phone Number', 'Status', 'WAMID', 'Error Message', 'Sent At', 'Delivered At', 'Read At'];
+    const rows = campaign.messages.map((m) => [
+      `"${m.phoneNumber}"`,
+      `"${m.status}"`,
+      `"${m.wamid || ''}"`,
+      `"${(m.errorMessage || '').replace(/"/g, '""')}"`,
+      `"${m.sentAt ? m.sentAt.toISOString() : ''}"`,
+      `"${m.deliveredAt ? m.deliveredAt.toISOString() : ''}"`,
+      `"${m.readAt ? m.readAt.toISOString() : ''}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${campaign.name.replace(/[^a-z0-9]/gi, '_')}_report.csv"`);
+    return res.send(csvContent);
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to export CSV: ' + err.message });
+  }
+};
+
 // List Campaigns for the Customer
 export const listCustomerCampaigns = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;

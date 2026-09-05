@@ -5,7 +5,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { register, login, getProfile, updateCredentials, logout } from './controllers/auth.controller';
 import { listAllUsers, updateUserAccess, deleteUser } from './controllers/admin.controller';
-import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates } from './controllers/whatsapp.controller';
+import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSandboxTestMessage, exportCampaignCSV } from './controllers/whatsapp.controller';
 import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking } from './controllers/website.controller';
 import { verifyWebhook, handleWebhookEvents } from './controllers/webhook.controller';
 import { authMiddleware, requireAdmin } from './middlewares/auth.middleware';
@@ -39,7 +39,9 @@ app.delete('/api/admin/users/:id', authMiddleware, requireAdmin, deleteUser);
 // --- PRODUCT 1: WHATSAPP BROADCAST ROUTES ---
 app.get('/api/whatsapp/templates', authMiddleware, getCustomerTemplates);
 app.post('/api/whatsapp/broadcast', authMiddleware, sendBulkMessages);
+app.post('/api/whatsapp/sandbox-test', authMiddleware, sendSandboxTestMessage);
 app.get('/api/whatsapp/campaigns', authMiddleware, listCustomerCampaigns);
+app.get('/api/whatsapp/campaigns/:id/export', authMiddleware, exportCampaignCSV);
 
 // --- PRODUCT 2: WEBSITE CUSTOMIZER ROUTES ---
 app.get('/api/website/my-website', authMiddleware, getMyWebsite);
