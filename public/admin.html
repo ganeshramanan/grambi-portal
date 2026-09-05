@@ -38,7 +38,7 @@
     </div>
 
     <!-- Users Table -->
-    <div class="border border-slate-800 bg-slate-900/40 rounded-2xl overflow-hidden shadow-xl">
+    <div class="border border-slate-800 bg-slate-900/40 rounded-2xl overflow-hidden shadow-xl mb-12">
       <table class="w-full text-left text-sm">
         <thead class="bg-slate-900 border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
           <tr>
@@ -53,6 +53,18 @@
           <!-- Dynamically filled -->
         </tbody>
       </table>
+    </div>
+
+    <!-- Active Products Catalog Management -->
+    <div>
+      <div class="mb-4">
+        <h2 class="text-xl font-bold text-white">Configured Products / Render Routes</h2>
+        <p class="text-xs text-slate-400">Manage, launch, or delete connected Render applications.</p>
+      </div>
+
+      <div id="adminProductList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered via JS -->
+      </div>
     </div>
   </main>
 
@@ -70,8 +82,55 @@
         const data = await res.json();
         globalProducts = data.products;
         renderUsers(data.users, data.products);
+        renderProductsList(data.products);
       } catch (err) {
         alert('Failed to load admin dashboard');
+      }
+    }
+
+    function renderProductsList(products) {
+      const container = document.getElementById('adminProductList');
+      container.innerHTML = '';
+
+      products.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'p-5 rounded-xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between';
+        div.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">${p.key}</span>
+              <button onclick="deleteProduct('${p.key}')" class="text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 p-1 rounded transition" title="Delete Product">
+                <i class="ri-delete-bin-line text-sm"></i> Delete
+              </button>
+            </div>
+            <h4 class="font-bold text-white text-base mb-1">${p.name}</h4>
+            <div class="text-xs font-mono text-slate-400 truncate bg-slate-950 p-2 rounded border border-slate-800/80 mb-4" title="${p.renderUrl}">
+              ${p.renderUrl}
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500 flex justify-between items-center border-t border-slate-800/60 pt-3">
+            <span>Render microservice</span>
+            <a href="${p.renderUrl}" target="_blank" class="text-emerald-400 hover:underline inline-flex items-center gap-1">Test URL <i class="ri-arrow-right-up-line"></i></a>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function deleteProduct(productKey) {
+      if (!confirm(`Are you sure you want to delete the product '${productKey}'? All customers will lose access immediately.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/admin/products/${productKey}`, {
+          method: 'DELETE'
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete');
+        loadAdminData();
+      } catch (err) {
+        alert(err.message);
       }
     }
 

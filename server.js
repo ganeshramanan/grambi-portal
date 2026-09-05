@@ -287,6 +287,30 @@ app.post('/api/admin/products', authenticate, requireAdmin, (req, res) => {
   res.json({ success: true, product: newProduct });
 });
 
+// 10. Delete a Product from Catalog (Admin only)
+app.delete('/api/admin/products/:key', authenticate, requireAdmin, (req, res) => {
+  const { key } = req.params;
+  const data = loadData();
+
+  const prodIndex = data.products.findIndex(p => p.key === key);
+  if (prodIndex === -1) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  // Remove the product from catalog
+  data.products.splice(prodIndex, 1);
+
+  // Also remove this product from all users' allowedProducts list
+  data.users.forEach(u => {
+    if (u.allowedProducts) {
+      u.allowedProducts = u.allowedProducts.filter(pKey => pKey !== key);
+    }
+  });
+
+  saveData(data);
+  res.json({ success: true, message: `Product ${key} deleted successfully` });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Grambi Portal Server running on http://localhost:${PORT}`);
 });
