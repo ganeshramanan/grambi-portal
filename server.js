@@ -311,6 +311,27 @@ app.delete('/api/admin/products/:key', authenticate, requireAdmin, (req, res) =>
   res.json({ success: true, message: `Product ${key} deleted successfully` });
 });
 
+// 11. Delete a User / Customer (Admin only)
+app.delete('/api/admin/users/:userId', authenticate, requireAdmin, (req, res) => {
+  const { userId } = req.params;
+  const data = loadData();
+
+  // Prevent admin from deleting themselves
+  if (req.user.id === userId) {
+    return res.status(400).json({ error: 'Cannot delete your own active admin account.' });
+  }
+
+  const userIndex = data.users.findIndex(u => u.id === userId);
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  const deletedUser = data.users.splice(userIndex, 1)[0];
+  saveData(data);
+
+  res.json({ success: true, message: `Customer ${deletedUser.name} (${deletedUser.email}) removed successfully` });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Grambi Portal Server running on http://localhost:${PORT}`);
 });

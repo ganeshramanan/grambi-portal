@@ -182,7 +182,9 @@
               <button onclick="updateStatus('${u.id}', 'approved')" class="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg">Approve</button>
               <button onclick="updateStatus('${u.id}', 'rejected')" class="px-3 py-1 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 text-xs rounded-lg">Reject</button>
             ` : `
-              <span class="text-xs text-slate-500">Managed</span>
+              <button onclick="deleteUser('${u.id}', '${u.name}')" class="px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 rounded-lg transition inline-flex items-center gap-1" title="Delete customer">
+                <i class="ri-delete-bin-line"></i> Delete
+              </button>
             `}
           </td>
         `;
@@ -215,6 +217,32 @@
         body: JSON.stringify({ allowedProducts: Array.from(allowed), status: 'approved' })
       });
       loadAdminData();
+    }
+
+    async function deleteUser(userId, userName) {
+      if (!confirm(`Are you sure you want to completely delete customer "${userName}"? They will no longer be able to log in.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
+          method: 'DELETE',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+        } else {
+          const text = await res.text();
+          if (!res.ok) throw new Error(`Server error (${res.status}): ${text.slice(0, 80)}`);
+        }
+
+        loadAdminData();
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
     function openNewProductModal() {
