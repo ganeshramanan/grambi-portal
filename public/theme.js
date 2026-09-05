@@ -15,8 +15,32 @@
       color: #0f172a !important;
     }
     html.light header {
-      background-color: rgba(255, 255, 255, 0.9) !important;
+      background-color: rgba(255, 255, 255, 0.95) !important;
       border-color: #e2e8f0 !important;
+    }
+    /* Fix Logo Gradient in Light Mode */
+    html.light .bg-gradient-to-r.from-white {
+      background-image: none !important;
+      color: #0f172a !important;
+      -webkit-text-fill-color: #0f172a !important;
+    }
+    /* Fix Nav Links and Sign In Button */
+    html.light header nav a {
+      color: #334155 !important;
+    }
+    html.light header nav a:hover {
+      color: #059669 !important;
+    }
+    html.light #navAuthArea button:first-of-type,
+    html.light header button.text-slate-200 {
+      color: #0f172a !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 0.5rem !important;
+      background-color: #f8fafc !important;
+    }
+    html.light header button.text-slate-200:hover {
+      background-color: #f1f5f9 !important;
+      color: #000000 !important;
     }
     html.light main, html.light section {
       color: #0f172a !important;
