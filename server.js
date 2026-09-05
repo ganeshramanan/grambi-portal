@@ -198,7 +198,7 @@ app.get('/api/auth/me', authenticate, (req, res) => {
   });
 });
 
-// 6. Launch Product Route (Secure Redirect with SSO Token)
+// 6. Launch Product Route (Secure Redirect with SSO Token + Injected Credentials)
 app.get('/api/products/launch/:productKey', authenticate, (req, res) => {
   const { productKey } = req.params;
   const data = loadData();
@@ -217,15 +217,51 @@ app.get('/api/products/launch/:productKey', authenticate, (req, res) => {
     return res.status(404).json({ error: 'Product not configured' });
   }
 
-  // Generate an SSO Token for the child Render app to verify
+  // Get user's product-specific configuration/credentials (e.g. phoneId, token, etc.)
+  const userConfig = (user.productConfigs && user.productConfigs[productKey]) || {};
+
+  // Generate an SSO Token containing customer info + their product credentials
   const ssoToken = jwt.sign(
-    { userId: user.id, email: user.email, name: user.name, product: productKey },
+    { 
+      userId: user.id, 
+      email: user.email, 
+      name: user.name, 
+      product: productKey,
+      config: userConfig 
+    },
     JWT_SECRET,
     { expiresIn: '15m' }
   );
 
   const targetUrl = `${product.renderUrl}?sso_token=${ssoToken}`;
-  res.json({ success: true, launchUrl: targetUrl });
+  res.json({ success: true, launchUrl: targetUrl, hasConfig: Object.keys(userConfig).length > 0 });
+});
+
+// 6b. Get / Save Product-Specific Configuration for current user
+app.get('/api/user/config/:productKey', authenticate, (req, res) => {
+  const { productKey } = req.params;
+  const data = loadData();
+  const user = data.users.find(u => u.id === req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const config = (user.productConfigs && user.productConfigs[productKey]) || {};
+  res.json({ config });
+});
+
+app.post('/api/user/config/:productKey', authenticate, (req, res) => {
+  const { productKey } = req.params;
+  const { config } = req.body;
+  const data = loadData();
+  const userIndex = data.users.findIndex(u => u.id === req.user.id);
+  if (userIndex === -1) return res.status(404).json({ error: 'User not found' });
+
+  if (!data.users[userIndex].productConfigs) {
+    data.users[userIndex].productConfigs = {};
+  }
+  data.users[userIndex].productConfigs[productKey] = config;
+  saveData(data);
+
+  res.json({ success: true, message: 'Settings saved successfully' });
 });
 
 // --- ADMIN ROUTES ---
