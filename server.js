@@ -5,6 +5,8 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 
+require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'grambi_default_jwt_secret_key';
@@ -19,28 +21,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 const DB_FILE = path.join(__dirname, 'data.json');
 
 function loadData() {
+  const initialProducts = [
+    {
+      id: 'prod_whatsapp',
+      key: 'whatsapp_automator',
+      name: 'WhatsApp Automator & Bulk Messenger',
+      description: 'Automated messaging, broadcast campaigns, WhatsApp flow automation.',
+      icon: 'ri-whatsapp-line',
+      badgeColor: 'emerald',
+      renderUrl: process.env.WHATSAPP_APP_URL || 'https://grambi-whatsapp-mock.onrender.com'
+    },
+    {
+      id: 'prod_website',
+      key: 'website_builder',
+      name: 'Website & Customer Portal',
+      description: 'High-converting custom web apps, customer management, and client portal.',
+      icon: 'ri-global-line',
+      badgeColor: 'blue',
+      renderUrl: process.env.WEBSITE_BUILDER_APP_URL || 'https://grambi-website-mock.onrender.com'
+    }
+  ];
+
   if (!fs.existsSync(DB_FILE)) {
     const initialData = {
-      products: [
-        {
-          id: 'prod_whatsapp',
-          key: 'whatsapp_automator',
-          name: 'WhatsApp Automator & Bulk Messenger',
-          description: 'Automated messaging, broadcast campaigns, WhatsApp flow automation.',
-          icon: 'ri-whatsapp-line',
-          badgeColor: 'emerald',
-          renderUrl: process.env.WHATSAPP_APP_URL || 'https://grambi-whatsapp-mock.onrender.com'
-        },
-        {
-          id: 'prod_website',
-          key: 'website_builder',
-          name: 'Website & Customer Portal',
-          description: 'High-converting custom web apps, customer management, and client portal.',
-          icon: 'ri-global-line',
-          badgeColor: 'blue',
-          renderUrl: process.env.WEBSITE_BUILDER_APP_URL || 'https://grambi-website-mock.onrender.com'
-        }
-      ],
+      products: initialProducts,
       users: [
         {
           id: 'usr_admin',
@@ -51,6 +55,7 @@ function loadData() {
           role: 'admin',
           status: 'approved',
           allowedProducts: ['whatsapp_automator', 'website_builder'],
+          productConfigs: {},
           createdAt: new Date().toISOString()
         },
         {
@@ -62,6 +67,7 @@ function loadData() {
           role: 'customer',
           status: 'approved',
           allowedProducts: ['whatsapp_automator'], // Only WhatsApp allowed
+          productConfigs: {},
           createdAt: new Date().toISOString()
         }
       ]
@@ -69,7 +75,18 @@ function loadData() {
     fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
     return initialData;
   }
-  return JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+
+  const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+  // Ensure productConfigs container exists for all users
+  let modified = false;
+  data.users.forEach(u => {
+    if (!u.productConfigs) {
+      u.productConfigs = {};
+      modified = true;
+    }
+  });
+  if (modified) saveData(data);
+  return data;
 }
 
 function saveData(data) {

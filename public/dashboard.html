@@ -229,11 +229,21 @@
       try {
         const res = await fetch(`/api/user/config/${activeModalProductKey}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ config })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to save');
+
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to save');
+        } else {
+          const text = await res.text();
+          if (!res.ok) throw new Error(`Server returned HTTP ${res.status}: ${text.slice(0, 80)}`);
+        }
 
         msgEl.className = "text-xs text-emerald-400 block";
         msgEl.innerText = "Credentials saved! They will be automatically passed when launching.";
@@ -246,12 +256,24 @@
 
     async function launchApp(productKey) {
       try {
-        const res = await fetch(`/api/products/launch/${productKey}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to launch');
+        const res = await fetch(`/api/products/launch/${productKey}`, {
+          headers: { 'Accept': 'application/json' }
+        });
 
-        // Open the Render Application in a new tab with the generated SSO Token
-        window.open(data.launchUrl, '_blank');
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to launch');
+          // Open the Render Application in a new tab with the generated SSO Token
+          window.open(data.launchUrl, '_blank');
+        } else {
+          const text = await res.text();
+          throw new Error(`Server returned HTTP ${res.status}: ${text.slice(0, 80)}`);
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
       } catch (err) {
         alert(err.message);
       }
