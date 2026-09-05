@@ -107,7 +107,11 @@
             </label>
             <label class="inline-flex items-center gap-1.5 text-xs cursor-pointer">
               <input type="checkbox" ${wbChecked} onchange="toggleAccess('${u.id}', 'WEBSITE_BUILDER', this.checked)" class="rounded bg-slate-950 border-slate-700 text-blue-500">
-              <span class="text-slate-300">Website Customizer</span>
+              <span class="text-slate-300">Website</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 text-xs cursor-pointer">
+              <input type="checkbox" ${subs.includes('SOCIAL_GENERATOR') ? 'checked' : ''} onchange="toggleAccess('${u.id}', 'SOCIAL_GENERATOR', this.checked)" class="rounded bg-slate-950 border-slate-700 text-pink-500">
+              <span class="text-slate-300">Social Studio</span>
             </label>
           </td>
           <td class="px-6 py-4 text-right space-x-2">

@@ -7,6 +7,7 @@ import { register, login, getProfile, updateCredentials, logout } from './contro
 import { listAllUsers, updateUserAccess, deleteUser } from './controllers/admin.controller';
 import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSandboxTestMessage, exportCampaignCSV } from './controllers/whatsapp.controller';
 import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking } from './controllers/website.controller';
+import { getOccasions, getPostTemplates } from './controllers/social.controller';
 import { verifyWebhook, handleWebhookEvents } from './controllers/webhook.controller';
 import { authMiddleware, requireAdmin } from './middlewares/auth.middleware';
 import './queues/message.worker';
@@ -53,6 +54,10 @@ app.post('/api/website/public/:slug/book', submitPublicBooking);
 app.get('/site/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/site.html'));
 });
+
+// --- PRODUCT 3: SOCIAL MEDIA POST GENERATOR & CALENDAR ROUTES ---
+app.get('/api/social/occasions', authMiddleware, getOccasions);
+app.get('/api/social/templates', authMiddleware, getPostTemplates);
 
 // --- META WEBHOOK ROUTES ---
 app.get('/webhook', verifyWebhook);

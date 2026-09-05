@@ -17,6 +17,7 @@ A single, clean, modular Node.js & TypeScript application that unifies:
 * **WhatsApp Broadcaster (`/apps/whatsapp.html`)**: Send bulk campaigns, manage Meta templates, view delivery receipts.
 * **Website Customizer (`/apps/website-customizer.html`)**: Edit business details, services, hours, with a live responsive mobile preview.
 * **Public Client Websites (`/site/:slug`)**: Live customer-facing workshop pages with real-time service booking appointment forms.
+* **Social Media Post Studio (`/apps/social-generator.html`)**: Calendar-synced festival greetings, flash sales, custom frames & luxury borders with 1-click PNG image export.
 
 ---
 

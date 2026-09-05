@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grambi — Social Media Post Creator & Occasions Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <script src="/theme.js"></script>
+  <!-- HTML2Canvas for 1-Click Instant High-Res Image Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&family=Montserrat:wght@800;900&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-serif-luxury { font-family: 'Playfair Display', serif; }
+    .font-bold-display { font-family: 'Montserrat', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/portal.html" class="text-slate-400 hover:text-white flex items-center gap-1 text-xs border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2">
+          <i class="ri-arrow-left-line"></i> Launchpad
+        </a>
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-pink-500/20">
+          <i class="ri-magic-line"></i>
+        </div>
+        <span class="font-bold text-base">Social Media Post Generator</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
+          <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
+        </button>
+        <button onclick="downloadGeneratedImage()" class="px-4 py-1.5 text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition">
+          <i class="ri-download-2-line"></i> Export Image
+        </button>
+        <span id="userBadge" class="text-xs text-slate-400 px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Loading...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Left: Controls, Occasion Picker & Image Upload (5 Cols) -->
+    <div class="lg:col-span-5 space-y-6">
+      
+      <!-- Occasion / Calendar Suggestions -->
+      <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="ri-calendar-event-line text-pink-400"></i> September Occasions & Festivals
+          </h2>
+          <span class="text-[11px] text-purple-400 font-mono">Auto-Sync</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2" id="occasionGrid">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- Customization Controls -->
+      <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
+        <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider">Post Text & Branding</h3>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Headline / Festival Greeting</label>
+            <input type="text" id="ctrlHeading" oninput="updateLivePost()" value="Happy Teachers' Day!" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Offer / Subtitle Message</label>
+            <textarea id="ctrlSubtitle" rows="2" oninput="updateLivePost()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-pink-500">Special gratitude discounts on all services for educators this week!</textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Business Name</label>
+              <input type="text" id="ctrlBrand" oninput="updateLivePost()" value="Grambi Auto Works" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Contact Phone / WhatsApp</label>
+              <input type="text" id="ctrlContact" oninput="updateLivePost()" value="+91 9876543210" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500" />
+            </div>
+          </div>
+
+          <!-- Border / Frame Styles -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Select Decorative Frame / Border</label>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+              <button type="button" onclick="setFrame('gold')" class="p-2 bg-slate-950 border border-amber-500/40 rounded-xl text-amber-300 hover:bg-slate-900 font-semibold text-[11px]">Gold Luxury</button>
+              <button type="button" onclick="setFrame('emerald')" class="p-2 bg-slate-950 border border-emerald-500/40 rounded-xl text-emerald-300 hover:bg-slate-900 font-semibold text-[11px]">Emerald Glow</button>
+              <button type="button" onclick="setFrame('minimal')" class="p-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-300 hover:bg-slate-900 font-semibold text-[11px]">Clean Modern</button>
+            </div>
+          </div>
+
+          <!-- Image Upload / Background -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Upload Photo (Auto-Crop into Post)</label>
+            <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Real-time Live Post Canvas Preview (7 Cols) -->
+    <div class="lg:col-span-7 flex flex-col items-center justify-center">
+      <div class="w-full flex justify-between items-center mb-3 max-w-[480px]">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Canvas Export Preview</span>
+        <span class="text-[11px] text-pink-400 font-mono">1080 &times; 1080 (1:1)</span>
+      </div>
+
+      <!-- The Exportable Post Box (Square 1:1) -->
+      <div id="postCanvas" class="w-full max-w-[480px] aspect-square rounded-3xl p-7 flex flex-col justify-between relative overflow-hidden shadow-2xl transition-all duration-300 select-none bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-950 text-white" style="border: 6px solid #f59e0b; box-shadow: 0 0 25px rgba(245, 158, 11, 0.25);">
+        
+        <!-- Background Overlay Image (if uploaded) -->
+        <div id="bgImageOverlay" class="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none"></div>
+
+        <!-- Top Header: Brand Name & Logo -->
+        <div class="relative z-10 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center font-extrabold text-white text-base shadow">
+              G
+            </div>
+            <span id="canvasBrand" class="font-extrabold text-sm tracking-tight drop-shadow">Grambi Auto Works</span>
+          </div>
+
+          <span class="px-2.5 py-0.5 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider border border-white/20">
+            Special Occasion
+          </span>
+        </div>
+
+        <!-- Middle Body: Greeting & Special Offer -->
+        <div class="relative z-10 text-center my-auto space-y-3 px-2">
+          <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md mx-auto flex items-center justify-center text-2xl text-amber-300 shadow-inner">
+            <i class="ri-sparkling-fill"></i>
+          </div>
+          <h1 id="canvasHeading" class="text-2xl sm:text-3xl font-extrabold tracking-tight font-serif-luxury leading-snug drop-shadow-md text-amber-200">
+            Happy Teachers' Day!
+          </h1>
+          <p id="canvasSubtitle" class="text-xs sm:text-sm text-slate-200 max-w-xs mx-auto leading-relaxed drop-shadow">
+            Special gratitude discounts on all services for educators this week!
+          </p>
+        </div>
+
+        <!-- Bottom Footer: Call to Action & Phone -->
+        <div class="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-1.5 text-slate-300">
+            <i class="ri-phone-fill text-emerald-400"></i>
+            <span id="canvasContact" class="font-bold font-mono">+91 9876543210</span>
+          </div>
+          <div class="flex items-center gap-1 text-[11px] font-bold text-amber-300">
+            <span>Book Today</span> <i class="ri-arrow-right-line"></i>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-[11px] text-slate-500 mt-4 text-center">
+        Click <strong class="text-slate-300">"Export Image"</strong> in the top header to save this ready-to-post graphic as a PNG.
+      </p>
+    </div>
+  </main>
+
+  <script>
+    let activeGradient = 'from-purple-900 via-indigo-900 to-slate-950';
+
+    async function initSocialApp() {
+      const token = localStorage.getItem('grambi_token');
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const user = await res.json();
+          document.getElementById('userBadge').innerText = user.businessName || user.email;
+          if (user.businessName) {
+            document.getElementById('ctrlBrand').value = user.businessName;
+            document.getElementById('canvasBrand').innerText = user.businessName;
+          }
+          if (user.phone) {
+            document.getElementById('ctrlContact').value = user.phone;
+            document.getElementById('canvasContact').innerText = user.phone;
+          }
+        }
+      } catch (e) {}
+
+      loadOccasions();
+    }
+
+    async function loadOccasions() {
+      try {
+        const res = await fetch('/api/social/occasions');
+        const data = await res.json();
+        const grid = document.getElementById('occasionGrid');
+
+        grid.innerHTML = (data.occasions || []).map(occ => `
+          <button type="button" onclick="selectOccasion('${encodeURIComponent(JSON.stringify(occ))}')" class="p-3 text-left rounded-xl border border-slate-800 bg-slate-950 hover:border-pink-500/50 hover:bg-slate-900 transition flex flex-col justify-between">
+            <div>
+              <span class="text-[9px] font-bold uppercase text-pink-400">${occ.category}</span>
+              <h4 class="text-xs font-bold text-white truncate">${occ.title}</h4>
+            </div>
+            <span class="text-[10px] text-slate-500 mt-2">1-Click Apply →</span>
+          </button>
+        `).join('');
+      } catch (e) {}
+    }
+
+    function selectOccasion(jsonStr) {
+      const occ = JSON.parse(decodeURIComponent(jsonStr));
+      document.getElementById('ctrlHeading').value = occ.suggestedHeading;
+      document.getElementById('ctrlSubtitle').value = occ.suggestedSubheading;
+      activeGradient = occ.bgGradient || 'from-purple-900 via-indigo-900 to-slate-950';
+      updateLivePost();
+    }
+
+    function updateLivePost() {
+      const heading = document.getElementById('ctrlHeading').value || 'Special Offer';
+      const subtitle = document.getElementById('ctrlSubtitle').value || '';
+      const brand = document.getElementById('ctrlBrand').value || 'Grambi Business';
+      const contact = document.getElementById('ctrlContact').value || '+91 9876543210';
+
+      document.getElementById('canvasHeading').innerText = heading;
+      document.getElementById('canvasSubtitle').innerText = subtitle;
+      document.getElementById('canvasBrand').innerText = brand;
+      document.getElementById('canvasContact').innerText = contact;
+
+      const canvas = document.getElementById('postCanvas');
+      canvas.className = `w-full max-w-[480px] aspect-square rounded-3xl p-7 flex flex-col justify-between relative overflow-hidden shadow-2xl transition-all duration-300 select-none bg-gradient-to-br ${activeGradient} text-white`;
+    }
+
+    function setFrame(frameType) {
+      const canvas = document.getElementById('postCanvas');
+      if (frameType === 'gold') {
+        canvas.style.border = '6px solid #f59e0b';
+        canvas.style.boxShadow = '0 0 25px rgba(245, 158, 11, 0.35)';
+      } else if (frameType === 'emerald') {
+        canvas.style.border = '6px solid #10b981';
+        canvas.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.4)';
+      } else {
+        canvas.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+        canvas.style.boxShadow = '0 20px 25px -5px rgb(0 0 0 / 0.5)';
+      }
+    }
+
+    function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const overlay = document.getElementById('bgImageOverlay');
+        overlay.style.backgroundImage = `url(${event.target.result})`;
+        overlay.style.opacity = '0.45';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function downloadGeneratedImage() {
+      const canvasEl = document.getElementById('postCanvas');
+      try {
+        const canvas = await html2canvas(canvasEl, {
+          scale: 2, // High resolution output
+          useCORS: true,
+          backgroundColor: null
+        });
+
+        const link = document.createElement('a');
+        link.download = `Grambi_Social_Post_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (err) {
+        alert('Failed to export image: ' + err.message);
+      }
+    }
+
+    initSocialApp();
+  </script>
+</body>
+</html>
