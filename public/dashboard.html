@@ -76,7 +76,9 @@
     }
 
     async function loadDashboard() {
+      const errBanner = document.createElement('div');
       try {
+        console.log('[Dashboard] Fetching /api/auth/me ...');
         const res = await fetch('/api/auth/me', {
           headers: {
             'Accept': 'application/json',
@@ -84,20 +86,27 @@
           }
         });
 
-        if (!res.ok) {
+        console.log('[Dashboard] Response status:', res.status);
+
+        if (res.status === 401 || res.status === 403) {
+          console.warn('[Dashboard] Unauthorized, redirecting to login');
           window.location.href = '/index.html';
           return;
         }
 
         const contentType = res.headers.get('content-type') || '';
         if (!contentType.includes('application/json')) {
-          window.location.href = '/index.html';
-          return;
+          const rawText = await res.text();
+          throw new Error(`Invalid server response (${res.status}): ${rawText.slice(0, 100)}`);
         }
 
         const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to load user session');
+        }
+
         currentUser = data.user;
-        document.getElementById('userName').innerText = currentUser.name;
+        document.getElementById('userName').innerText = currentUser.name || currentUser.email;
         document.getElementById('userRole').innerText = currentUser.role === 'admin' ? 'Super Admin' : 'Customer Account';
 
         if (currentUser.role === 'admin') {
@@ -106,7 +115,19 @@
 
         renderProducts(data.products, currentUser);
       } catch (err) {
-        window.location.href = '/index.html';
+        console.error('[Dashboard Error]', err);
+        document.getElementById('userName').innerText = 'Session Error';
+        document.getElementById('userRole').innerText = 'Please re-login';
+        
+        const container = document.getElementById('productCards');
+        container.innerHTML = `
+          <div class="col-span-full p-6 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-center">
+            <i class="ri-error-warning-line text-3xl text-rose-400 mb-2"></i>
+            <h3 class="text-lg font-bold text-white">Unable to Load Dashboard</h3>
+            <p class="text-xs text-rose-300 mt-1 mb-4">${err.message}</p>
+            <a href="/index.html" class="px-4 py-2 bg-rose-500 text-white rounded-lg text-xs font-bold">Return to Login</a>
+          </div>
+        `;
       }
     }
 
