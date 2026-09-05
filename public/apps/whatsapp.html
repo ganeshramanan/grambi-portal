@@ -6,6 +6,7 @@
   <title>Grambi — WhatsApp Broadcast Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <script src="/theme.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
@@ -23,6 +24,9 @@
       </div>
 
       <div class="flex items-center gap-3">
+        <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
+          <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
+        </button>
         <button onclick="openSandboxModal()" class="px-3 py-1.5 text-xs border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 rounded-lg flex items-center gap-1.5 transition">
           <i class="ri-flashlight-line text-amber-400"></i> Test Sandbox
         </button>

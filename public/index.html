@@ -6,6 +6,7 @@
   <title>Grambi.in — Intelligent Business Ecosystem</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <script src="/theme.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -31,6 +32,9 @@
       </nav>
 
       <div class="flex items-center gap-3" id="navAuthArea">
+        <button onclick="toggleTheme()" class="p-2 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
+          <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
+        </button>
         <button onclick="openModal('loginModal')" class="px-5 py-2.5 text-sm font-semibold text-slate-200 hover:text-white transition">
           Sign In
         </button>

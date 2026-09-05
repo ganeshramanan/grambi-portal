@@ -6,6 +6,7 @@
   <title>Grambi Launchpad — Select Application</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <script src="/theme.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
 
@@ -18,6 +19,10 @@
       </div>
 
       <div class="flex items-center gap-4">
+        <!-- Theme Toggle Button -->
+        <button onclick="toggleTheme()" class="p-2 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
+          <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
+        </button>
         <div class="text-right">
           <div id="userName" class="text-sm font-semibold text-white">Loading...</div>
           <div id="userRole" class="text-xs text-slate-400 capitalize">Member</div>
