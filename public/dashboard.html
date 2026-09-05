@@ -70,10 +70,27 @@
   <script>
     let currentUser = null;
 
+    function getAuthHeaders() {
+      const token = localStorage.getItem('grambi_token');
+      return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
+
     async function loadDashboard() {
       try {
-        const res = await fetch('/api/auth/me');
+        const res = await fetch('/api/auth/me', {
+          headers: {
+            'Accept': 'application/json',
+            ...getAuthHeaders()
+          }
+        });
+
         if (!res.ok) {
+          window.location.href = '/index.html';
+          return;
+        }
+
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
           window.location.href = '/index.html';
           return;
         }
@@ -167,7 +184,12 @@
       // Fetch saved settings
       let savedConfig = {};
       try {
-        const res = await fetch(`/api/user/config/${productKey}`);
+        const res = await fetch(`/api/user/config/${productKey}`, {
+          headers: {
+            'Accept': 'application/json',
+            ...getAuthHeaders()
+          }
+        });
         if (res.ok) {
           const data = await res.json();
           savedConfig = data.config || {};
@@ -231,7 +253,8 @@
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            ...getAuthHeaders()
           },
           body: JSON.stringify({ config })
         });
@@ -257,7 +280,10 @@
     async function launchApp(productKey) {
       try {
         const res = await fetch(`/api/products/launch/${productKey}`, {
-          headers: { 'Accept': 'application/json' }
+          headers: { 
+            'Accept': 'application/json',
+            ...getAuthHeaders()
+          }
         });
 
         const contentType = res.headers.get('content-type') || '';
@@ -274,12 +300,9 @@
         alert(err.message);
       }
     }
-      } catch (err) {
-        alert(err.message);
-      }
-    }
 
     async function handleLogout() {
+      localStorage.removeItem('grambi_token');
       await fetch('/api/auth/logout', { method: 'POST' });
       window.location.href = '/index.html';
     }

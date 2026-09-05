@@ -71,9 +71,19 @@
   <script>
     let globalProducts = [];
 
+    function getAuthHeaders() {
+      const token = localStorage.getItem('grambi_token');
+      return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
+
     async function loadAdminData() {
       try {
-        const res = await fetch('/api/admin/users');
+        const res = await fetch('/api/admin/users', {
+          headers: {
+            'Accept': 'application/json',
+            ...getAuthHeaders()
+          }
+        });
         if (!res.ok) {
           window.location.href = '/dashboard.html';
           return;

@@ -262,11 +262,28 @@
       try {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ email, password })
         });
-        const data = await res.json();
+
+        const contentType = res.headers.get('content-type') || '';
+        let data = {};
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(`Server returned HTTP ${res.status}: ${text.slice(0, 80)}`);
+        }
+
         if (!res.ok) throw new Error(data.error || 'Login failed');
+
+        // Save token to localStorage as backup for browsers that block cookies
+        if (data.token) {
+          localStorage.setItem('grambi_token', data.token);
+        }
 
         window.location.href = '/dashboard.html';
       } catch (err) {

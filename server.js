@@ -180,6 +180,7 @@ app.post('/api/auth/login', async (req, res) => {
   res.cookie('token', token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
   res.json({
     success: true,
+    token: token, // Also returned in JSON for Authorization header backup
     user: {
       id: user.id,
       name: user.name,
