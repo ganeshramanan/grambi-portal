@@ -240,15 +240,28 @@
     }
 
     async function fetchTemplates() {
+      const btn = document.querySelector('button[onclick="fetchTemplates()"]');
+      if (btn) btn.innerText = 'Syncing...';
+
       try {
-        const res = await fetch('/api/whatsapp/templates');
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/whatsapp/templates', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         const data = await res.json();
         if (data.templates && data.templates.length > 0) {
           const list = document.getElementById('templateList');
           list.innerHTML = data.templates.map(t => `<option value="${t.name}">`).join('');
-          alert(`✅ Synced ${data.templates.length} Meta templates!`);
+          if (btn) btn.innerText = `Synced (${data.templates.length})`;
+        } else if (data.error) {
+          if (btn) btn.innerText = 'Sync Failed';
+          alert('Meta Template Sync: ' + data.error);
+        } else {
+          if (btn) btn.innerText = '0 Templates';
         }
-      } catch (e) {}
+      } catch (e) {
+        if (btn) btn.innerText = 'Sync Templates';
+      }
     }
 
     async function initApp() {

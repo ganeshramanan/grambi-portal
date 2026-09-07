@@ -216,9 +216,13 @@ export const getCustomerTemplates = async (req: AuthRequest, res: Response) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
 
   if (!user || !user.wabaId || !user.accessToken) {
-    return res.json({ templates: [] });
+    return res.json({ templates: [], message: 'WABA ID or Access Token missing in API Settings' });
   }
 
-  const templates = await waService.getTemplates(user.wabaId, user.accessToken);
-  return res.json({ templates });
+  try {
+    const templates = await waService.getTemplates(user.wabaId, user.accessToken);
+    return res.json({ templates });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message || 'Failed to sync templates from Meta' });
+  }
 };

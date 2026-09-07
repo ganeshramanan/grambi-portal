@@ -56,7 +56,8 @@ export class WhatsAppService {
       });
       return res.data?.data || [];
     } catch (err: any) {
-      return [];
+      const errorMsg = err.response?.data?.error?.message || err.message || 'Meta API error';
+      throw new Error(errorMsg);
     }
   }
 }

@@ -1,0 +1,16 @@
+{
+  "name": "Grambi Business Hub",
+  "short_name": "Grambi",
+  "description": "Unified WhatsApp Broadcaster, Website Customizer, and Social Media Studio",
+  "start_url": "/portal.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "https://cdn.jsdelivr.net/npm/remixicon@4.2.0/icons/Logos/whatsapp-fill.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
