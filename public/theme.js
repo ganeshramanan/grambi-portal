@@ -1,12 +1,11 @@
 /**
  * Grambi Theme Manager (Dark / Light Mode Toggle)
- * Uses high-priority CSS variable injection for instant, flawless theme switching.
+ * Uses high-priority CSS overrides for clean, high-contrast light and dark modes.
  */
 
 (function initTheme() {
   const THEME_KEY = 'grambi_theme';
 
-  // Inject comprehensive CSS theme overrides
   const styleEl = document.createElement('style');
   styleEl.id = 'grambi-theme-styles';
   styleEl.innerHTML = `
@@ -18,13 +17,12 @@
       background-color: rgba(255, 255, 255, 0.95) !important;
       border-color: #e2e8f0 !important;
     }
-    /* Fix Logo Gradient in Light Mode */
+    /* Brand Header in Light Mode */
     html.light .bg-gradient-to-r.from-white {
       background-image: none !important;
       color: #0f172a !important;
       -webkit-text-fill-color: #0f172a !important;
     }
-    /* Fix Nav Links and Sign In Button */
     html.light header nav a {
       color: #334155 !important;
     }
@@ -32,19 +30,27 @@
       color: #059669 !important;
     }
     html.light #navAuthArea button:first-of-type,
-    html.light header button.text-slate-200 {
+    html.light header button.text-slate-200,
+    html.light header a.text-slate-400 {
       color: #0f172a !important;
       border: 1px solid #cbd5e1 !important;
       border-radius: 0.5rem !important;
       background-color: #f8fafc !important;
     }
-    html.light header button.text-slate-200:hover {
+    html.light header span#userBadge {
       background-color: #f1f5f9 !important;
-      color: #000000 !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+    }
+    html.light header button.bg-slate-900 {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
     }
     html.light main, html.light section {
       color: #0f172a !important;
     }
+    /* Card Backgrounds */
     html.light div.bg-slate-900,
     html.light div.bg-slate-900\\/50,
     html.light div.bg-slate-900\\/40,
@@ -54,11 +60,12 @@
       border-color: #e2e8f0 !important;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
     }
+    /* Fix Input Fields */
     html.light input,
     html.light textarea,
     html.light select,
-    html.light div.bg-slate-950 {
-      background-color: #f1f5f9 !important;
+    html.light div.bg-slate-950:not(#postCanvas):not(button) {
+      background-color: #f8fafc !important;
       border-color: #cbd5e1 !important;
       color: #0f172a !important;
     }
@@ -67,12 +74,47 @@
       background-color: #ffffff !important;
       border-color: #10b981 !important;
     }
+    /* Fix Buttons & Dark Badges in Light Mode */
+    html.light button.bg-slate-950,
+    html.light div.bg-slate-950 button {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    html.light button.bg-slate-950:hover {
+      background-color: #e2e8f0 !important;
+    }
+    html.light span.bg-slate-900,
+    html.light span.bg-slate-800 {
+      background-color: #f1f5f9 !important;
+      color: #475569 !important;
+      border-color: #e2e8f0 !important;
+    }
+    /* Campaign Cards in Broadcast Reports */
+    html.light div#campaignList div {
+      background-color: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
+    html.light div#campaignList span.text-white {
+      color: #0f172a !important;
+    }
+    /* Primary Emerald Action Button */
+    html.light button#sendBtn,
+    html.light button.bg-emerald-400 {
+      background-color: #10b981 !important;
+      color: #ffffff !important;
+    }
+    html.light button#sendBtn:hover,
+    html.light button.bg-emerald-400:hover {
+      background-color: #059669 !important;
+    }
+    /* Typography Overrides */
     html.light .text-white {
       color: #0f172a !important;
     }
     html.light .text-slate-400,
     html.light .text-slate-300 {
-      color: #475569 !important;
+      color: #334155 !important;
     }
     html.light .text-slate-500 {
       color: #64748b !important;
@@ -80,17 +122,6 @@
     html.light .border-slate-800,
     html.light .border-slate-800\\/80,
     html.light .border-slate-900 {
-      border-color: #e2e8f0 !important;
-    }
-    html.light table thead {
-      background-color: #f1f5f9 !important;
-      border-color: #e2e8f0 !important;
-      color: #475569 !important;
-    }
-    html.light table tbody tr:hover {
-      background-color: #f8fafc !important;
-    }
-    html.light table tbody {
       border-color: #e2e8f0 !important;
     }
     html.light footer {
@@ -113,7 +144,6 @@
       html.classList.add('dark');
     }
 
-    // Update any toggle icons on the page
     const icons = document.querySelectorAll('#themeToggleIcon');
     icons.forEach(icon => {
       icon.className = theme === 'light' ? 'ri-moon-line text-slate-800 text-base' : 'ri-sun-line text-amber-400 text-base';
@@ -127,11 +157,9 @@
     applyTheme(next);
   };
 
-  // Initial load
   const saved = localStorage.getItem(THEME_KEY) || 'dark';
   applyTheme(saved);
 
-  // Sync after DOM loads in case icons rendered later
   document.addEventListener('DOMContentLoaded', () => {
     applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
   });
