@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grambi — Workshop Website Customizer</title>
+  <title>Grambi — Workshop Website & vCard Customizer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
   <script src="/theme.js"></script>
@@ -24,14 +24,14 @@
         <div class="w-8 h-8 rounded-lg bg-blue-500 text-slate-950 flex items-center justify-center font-bold text-lg">
           <i class="ri-layout-masonry-line"></i>
         </div>
-        <span class="font-bold text-base">Workshop Website Customizer</span>
+        <span class="font-bold text-base">Workshop Website & vCard Customizer</span>
       </div>
 
       <div class="flex items-center gap-3">
         <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
           <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
         </button>
-        <a id="publicSiteLink" href="#" target="_blank" class="px-3 py-1.5 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 flex items-center gap-1 transition">
+        <a id="publicSiteLink" href="#" target="_blank" class="px-3.5 py-1.5 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 flex items-center gap-1.5 transition font-bold">
           <i class="ri-external-link-line"></i> View Live Site
         </a>
         <span id="userBadge" class="text-xs text-slate-400 px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Loading...</span>
@@ -90,11 +90,22 @@
               <input type="text" id="siteHours" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Custom Website URL Slug</label>
-              <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs">
-                <span class="text-slate-500 font-mono">/site/</span>
-                <input type="text" id="siteSlug" class="bg-transparent text-white font-mono focus:outline-none w-full" />
-              </div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Theme Color</label>
+              <select id="siteTheme" onchange="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer">
+                <option value="blue">Sapphire Blue (Default)</option>
+                <option value="emerald">Emerald Green</option>
+                <option value="purple">Royal Purple</option>
+                <option value="amber">Warm Amber</option>
+                <option value="rose">Crimson Rose</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Custom Website URL Slug</label>
+            <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs">
+              <span class="text-slate-500 font-mono">/site/</span>
+              <input type="text" id="siteSlug" class="bg-transparent text-white font-mono focus:outline-none w-full" />
             </div>
           </div>
 
@@ -105,66 +116,101 @@
           </button>
         </form>
       </div>
+
+      <!-- Live Incoming Leads / Appointments Table -->
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="ri-user-follow-line text-emerald-400"></i> Customer Appointments & Leads
+          </h3>
+          <button onclick="loadWebsiteData()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
+            <i class="ri-refresh-line"></i> Refresh
+          </button>
+        </div>
+
+        <div id="leadsContainer" class="space-y-2.5 max-h-[260px] overflow-y-auto">
+          <div class="text-xs text-slate-500 py-4 text-center">No customer bookings received yet.</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Right: Responsive Live Mobile Preview (6 Cols) -->
+    <!-- Right: Responsive Live Mobile/vCard Preview (6 Cols) -->
     <div class="lg:col-span-6 space-y-4">
       <div class="flex justify-between items-center px-2">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Customer Website Preview</h3>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Digital vCard & Site Preview</h3>
         <span class="text-[11px] text-blue-400 font-mono">Auto-Updating</span>
       </div>
 
-      <!-- Phone Frame Container -->
-      <div class="border-4 border-slate-800 bg-slate-900 rounded-[32px] overflow-hidden shadow-2xl max-w-[420px] mx-auto min-h-[620px] flex flex-col text-slate-900">
+      <!-- Mobile Frame Container -->
+      <div class="border-4 border-slate-800 bg-slate-900 rounded-[36px] overflow-hidden shadow-2xl max-w-[400px] mx-auto min-h-[640px] flex flex-col text-slate-900">
         
-        <!-- Preview Hero Section -->
-        <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 text-white text-center space-y-2">
-          <div class="w-10 h-10 bg-white/20 rounded-xl mx-auto flex items-center justify-center text-xl font-bold">
+        <!-- Preview Hero Section (vCard Header) -->
+        <div id="prevHeroBox" class="bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-6 text-white text-center space-y-3">
+          <div class="w-12 h-12 bg-white/20 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold shadow-md">
             <i class="ri-car-washing-line"></i>
           </div>
-          <h1 id="prevTitle" class="text-xl font-extrabold tracking-tight">Auto Care Workshop</h1>
-          <p id="prevTagline" class="text-xs text-blue-100">Quality Car & Bike Service Specialist</p>
+          <div>
+            <h1 id="prevTitle" class="text-lg font-extrabold tracking-tight">Auto Care Workshop</h1>
+            <p id="prevTagline" class="text-xs text-blue-200 mt-0.5">Quality Car & Bike Service Specialist</p>
+          </div>
           
-          <div class="pt-3 flex justify-center gap-2">
-            <a id="prevCallBtn" href="#" class="px-3 py-1.5 bg-white text-blue-900 text-[11px] font-bold rounded-lg shadow flex items-center gap-1">
-              <i class="ri-phone-fill"></i> Call
+          <!-- vCard Action Buttons -->
+          <div class="grid grid-cols-4 gap-2 pt-2 text-[10px] font-bold">
+            <a id="prevCallBtn" href="#" class="p-2 bg-white/10 rounded-xl backdrop-blur-md flex flex-col items-center gap-1 hover:bg-white/20 transition">
+              <i class="ri-phone-fill text-blue-400 text-base"></i> Call
             </a>
-            <a id="prevWaBtn" href="#" class="px-3 py-1.5 bg-emerald-500 text-white text-[11px] font-bold rounded-lg shadow flex items-center gap-1">
-              <i class="ri-whatsapp-fill"></i> WhatsApp
+            <a id="prevWaBtn" href="#" class="p-2 bg-white/10 rounded-xl backdrop-blur-md flex flex-col items-center gap-1 hover:bg-white/20 transition">
+              <i class="ri-whatsapp-fill text-emerald-400 text-base"></i> WhatsApp
+            </a>
+            <a id="prevMapBtn" href="#" target="_blank" class="p-2 bg-white/10 rounded-xl backdrop-blur-md flex flex-col items-center gap-1 hover:bg-white/20 transition">
+              <i class="ri-direction-fill text-amber-400 text-base"></i> Map
+            </a>
+            <a href="#prevBookCard" class="p-2 bg-blue-600 text-white rounded-xl flex flex-col items-center gap-1 shadow">
+              <i class="ri-calendar-check-fill text-base"></i> Book
             </a>
           </div>
         </div>
 
         <!-- Preview Body Content -->
-        <div class="p-5 bg-white space-y-5 flex-grow text-slate-800">
+        <div class="p-5 bg-white space-y-4 flex-grow text-slate-800 text-xs overflow-y-auto max-h-[420px]">
           <div>
-            <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1">About Us</h4>
-            <p id="prevAbout" class="text-xs text-slate-600 leading-relaxed">
+            <span class="text-[10px] font-bold uppercase text-blue-600 tracking-wider">About Workshop</span>
+            <p id="prevAbout" class="text-xs text-slate-600 leading-relaxed mt-1">
               We provide expert automotive maintenance, periodic servicing, diagnostics, and repairs with certified mechanics.
             </p>
           </div>
 
           <div>
-            <h4 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-2">Popular Services</h4>
-            <div class="space-y-2" id="prevServicesList">
-              <div class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 flex justify-between items-center text-xs">
-                <span class="font-semibold text-slate-800">General Periodic Service</span>
-                <span class="font-bold text-blue-600">₹1,499</span>
+            <span class="text-[10px] font-bold uppercase text-blue-600 tracking-wider">Core Services</span>
+            <div class="space-y-2 mt-1.5" id="prevServicesList">
+              <div class="p-3 rounded-2xl border border-slate-100 bg-slate-50 flex justify-between items-center">
+                <span class="font-bold text-slate-800">General Periodic Maintenance</span>
+                <span class="font-extrabold text-blue-600">₹1,499</span>
               </div>
-              <div class="p-2.5 rounded-xl border border-slate-100 bg-slate-50 flex justify-between items-center text-xs">
-                <span class="font-semibold text-slate-800">Brake Overhaul & Fluid</span>
-                <span class="font-bold text-blue-600">₹999</span>
+              <div class="p-3 rounded-2xl border border-slate-100 bg-slate-50 flex justify-between items-center">
+                <span class="font-bold text-slate-800">Brake Overhaul & Fluid</span>
+                <span class="font-extrabold text-blue-600">₹999</span>
               </div>
             </div>
           </div>
 
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] space-y-1">
+          <!-- Appointment Booking Preview -->
+          <div id="prevBookCard" class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-2">
+            <span class="text-[10px] font-bold uppercase text-blue-600">Quick Appointment</span>
+            <h4 class="font-bold text-slate-900 text-xs">Schedule a Service Slot</h4>
+            <div class="py-2 px-3 bg-blue-600 text-white font-bold rounded-xl text-xs">
+              Book Appointment Online
+            </div>
+          </div>
+
+          <!-- Location Info -->
+          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-[11px] space-y-1.5">
             <div class="flex items-center gap-1.5 text-slate-600">
-              <i class="ri-map-pin-line text-blue-600"></i>
+              <i class="ri-map-pin-2-fill text-blue-600"></i>
               <span id="prevAddress">Main Highway Road, Industrial Area</span>
             </div>
             <div class="flex items-center gap-1.5 text-slate-600">
-              <i class="ri-time-line text-blue-600"></i>
+              <i class="ri-time-fill text-blue-600"></i>
               <span id="prevHours">Mon - Sat: 9:00 AM - 7:00 PM</span>
             </div>
           </div>
@@ -193,9 +239,28 @@
         document.getElementById('siteAddress').value = currentWebsite.address || '';
         document.getElementById('siteHours').value = currentWebsite.hours || '';
         document.getElementById('siteSlug').value = currentWebsite.slug || '';
+        if (currentWebsite.theme) document.getElementById('siteTheme').value = currentWebsite.theme;
 
         document.getElementById('userBadge').innerText = currentWebsite.businessName;
         document.getElementById('publicSiteLink').href = `/site/${currentWebsite.slug}`;
+
+        // Render Service Requests / Leads
+        const leadsBox = document.getElementById('leadsContainer');
+        if (currentWebsite.serviceRequests && currentWebsite.serviceRequests.length > 0) {
+          leadsBox.innerHTML = currentWebsite.serviceRequests.map(r => `
+            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
+              <div>
+                <div class="font-bold text-white">${r.name} &bull; <span class="text-slate-400">${r.phone}</span></div>
+                <div class="text-[11px] text-blue-400 font-medium">${r.service} ${r.vehicle ? `(${r.vehicle})` : ''}</div>
+              </div>
+              <a href="https://wa.me/${r.phone.replace(/\D/g, '')}" target="_blank" class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg flex items-center gap-1 font-bold text-[11px]">
+                <i class="ri-whatsapp-fill"></i> Reply
+              </a>
+            </div>
+          `).join('');
+        } else {
+          leadsBox.innerHTML = '<div class="text-xs text-slate-500 py-4 text-center">No customer bookings received yet.</div>';
+        }
 
         updateLivePreview();
       } catch (err) {
@@ -217,8 +282,12 @@
       document.getElementById('prevAbout').innerText = about;
       document.getElementById('prevAddress').innerText = address;
       document.getElementById('prevHours').innerText = hours;
-      document.getElementById('prevCallBtn').href = `tel:${phone}`;
-      document.getElementById('prevWaBtn').href = `https://wa.me/${whatsapp.replace(/\D/g, '')}`;
+
+      const cleanPhone = phone.replace(/\D/g, '');
+      const cleanWa = whatsapp.replace(/\D/g, '');
+      document.getElementById('prevCallBtn').href = `tel:${cleanPhone}`;
+      document.getElementById('prevWaBtn').href = `https://wa.me/${cleanWa}`;
+      document.getElementById('prevMapBtn').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' ' + address)}`;
     }
 
     async function handleSaveWebsite(e) {
@@ -238,6 +307,7 @@
         whatsapp: document.getElementById('siteWhatsapp').value.trim(),
         address: document.getElementById('siteAddress').value.trim(),
         hours: document.getElementById('siteHours').value.trim(),
+        theme: document.getElementById('siteTheme').value,
         slug: document.getElementById('siteSlug').value.trim()
       };
 

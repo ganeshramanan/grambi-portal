@@ -2,35 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Workshop Website</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+    /* Theme Palettes */
+    .theme-blue { --p-color: #2563eb; --p-dark: #1e40af; --p-light: #eff6ff; }
+    .theme-emerald { --p-color: #059669; --p-dark: #065f46; --p-light: #ecfdf5; }
+    .theme-purple { --p-color: #7c3aed; --p-dark: #5b21b6; --p-light: #f5f3ff; }
+    .theme-amber { --p-color: #d97706; --p-dark: #92400e; --p-light: #fffbeb; }
+    .theme-rose { --p-color: #e11d48; --p-dark: #9f1239; --p-light: #fff1f2; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
+<body id="siteBody" class="bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white theme-blue">
 
-  <!-- Navigation Bar -->
-  <header class="bg-white/90 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+  <!-- Top Sticky Navigation Bar -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-500/20">
+        <div id="siteLogoBox" class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-500/20 overflow-hidden">
           <i class="ri-car-washing-line"></i>
         </div>
         <div>
-          <h1 id="siteName" class="font-bold text-lg text-slate-900 leading-tight">Workshop Name</h1>
-          <p id="siteTag" class="text-xs text-slate-500">Auto Care Specialists</p>
+          <h1 id="siteName" class="font-extrabold text-base sm:text-lg text-slate-900 leading-tight">Workshop Name</h1>
+          <p id="siteTag" class="text-[11px] text-slate-500 font-medium truncate max-w-[160px] sm:max-w-xs">Auto Care Specialists</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <a id="callBtn" href="#" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-          <i class="ri-phone-fill text-blue-600"></i> <span class="hidden sm:inline">Call Us</span>
+      <!-- Quick Header Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a id="saveContactVCard" href="#" onclick="downloadVCard(event)" class="hidden sm:flex px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition items-center gap-1.5" title="Save vCard to Contacts">
+          <i class="ri-contacts-book-2-line text-blue-600"></i> Save Contact
         </a>
-        <a id="waBtn" href="#" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5">
+        <a id="headerCallBtn" href="#" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+          <i class="ri-phone-fill text-blue-600"></i> <span class="hidden sm:inline">Call</span>
+        </a>
+        <a id="headerWaBtn" href="#" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5">
           <i class="ri-whatsapp-fill"></i> <span class="hidden sm:inline">WhatsApp</span>
         </a>
       </div>
@@ -38,55 +49,87 @@
   </header>
 
   <main class="flex-grow">
-    <!-- Hero Banner -->
-    <section class="bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-950 text-white py-20 px-6 text-center relative overflow-hidden">
-      <div class="max-w-4xl mx-auto space-y-6 relative z-10">
-        <span class="px-3.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-semibold uppercase tracking-wider">
-          Trusted Auto Service Center
-        </span>
-        <h2 id="heroTitle" class="text-3xl sm:text-5xl font-extrabold tracking-tight">Professional Auto Care & Maintenance</h2>
-        <p id="heroAbout" class="text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+    <!-- Hero Banner with vCard Action Bar -->
+    <section class="bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white py-14 sm:py-20 px-6 text-center relative overflow-hidden">
+      <div class="max-w-3xl mx-auto space-y-6 relative z-10">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-semibold uppercase tracking-wider">
+          <i class="ri-shield-check-line"></i> Verified Automotive Workshop
+        </div>
+        
+        <h2 id="heroTitle" class="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+          Professional Auto Care & Maintenance
+        </h2>
+        
+        <p id="heroAbout" class="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
           Certified multi-brand car & bike maintenance, high-precision diagnostics, periodic servicing, and genuine parts.
         </p>
 
-        <div class="pt-4 flex justify-center gap-4">
-          <a href="#bookSection" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/30 transition">
-            Book Service Appointment
+        <!-- Digital vCard Quick Buttons -->
+        <div class="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg mx-auto text-xs font-bold">
+          <a id="heroCallBtn" href="#" class="p-3 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md border border-white/10 flex flex-col items-center gap-1.5 transition">
+            <i class="ri-phone-fill text-xl text-blue-400"></i> Call Now
+          </a>
+          <a id="heroWaBtn" href="#" class="p-3 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md border border-white/10 flex flex-col items-center gap-1.5 transition">
+            <i class="ri-whatsapp-fill text-xl text-emerald-400"></i> WhatsApp
+          </a>
+          <a id="heroMapBtn" href="#" target="_blank" class="p-3 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md border border-white/10 flex flex-col items-center gap-1.5 transition">
+            <i class="ri-direction-fill text-xl text-amber-400"></i> Directions
+          </a>
+          <a href="#bookSection" class="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl shadow-lg shadow-blue-600/30 flex flex-col items-center gap-1.5 transition">
+            <i class="ri-calendar-check-fill text-xl"></i> Book Slot
           </a>
         </div>
       </div>
     </section>
 
-    <!-- Services Grid -->
+    <!-- Services Section -->
     <section class="py-16 max-w-6xl mx-auto px-6">
       <div class="text-center mb-12">
-        <h3 class="text-2xl font-bold text-slate-900">Our Core Workshop Services</h3>
-        <p class="text-sm text-slate-500 mt-1">Transparent pricing with quality guarantee.</p>
+        <span class="text-xs font-bold uppercase tracking-wider text-blue-600">What We Offer</span>
+        <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Our Workshop Services</h3>
+        <p class="text-sm text-slate-500 mt-1">Transparent pricing and certified multi-point checklist.</p>
       </div>
 
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" id="servicesContainer">
-        <!-- Rendered via JS -->
+        <!-- Injected via JS -->
       </div>
     </section>
 
-    <!-- Appointment Booking Section -->
-    <section id="bookSection" class="py-16 bg-slate-100 border-t border-slate-200">
+    <!-- Photo Gallery (Portfolio / Facility) -->
+    <section id="gallerySection" class="py-12 bg-white border-y border-slate-200">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Our Facility & Work</span>
+            <h3 class="text-xl sm:text-2xl font-bold text-slate-900">Workshop Photos</h3>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="galleryContainer">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Appointment & Enquiry Form -->
+    <section id="bookSection" class="py-16 bg-slate-100 border-b border-slate-200">
       <div class="max-w-xl mx-auto px-6">
-        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl space-y-6">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xl space-y-6">
           <div class="text-center">
-            <h3 class="text-xl font-bold text-slate-900">Book a Service Slot</h3>
-            <p class="text-xs text-slate-500 mt-1">Leave your details and we will confirm your appointment.</p>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Direct Booking</span>
+            <h3 class="text-2xl font-black text-slate-900 mt-1">Schedule an Appointment</h3>
+            <p class="text-xs text-slate-500 mt-1">Submit your details and we will confirm your preferred service slot.</p>
           </div>
 
           <form onsubmit="handlePublicBooking(event)" class="space-y-4">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Your Name</label>
-              <input type="text" id="custName" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="John Doe" />
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Customer Name</label>
+              <input type="text" id="custName" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="e.g. Rahul Sharma" />
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp / Phone</label>
                 <input type="tel" id="custPhone" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="+91 9876543210" />
               </div>
               <div>
@@ -98,16 +141,22 @@
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Select Service</label>
               <select id="custService" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600">
-                <option value="General Periodic Maintenance">General Periodic Maintenance</option>
+                <option value="General Maintenance & Periodic Service">General Maintenance & Periodic Service</option>
                 <option value="Brake Overhaul & Fluid">Brake Overhaul & Fluid</option>
                 <option value="AC Gas Refill & Service">AC Gas Refill & Service</option>
                 <option value="Engine Diagnosis & Electrical">Engine Diagnosis & Electrical</option>
+                <option value="Wheel Alignment & Balancing">Wheel Alignment & Balancing</option>
               </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Additional Notes / Complaints</label>
+              <textarea id="custNotes" rows="3" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="Mention any specific issue (e.g. noise from suspension)"></textarea>
             </div>
 
             <div id="bookingMsg" class="text-xs hidden"></div>
 
-            <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-blue-500/25">
+            <button type="submit" id="bookSubmitBtn" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-blue-500/25">
               Confirm Appointment Request
             </button>
           </form>
@@ -115,57 +164,107 @@
       </div>
     </section>
 
-    <!-- Workshop Details & Hours -->
+    <!-- Location & Operating Hours -->
     <section class="py-12 max-w-6xl mx-auto px-6 grid sm:grid-cols-2 gap-6 text-sm text-slate-600">
-      <div class="p-6 rounded-2xl bg-white border border-slate-200 space-y-2">
-        <h4 class="font-bold text-slate-900 flex items-center gap-2"><i class="ri-map-pin-line text-blue-600"></i> Workshop Address</h4>
-        <p id="siteAddress" class="text-xs leading-relaxed">Loading address...</p>
+      <div class="p-6 rounded-3xl bg-white border border-slate-200 space-y-2">
+        <h4 class="font-bold text-slate-900 flex items-center gap-2"><i class="ri-map-pin-2-fill text-blue-600"></i> Workshop Address</h4>
+        <p id="siteAddress" class="text-xs leading-relaxed">Loading location...</p>
+        <a id="getDirectionsBtn" href="#" target="_blank" class="inline-flex items-center gap-1 text-xs text-blue-600 font-bold hover:underline pt-2">
+          Open in Google Maps <i class="ri-arrow-right-up-line"></i>
+        </a>
       </div>
-      <div class="p-6 rounded-2xl bg-white border border-slate-200 space-y-2">
-        <h4 class="font-bold text-slate-900 flex items-center gap-2"><i class="ri-time-line text-blue-600"></i> Business Hours</h4>
-        <p id="siteHours" class="text-xs leading-relaxed">Loading hours...</p>
+      <div class="p-6 rounded-3xl bg-white border border-slate-200 space-y-2">
+        <h4 class="font-bold text-slate-900 flex items-center gap-2"><i class="ri-time-fill text-blue-600"></i> Operating Hours</h4>
+        <p id="siteHours" class="text-xs leading-relaxed">Mon - Sat: 9:00 AM - 7:00 PM</p>
       </div>
     </section>
   </main>
 
+  <!-- Sticky Bottom Contact Bar (Optimized for Mobile/vCard view) -->
+  <div class="sticky bottom-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 sm:hidden shadow-lg">
+    <div class="grid grid-cols-3 gap-2 text-xs font-bold text-center">
+      <a id="mobileCall" href="#" class="py-2.5 bg-slate-100 text-slate-900 rounded-xl flex items-center justify-center gap-1">
+        <i class="ri-phone-fill text-blue-600"></i> Call
+      </a>
+      <a id="mobileWa" href="#" class="py-2.5 bg-emerald-600 text-white rounded-xl flex items-center justify-center gap-1 shadow-md shadow-emerald-500/20">
+        <i class="ri-whatsapp-fill"></i> WhatsApp
+      </a>
+      <a href="#bookSection" class="py-2.5 bg-blue-600 text-white rounded-xl flex items-center justify-center gap-1 shadow-md shadow-blue-500/20">
+        <i class="ri-calendar-check-fill"></i> Book
+      </a>
+    </div>
+  </div>
+
   <footer class="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
-    <p>Powered by <span class="font-bold text-slate-700">Grambi Platform</span> &copy; 2026</p>
+    <p>Powered by <a href="https://grambi.in" class="font-bold text-slate-800 hover:text-blue-600">Grambi Platform</a> &copy; 2026</p>
   </footer>
 
   <script>
     const slug = window.location.pathname.split('/site/')[1] || 'my-workshop';
+    let currentSiteData = null;
 
     async function loadPublicSite() {
       try {
         const res = await fetch(`/api/website/public/${encodeURIComponent(slug)}`);
         if (!res.ok) throw new Error('Site not found');
         const data = await res.json();
+        currentSiteData = data;
 
         document.title = data.businessName;
         document.getElementById('siteName').innerText = data.businessName;
-        document.getElementById('siteTag').innerText = data.tagline || 'Auto Service Specialist';
+        document.getElementById('siteTag').innerText = data.tagline || 'Auto Care Specialists';
         document.getElementById('heroTitle').innerText = data.tagline || data.businessName;
         document.getElementById('heroAbout').innerText = data.about || 'Certified multi-brand car & bike maintenance specialist.';
         document.getElementById('siteAddress').innerText = data.address || 'Location provided upon appointment confirmation.';
         document.getElementById('siteHours').innerText = data.hours || 'Mon - Sat: 9:00 AM - 7:00 PM';
 
-        document.getElementById('callBtn').href = `tel:${data.phone}`;
-        document.getElementById('waBtn').href = `https://wa.me/${data.whatsapp ? data.whatsapp.replace(/\D/g, '') : ''}`;
+        // Update Theme
+        if (data.theme) {
+          document.getElementById('siteBody').className = `bg-slate-50 text-slate-900 min-h-screen flex flex-col theme-${data.theme}`;
+        }
+
+        // Action URLs
+        const cleanPhone = (data.phone || '').replace(/\D/g, '');
+        const cleanWa = (data.whatsapp || '').replace(/\D/g, '');
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((data.businessName || '') + ' ' + (data.address || ''))}`;
+
+        document.getElementById('headerCallBtn').href = `tel:${cleanPhone}`;
+        document.getElementById('heroCallBtn').href = `tel:${cleanPhone}`;
+        document.getElementById('mobileCall').href = `tel:${cleanPhone}`;
+
+        document.getElementById('headerWaBtn').href = `https://wa.me/${cleanWa}`;
+        document.getElementById('heroWaBtn').href = `https://wa.me/${cleanWa}`;
+        document.getElementById('mobileWa').href = `https://wa.me/${cleanWa}`;
+
+        document.getElementById('heroMapBtn').href = mapsUrl;
+        document.getElementById('getDirectionsBtn').href = mapsUrl;
 
         // Render Services
-        const container = document.getElementById('servicesContainer');
-        container.innerHTML = (data.services || []).map(s => `
-          <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-3">
+        const servContainer = document.getElementById('servicesContainer');
+        servContainer.innerHTML = (data.services || []).map(s => `
+          <div class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition">
             <div>
-              <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold mb-3">
-                <i class="ri-shield-check-line"></i>
+              <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold mb-3">
+                <i class="ri-shield-check-line text-lg"></i>
               </div>
-              <h4 class="font-bold text-slate-900 text-sm">${s.name}</h4>
-              <p class="text-xs text-slate-500 mt-1">${s.description || 'Expert mechanics and genuine replacement parts.'}</p>
+              <h4 class="font-extrabold text-slate-900 text-sm">${s.name}</h4>
+              <p class="text-xs text-slate-500 mt-1 leading-relaxed">${s.description || 'Certified technicians and multi-point quality inspection.'}</p>
             </div>
-            <div class="text-sm font-extrabold text-blue-600 border-t border-slate-100 pt-3">${s.price || 'Contact for Quote'}</div>
+            <div class="text-base font-black text-blue-600 border-t border-slate-100 pt-3">${s.price || 'Get Quote'}</div>
           </div>
         `).join('');
+
+        // Render Gallery
+        const galContainer = document.getElementById('galleryContainer');
+        if (data.gallery && data.gallery.length > 0) {
+          galContainer.innerHTML = data.gallery.map((imgUrl, i) => `
+            <div class="aspect-video sm:aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm group">
+              <img src="${imgUrl}" alt="Facility ${i + 1}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            </div>
+          `).join('');
+        } else {
+          document.getElementById('gallerySection').classList.add('hidden');
+        }
 
       } catch (err) {
         document.body.innerHTML = `
@@ -180,14 +279,45 @@
       }
     }
 
+    // 1-Click vCard Generator (.vcf download for mobile contacts)
+    function downloadVCard(e) {
+      e.preventDefault();
+      if (!currentSiteData) return;
+
+      const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${currentSiteData.businessName}
+ORG:${currentSiteData.businessName}
+TEL;TYPE=WORK,VOICE:${currentSiteData.phone || ''}
+TEL;TYPE=CELL:${currentSiteData.whatsapp || ''}
+ADR;TYPE=WORK:;;${currentSiteData.address || ''};;;;
+NOTE:${currentSiteData.tagline || ''}
+URL:https://grambi.in/site/${slug}
+END:VCARD`;
+
+      const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${currentSiteData.businessName.replace(/\s+/g, '_')}.vcf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     async function handlePublicBooking(e) {
       e.preventDefault();
       const msg = document.getElementById('bookingMsg');
+      const btn = document.getElementById('bookSubmitBtn');
+      btn.disabled = true;
+      btn.innerText = 'Submitting Request...';
+
       const payload = {
         name: document.getElementById('custName').value.trim(),
         phone: document.getElementById('custPhone').value.trim(),
         vehicle: document.getElementById('custVehicle').value.trim(),
-        service: document.getElementById('custService').value
+        service: document.getElementById('custService').value,
+        notes: document.getElementById('custNotes').value.trim()
       };
 
       try {
@@ -205,6 +335,9 @@
       } catch (err) {
         msg.className = "text-xs text-rose-600 block p-3 bg-rose-50 border border-rose-200 rounded-xl";
         msg.innerText = "❌ " + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Confirm Appointment Request';
       }
     }
 
