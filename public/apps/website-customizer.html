@@ -707,12 +707,12 @@
           <div class="flex items-center gap-2">
             <span class="w-5 h-5 rounded-full bg-slate-900 text-slate-400 font-bold flex items-center justify-center text-[10px]">${idx + 1}</span>
             <input type="text" value="${s.name || ''}" oninput="updateServiceField('${s.id}', 'name', this.value)" placeholder="Service Name (e.g. Periodic Oil Service)" class="flex-grow bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500" />
-            <input type="text" value="${s.price || ''}" oninput="updateServiceField('${s.id}', 'price', this.value)" placeholder="Price (₹1,499)" class="w-24 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-blue-500" />
+            <input type="text" value="${s.price || ''}" oninput="updateServiceField('${s.id}', 'price', this.value)" placeholder="Price (Optional, e.g. ₹1,499)" class="w-28 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-blue-500" />
             <button type="button" onclick="removeServiceRow('${s.id}')" class="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition" title="Delete Service">
               <i class="ri-delete-bin-line"></i>
             </button>
           </div>
-          <input type="text" value="${s.description || ''}" oninput="updateServiceField('${s.id}', 'description', this.value)" placeholder="Brief description (e.g. Engine flush, filter & multi-point checkup)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none focus:border-blue-500" />
+          <textarea rows="2" oninput="updateServiceField('${s.id}', 'description', this.value)" placeholder="Service Description or Bullet points (e.g. &#10;✓ Engine oil check & replacement&#10;✓ Brake inspection&#10;✓ Tyre & air pressure check)" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-[11px] text-slate-300 focus:outline-none focus:border-blue-500 leading-relaxed">${s.description || ''}</textarea>
         </div>
       `).join('');
     }
@@ -848,15 +848,30 @@
       const prevServList = document.getElementById('prevServicesList');
       if (prevServList) {
         if (dynamicServices.length > 0) {
-          prevServList.innerHTML = dynamicServices.map(s => `
-            <div class="p-3 rounded-2xl border border-slate-100 bg-slate-50 flex justify-between items-center text-xs">
-              <div>
-                <span class="font-bold text-slate-800">${s.name || 'Untitled Service'}</span>
-                ${s.description ? `<p class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[180px]">${s.description}</p>` : ''}
+          prevServList.innerHTML = dynamicServices.map(s => {
+            const rawDesc = s.description || '';
+            const lines = rawDesc.split(/[\r\n✓•]+/).map(l => l.trim()).filter(l => l.length > 0);
+            
+            let previewDescHtml = '';
+            if (lines.length > 1) {
+              previewDescHtml = `<ul class="space-y-1 mt-1 text-[11px] text-slate-500">
+                ${lines.slice(0, 3).map(l => `<li class="flex items-start gap-1"><i class="ri-check-line text-emerald-500 font-bold shrink-0"></i> <span class="truncate">${l.replace(/^[-*]\s*/, '')}</span></li>`).join('')}
+                ${lines.length > 3 ? `<li class="text-[10px] text-slate-400 pl-4">+${lines.length - 3} more items...</li>` : ''}
+              </ul>`;
+            } else if (lines.length === 1) {
+              previewDescHtml = `<p class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[180px]">${lines[0]}</p>`;
+            }
+
+            return `
+              <div class="p-3 rounded-2xl border border-slate-100 bg-slate-50 flex justify-between items-start text-xs">
+                <div class="flex-grow">
+                  <span class="font-bold text-slate-800">${s.name || 'Untitled Service'}</span>
+                  ${previewDescHtml}
+                </div>
+                ${s.price ? `<span class="font-extrabold ${themeCfg.priceColor} text-xs ml-2 shrink-0">${s.price}</span>` : ''}
               </div>
-              ${s.price ? `<span class="font-extrabold ${themeCfg.priceColor} text-xs ml-2">${s.price}</span>` : ''}
-            </div>
-          `).join('');
+            `;
+          }).join('');
         } else {
           prevServList.innerHTML = '<div class="text-[11px] text-slate-400 py-2 text-center">No services configured yet.</div>';
         }

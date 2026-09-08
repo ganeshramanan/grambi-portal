@@ -278,17 +278,22 @@
         // Render Services with Bullet Support & Clean Pricing
         const servContainer = document.getElementById('servicesContainer');
         servContainer.innerHTML = (data.services || []).map(s => {
-          // Format bullet points if customer used newlines or dashes
+          // Format bullet points if customer used newlines, checkmarks (✓), dashes (-), or bullets (•)
           const rawDesc = s.description || '';
-          const lines = rawDesc.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0);
+          
+          // Split by newlines OR checkmarks (✓) OR bullets (•)
+          let lines = rawDesc
+            .split(/[\r\n✓•]+/)
+            .map(l => l.trim())
+            .filter(l => l.length > 0);
           
           let formattedDesc = '';
           if (lines.length > 1) {
-            formattedDesc = `<ul class="space-y-1 mt-2 text-xs text-slate-600">
-              ${lines.map(l => `<li class="flex items-start gap-1.5"><i class="ri-checkbox-circle-fill text-blue-600 text-xs mt-0.5 shrink-0"></i> <span>${l.replace(/^[-•*]\s*/, '')}</span></li>`).join('')}
+            formattedDesc = `<ul class="space-y-1.5 mt-3 text-xs text-slate-600">
+              ${lines.map(l => `<li class="flex items-start gap-2"><i class="ri-checkbox-circle-fill text-blue-600 text-sm mt-0.5 shrink-0"></i> <span class="leading-relaxed">${l.replace(/^[-*]\s*/, '')}</span></li>`).join('')}
             </ul>`;
           } else if (lines.length === 1) {
-            formattedDesc = `<p class="text-xs text-slate-500 mt-1.5 leading-relaxed">${lines[0]}</p>`;
+            formattedDesc = `<p class="text-xs text-slate-500 mt-2 leading-relaxed">${lines[0]}</p>`;
           }
 
           return `
@@ -297,7 +302,7 @@
                 <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold mb-3">
                   <i class="ri-check-line text-lg"></i>
                 </div>
-                <h4 class="font-extrabold text-slate-900 text-sm">${s.name}</h4>
+                <h4 class="font-extrabold text-slate-900 text-base">${s.name}</h4>
                 ${formattedDesc}
               </div>
               ${s.price ? `<div class="text-base font-black text-blue-600 border-t border-slate-100 pt-3">${s.price}</div>` : ''}
