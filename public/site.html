@@ -76,7 +76,7 @@
             <i class="ri-direction-fill text-xl text-amber-400"></i> Directions
           </a>
           <a href="#bookSection" class="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl shadow-lg shadow-blue-600/30 flex flex-col items-center gap-1.5 transition">
-            <i class="ri-calendar-check-fill text-xl"></i> Book Slot
+            <i class="ri-mail-send-fill text-xl"></i> Enquire
           </a>
         </div>
       </div>
@@ -111,49 +111,76 @@
       </div>
     </section>
 
-    <!-- Appointment & Enquiry Form -->
+    <!-- Enquiry Form Section -->
     <section id="bookSection" class="py-16 bg-slate-100 border-b border-slate-200">
       <div class="max-w-xl mx-auto px-6">
         <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xl space-y-6">
           <div class="text-center">
-            <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Direct Enquiry</span>
-            <h3 class="text-2xl font-black text-slate-900 mt-1">Book an Appointment / Enquiry</h3>
-            <p class="text-xs text-slate-500 mt-1">Submit your details and we will get back to you shortly.</p>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Get In Touch</span>
+            <h3 class="text-2xl font-black text-slate-900 mt-1">Enquiry Form</h3>
+            <p class="text-xs text-slate-500 mt-1">Tell us what you need and we will get back to you shortly.</p>
           </div>
 
           <form onsubmit="handlePublicBooking(event)" class="space-y-4">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Your Name</label>
-              <input type="text" id="custName" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="e.g. Rahul Sharma" />
+              <label for="custName" class="block text-xs font-semibold text-slate-700 mb-1">Enter Full Name</label>
+              <input 
+                type="text" 
+                id="custName" 
+                name="name"
+                autocomplete="name"
+                required 
+                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600 transition" 
+                placeholder="e.g. Rahul Sharma" 
+              />
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">WhatsApp / Phone</label>
-                <input type="tel" id="custPhone" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="+91 9876543210" />
+                <label for="custPhone" class="block text-xs font-semibold text-slate-700 mb-1">Enter Phone Number</label>
+                <input 
+                  type="tel" 
+                  id="custPhone" 
+                  name="phone"
+                  autocomplete="tel"
+                  required 
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600 transition" 
+                  placeholder="+91 9876543210" 
+                />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Vehicle / Reference Detail (Optional)</label>
-                <input type="text" id="custVehicle" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="e.g. Honda City / Patient Name / Order ID" />
+                <label for="custEmail" class="block text-xs font-semibold text-slate-700 mb-1">Enter Email (Optional)</label>
+                <input 
+                  type="email" 
+                  id="custEmail" 
+                  name="email"
+                  autocomplete="email"
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600 transition" 
+                  placeholder="name@example.com" 
+                />
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Select Requirement / Service</label>
-              <select id="custService" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600">
-                <option value="General Service">General Service</option>
-              </select>
+              <label for="custNotes" class="block text-xs font-semibold text-slate-700 mb-1">Enter Message / Requirement</label>
+              <textarea 
+                id="custNotes" 
+                name="message"
+                rows="4" 
+                required 
+                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600 transition" 
+                placeholder="Tell us how we can help you..."
+              ></textarea>
             </div>
 
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Additional Notes / Requirements</label>
-              <textarea id="custNotes" rows="3" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:border-blue-600" placeholder="Describe your requirement in detail..."></textarea>
-            </div>
+            <div id="bookingMsg" class="text-xs hidden text-center font-medium"></div>
 
-            <div id="bookingMsg" class="text-xs hidden"></div>
-
-            <button type="submit" id="bookSubmitBtn" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-blue-500/25">
-              Confirm Appointment / Send Enquiry
+            <button 
+              type="submit" 
+              id="bookSubmitBtn" 
+              class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-blue-500/25 cursor-pointer"
+            >
+              Send Enquiry
             </button>
           </form>
         </div>
@@ -186,7 +213,7 @@
         <i class="ri-whatsapp-fill"></i> WhatsApp
       </a>
       <a href="#bookSection" class="py-2.5 bg-blue-600 text-white rounded-xl flex items-center justify-center gap-1 shadow-md shadow-blue-500/20">
-        <i class="ri-calendar-check-fill"></i> Book
+        <i class="ri-mail-send-fill"></i> Enquire
       </a>
     </div>
   </div>
@@ -310,28 +337,20 @@
           `;
         }).join('');
 
-        // Render Gallery with Click-to-Open Lightbox
+        // Gallery Lightbox Handlers
         const galContainer = document.getElementById('galleryContainer');
-        if (data.gallery && data.gallery.length > 0) {
+        if (galContainer && data.gallery && data.gallery.length > 0) {
           galContainer.innerHTML = data.gallery.map((imgUrl, i) => `
-            <div class="aspect-video sm:aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm group cursor-pointer relative" onclick="openLightbox('${imgUrl}', 'Workshop Facility Photo ${i + 1}')">
-              <img src="${imgUrl}" alt="Facility ${i + 1}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            <div class="aspect-video sm:aspect-square rounded-2xl border border-slate-200 shadow-sm group cursor-pointer relative overflow-hidden" onclick="openLightbox('${imgUrl}', 'Gallery Photo ${i + 1}')">
+              <img src="${imgUrl}" alt="Gallery ${i + 1}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
               <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-lg font-bold">
                 <i class="ri-zoom-in-line bg-black/50 p-2 rounded-full"></i>
               </div>
             </div>
           `).join('');
           document.getElementById('gallerySection').classList.remove('hidden');
-        } else {
+        } else if (document.getElementById('gallerySection')) {
           document.getElementById('gallerySection').classList.add('hidden');
-        }
-
-        // Sync Service Options into Appointment Dropdown
-        const selectEl = document.getElementById('custService');
-        if (data.services && data.services.length > 0) {
-          selectEl.innerHTML = data.services.map(s => `
-            <option value="${s.name}">${s.name} ${s.price ? `(${s.price})` : ''}</option>
-          `).join('');
         }
 
       } catch (err) {
@@ -379,13 +398,13 @@ END:VCARD`;
       const msg = document.getElementById('bookingMsg');
       const btn = document.getElementById('bookSubmitBtn');
       btn.disabled = true;
-      btn.innerText = 'Submitting Request...';
+      btn.innerText = 'Sending Enquiry...';
 
+      const custEmailEl = document.getElementById('custEmail');
       const payload = {
         name: document.getElementById('custName').value.trim(),
         phone: document.getElementById('custPhone').value.trim(),
-        vehicle: document.getElementById('custVehicle').value.trim(),
-        service: document.getElementById('custService').value,
+        email: custEmailEl ? custEmailEl.value.trim() : undefined,
         notes: document.getElementById('custNotes').value.trim()
       };
 
@@ -396,19 +415,19 @@ END:VCARD`;
           body: JSON.stringify(payload)
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to submit booking');
+        if (!res.ok) throw new Error(data.error || 'Failed to submit enquiry');
 
         trackEvent('BOOKING_SUBMIT');
 
         msg.className = "text-xs text-emerald-600 block p-3 bg-emerald-50 border border-emerald-200 rounded-xl";
-        msg.innerText = "✅ " + data.message;
+        msg.innerText = "✅ " + (data.message || 'Enquiry submitted successfully!');
         e.target.reset();
       } catch (err) {
         msg.className = "text-xs text-rose-600 block p-3 bg-rose-50 border border-rose-200 rounded-xl";
         msg.innerText = "❌ " + err.message;
       } finally {
         btn.disabled = false;
-        btn.innerText = 'Confirm Appointment Request';
+        btn.innerText = 'Send Enquiry';
       }
     }
 
