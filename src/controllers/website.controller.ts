@@ -1,15 +1,72 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middlewares/auth.middleware';
-import { INDUSTRY_TEMPLATES } from '../config/templates.preset';
+import { INDUSTRY_TEMPLATES, addCustomTemplate, deleteCustomTemplate } from '../config/templates.preset';
 
 const prisma = new PrismaClient();
 
-// List All Preset & Configured Website Templates
+// List All Preset & Configured Website Templates (supports ?category=Automotive)
 export const getWebsiteTemplates = async (req: Request, res: Response) => {
+  const { category } = req.query;
+  let filtered = INDUSTRY_TEMPLATES;
+  if (category && category !== 'ALL') {
+    filtered = INDUSTRY_TEMPLATES.filter(t => t.category.toLowerCase().includes(String(category).toLowerCase()));
+  }
+
+  // Also collect all distinct categories for category dropdown
+  const categories = Array.from(new Set(INDUSTRY_TEMPLATES.map(t => t.category)));
+
   return res.json({
     success: true,
-    templates: INDUSTRY_TEMPLATES
+    categories,
+    templates: filtered
+  });
+};
+
+// Admin: Add New Industry Website Template
+export const createWebsiteTemplate = async (req: AuthRequest, res: Response) => {
+  const { name, category, theme, heroBg, previewThumb, tagline, about, defaultServices } = req.body;
+
+  if (!name || !category || !heroBg) {
+    return res.status(400).json({ error: 'Name, Category, and Hero Background URL are required.' });
+  }
+
+  const newTemplate = addCustomTemplate({
+    id: `tpl_${Date.now()}`,
+    name,
+    category,
+    icon: 'ri-layout-masonry-line',
+    badgeText: `Verified ${category} Specialist`,
+    theme: theme || 'amber',
+    heroBg,
+    previewThumb: previewThumb || heroBg,
+    tagline: tagline || `${name} Quality Services`,
+    about: about || `Dedicated to delivering the highest quality ${category} services.`,
+    defaultServices: Array.isArray(defaultServices) && defaultServices.length > 0 ? defaultServices : [
+      { name: 'Standard Service Package', price: '₹999', description: '• Premium quality\n• Timely delivery' }
+    ],
+    defaultGallery: [heroBg]
+  });
+
+  return res.status(201).json({
+    success: true,
+    message: 'Template created successfully',
+    template: newTemplate
+  });
+};
+
+// Admin: Delete Website Template
+export const removeWebsiteTemplate = async (req: AuthRequest, res: Response) => {
+  const { templateId } = req.params;
+  const deleted = deleteCustomTemplate(templateId);
+
+  if (!deleted) {
+    return res.status(404).json({ error: 'Template not found' });
+  }
+
+  return res.json({
+    success: true,
+    message: 'Template deleted successfully'
   });
 };
 
