@@ -223,3 +223,88 @@ export const updateLeadStatus = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ error: 'Failed to update lead status: ' + err.message });
   }
 };
+
+// Record Public Analytics Event (Page view, Call Click, WhatsApp Click, Map Directions)
+export const recordAnalyticsEvent = async (req: Request, res: Response) => {
+  const { slug } = req.params;
+  const { eventType } = req.body;
+
+  if (!eventType) {
+    return res.status(400).json({ error: 'eventType is required' });
+  }
+
+  try {
+    const website = await prisma.website.findUnique({ where: { slug } });
+    if (!website) return res.status(404).json({ error: 'Website not found' });
+
+    await prisma.analyticsEvent.create({
+      data: {
+        websiteId: website.id,
+        eventType: String(eventType).toUpperCase()
+      }
+    });
+
+    return res.json({ success: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to record event: ' + err.message });
+  }
+};
+
+// Get Analytics Stats for Workshop Owner (With Time Filters: WEEK, MONTH, ALL)
+export const getWebsiteAnalytics = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { period = 'WEEK' } = req.query;
+
+  try {
+    const website = await prisma.website.findUnique({ where: { userId } });
+    if (!website) return res.status(404).json({ error: 'Website not found' });
+
+    // Calculate Date Threshold
+    let dateFilter: Date | undefined = undefined;
+    const now = new Date();
+    if (period === 'WEEK') {
+      dateFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else if (period === 'MONTH') {
+      dateFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    }
+
+    const whereClause: any = {
+      websiteId: website.id,
+      ...(dateFilter ? { createdAt: { gte: dateFilter } } : {})
+    };
+
+    const events = await prisma.analyticsEvent.findMany({
+      where: whereClause,
+      select: { eventType: true, createdAt: true }
+    });
+
+    const pageViews = events.filter(e => e.eventType === 'PAGE_VIEW').length;
+    const callClicks = events.filter(e => e.eventType === 'CALL_CLICK').length;
+    const whatsappClicks = events.filter(e => e.eventType === 'WHATSAPP_CLICK').length;
+    const mapClicks = events.filter(e => e.eventType === 'MAP_CLICK').length;
+    const vcardDownloads = events.filter(e => e.eventType === 'VCARD_DOWNLOAD').length;
+
+    // Also count bookings received in this period
+    const bookingsCount = await prisma.serviceRequest.count({
+      where: {
+        websiteId: website.id,
+        ...(dateFilter ? { createdAt: { gte: dateFilter } } : {})
+      }
+    });
+
+    return res.json({
+      period,
+      stats: {
+        pageViews,
+        callClicks,
+        whatsappClicks,
+        mapClicks,
+        vcardDownloads,
+        bookingsCount,
+        totalInteractions: callClicks + whatsappClicks + mapClicks + vcardDownloads + bookingsCount
+      }
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to fetch analytics: ' + err.message });
+  }
+};

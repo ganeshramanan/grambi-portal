@@ -46,6 +46,15 @@ model Website {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   serviceRequests ServiceRequest[]
+  analyticsEvents AnalyticsEvent[]
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(uuid())
+  websiteId String
+  website   Website  @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  eventType String   // 'PAGE_VIEW', 'CALL_CLICK', 'WHATSAPP_CLICK', 'MAP_CLICK', 'VCARD_DOWNLOAD'
+  createdAt DateTime @default(now())
 }
 
 model ServiceRequest {

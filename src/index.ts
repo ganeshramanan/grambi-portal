@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import { register, login, getProfile, updateCredentials, logout } from './controllers/auth.controller';
 import { listAllUsers, updateUserAccess, deleteUser } from './controllers/admin.controller';
 import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSandboxTestMessage, exportCampaignCSV } from './controllers/whatsapp.controller';
-import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking, updateLeadStatus } from './controllers/website.controller';
+import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking, updateLeadStatus, recordAnalyticsEvent, getWebsiteAnalytics } from './controllers/website.controller';
 import { getOccasions, getPostTemplates } from './controllers/social.controller';
 import { verifyWebhook, handleWebhookEvents } from './controllers/webhook.controller';
 import { authMiddleware, requireAdmin } from './middlewares/auth.middleware';
@@ -89,12 +89,14 @@ app.post('/api/whatsapp/sandbox-test', authMiddleware, sendSandboxTestMessage);
 app.get('/api/whatsapp/campaigns', authMiddleware, listCustomerCampaigns);
 app.get('/api/whatsapp/campaigns/:id/export', authMiddleware, exportCampaignCSV);
 
-// --- PRODUCT 2: WEBSITE CUSTOMIZER ROUTES ---
+// --- PRODUCT 2: WEBSITE CUSTOMIZER & ANALYTICS ROUTES ---
 app.get('/api/website/my-website', authMiddleware, getMyWebsite);
 app.put('/api/website/my-website', authMiddleware, updateMyWebsite);
+app.get('/api/website/analytics', authMiddleware, getWebsiteAnalytics);
 app.put('/api/website/leads/:leadId/status', authMiddleware, updateLeadStatus);
 app.get('/api/website/public/:slug', getPublicWebsite);
 app.post('/api/website/public/:slug/book', submitPublicBooking);
+app.post('/api/website/public/:slug/event', recordAnalyticsEvent);
 
 // Direct Public Website View: /site/:slug
 app.get('/site/:slug', (req, res) => {

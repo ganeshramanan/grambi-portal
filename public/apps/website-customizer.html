@@ -49,8 +49,64 @@
   <!-- Workspace Grid (Editor Left, Live Preview Right) -->
   <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
     
-    <!-- Left: Customizer Form (6 Cols) -->
+    <!-- Left: Customizer Form & Analytics (6 Cols) -->
     <div class="lg:col-span-6 space-y-6">
+
+      <!-- Real-Time Customer Analytics & Click Counters -->
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div class="flex items-center gap-2">
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="ri-bar-chart-2-fill text-blue-400"></i> Website Visitor & Click Analytics
+            </h2>
+            <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-mono font-bold">Live</span>
+          </div>
+          
+          <!-- Analytics Period Selector (Week / Month / All Time) -->
+          <div class="flex gap-1 text-[11px] font-bold">
+            <button type="button" onclick="loadAnalytics('WEEK')" id="btnPeriodWEEK" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white transition">7 Days</button>
+            <button type="button" onclick="loadAnalytics('MONTH')" id="btnPeriodMONTH" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition">30 Days</button>
+            <button type="button" onclick="loadAnalytics('ALL')" id="btnPeriodALL" class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition">All Time</button>
+          </div>
+        </div>
+
+        <!-- 4 Key ROI Counters Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div class="flex items-center justify-center gap-1 text-[11px] text-slate-400 font-bold uppercase">
+              <i class="ri-eye-line text-blue-400"></i> Views
+            </div>
+            <div id="metricViews" class="text-xl font-black text-white mt-1">0</div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div class="flex items-center justify-center gap-1 text-[11px] text-blue-400 font-bold uppercase">
+              <i class="ri-phone-fill text-blue-400"></i> Calls
+            </div>
+            <div id="metricCalls" class="text-xl font-black text-blue-400 mt-1">0</div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div class="flex items-center justify-center gap-1 text-[11px] text-emerald-400 font-bold uppercase">
+              <i class="ri-whatsapp-fill text-emerald-400"></i> Chats
+            </div>
+            <div id="metricWhatsApp" class="text-xl font-black text-emerald-400 mt-1">0</div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div class="flex items-center justify-center gap-1 text-[11px] text-amber-400 font-bold uppercase">
+              <i class="ri-direction-fill text-amber-400"></i> Maps
+            </div>
+            <div id="metricDirections" class="text-xl font-black text-amber-400 mt-1">0</div>
+          </div>
+        </div>
+
+        <div class="text-[11px] text-slate-400 flex justify-between items-center pt-1 border-t border-slate-800/50">
+          <span>Appointments Booked: <strong id="metricBookings" class="text-emerald-400">0</strong></span>
+          <span>Total Customer Actions: <strong id="metricTotalActions" class="text-blue-400">0</strong></span>
+        </div>
+      </div>
+
       <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-5">
         <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
           <h2 class="text-base font-bold text-white flex items-center gap-2">
@@ -405,6 +461,44 @@
       }
     }
 
+    let currentAnalyticsPeriod = 'WEEK';
+
+    async function loadAnalytics(period = 'WEEK') {
+      currentAnalyticsPeriod = period;
+
+      // Update Period Buttons
+      ['WEEK', 'MONTH', 'ALL'].forEach(p => {
+        const btn = document.getElementById(`btnPeriod${p}`);
+        if (btn) {
+          if (p === period) {
+            btn.className = 'px-2.5 py-1 rounded-lg bg-blue-600 text-white transition';
+          } else {
+            btn.className = 'px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white transition';
+          }
+        }
+      });
+
+      const token = localStorage.getItem('grambi_token');
+      try {
+        const res = await fetch(`/api/website/analytics?period=${period}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const s = data.stats || {};
+
+          document.getElementById('metricViews').innerText = s.pageViews || 0;
+          document.getElementById('metricCalls').innerText = s.callClicks || 0;
+          document.getElementById('metricWhatsApp').innerText = s.whatsappClicks || 0;
+          document.getElementById('metricDirections').innerText = s.mapClicks || 0;
+          document.getElementById('metricBookings').innerText = s.bookingsCount || 0;
+          document.getElementById('metricTotalActions').innerText = s.totalInteractions || 0;
+        }
+      } catch (err) {
+        console.error('Failed to load analytics:', err);
+      }
+    }
+
     async function loadWebsiteData() {
       const token = localStorage.getItem('grambi_token');
       try {
@@ -430,6 +524,9 @@
         // Populate and render leads with pagination
         allServiceRequests = currentWebsite.serviceRequests || [];
         renderLeads();
+
+        // Load live analytics
+        loadAnalytics(currentAnalyticsPeriod);
 
         updateLivePreview();
       } catch (err) {

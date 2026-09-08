@@ -232,12 +232,26 @@
         document.getElementById('heroCallBtn').href = `tel:${cleanPhone}`;
         document.getElementById('mobileCall').href = `tel:${cleanPhone}`;
 
+        document.getElementById('headerCallBtn').onclick = () => trackEvent('CALL_CLICK');
+        document.getElementById('heroCallBtn').onclick = () => trackEvent('CALL_CLICK');
+        document.getElementById('mobileCall').onclick = () => trackEvent('CALL_CLICK');
+
         document.getElementById('headerWaBtn').href = `https://wa.me/${cleanWa}`;
         document.getElementById('heroWaBtn').href = `https://wa.me/${cleanWa}`;
         document.getElementById('mobileWa').href = `https://wa.me/${cleanWa}`;
 
+        document.getElementById('headerWaBtn').onclick = () => trackEvent('WHATSAPP_CLICK');
+        document.getElementById('heroWaBtn').onclick = () => trackEvent('WHATSAPP_CLICK');
+        document.getElementById('mobileWa').onclick = () => trackEvent('WHATSAPP_CLICK');
+
         document.getElementById('heroMapBtn').href = mapsUrl;
         document.getElementById('getDirectionsBtn').href = mapsUrl;
+
+        document.getElementById('heroMapBtn').onclick = () => trackEvent('MAP_CLICK');
+        document.getElementById('getDirectionsBtn').onclick = () => trackEvent('MAP_CLICK');
+
+        // Record Initial Page View Analytics
+        trackEvent('PAGE_VIEW');
 
         // Render Services
         const servContainer = document.getElementById('servicesContainer');
@@ -282,6 +296,7 @@
     // 1-Click vCard Generator (.vcf download for mobile contacts)
     function downloadVCard(e) {
       e.preventDefault();
+      trackEvent('VCARD_DOWNLOAD');
       if (!currentSiteData) return;
 
       const vcard = `BEGIN:VCARD
@@ -329,6 +344,8 @@ END:VCARD`;
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to submit booking');
 
+        trackEvent('BOOKING_SUBMIT');
+
         msg.className = "text-xs text-emerald-600 block p-3 bg-emerald-50 border border-emerald-200 rounded-xl";
         msg.innerText = "✅ " + data.message;
         e.target.reset();
@@ -339,6 +356,23 @@ END:VCARD`;
         btn.disabled = false;
         btn.innerText = 'Confirm Appointment Request';
       }
+    }
+
+    // Lightweight Analytics Beacon / Event Tracker
+    function trackEvent(eventType) {
+      try {
+        const payload = JSON.stringify({ eventType });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(`/api/website/public/${encodeURIComponent(slug)}/event`, payload);
+        } else {
+          fetch(`/api/website/public/${encodeURIComponent(slug)}/event`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload,
+            keepalive: true
+          }).catch(() => {});
+        }
+      } catch (e) {}
     }
 
     loadPublicSite();
