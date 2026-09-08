@@ -199,6 +199,17 @@
     <p>Powered by <a href="https://grambi.in" class="font-bold text-slate-800 hover:text-blue-600">Grambi Platform</a> &copy; 2026</p>
   </footer>
 
+  <!-- Fullscreen Photo Gallery Lightbox Modal -->
+  <div id="galleryLightbox" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4 transition-all" onclick="closeLightbox()">
+    <button type="button" onclick="closeLightbox()" class="absolute top-5 right-5 text-white/80 hover:text-white p-2 text-2xl font-bold bg-white/10 rounded-full w-10 h-10 flex items-center justify-center transition">
+      <i class="ri-close-line"></i>
+    </button>
+    <div class="max-w-4xl max-h-[85vh] p-2 flex flex-col items-center" onclick="event.stopPropagation()">
+      <img id="lightboxImg" src="" alt="Full view" class="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl border border-white/10" />
+      <span id="lightboxCaption" class="text-xs text-slate-300 mt-3 font-semibold text-center"></span>
+    </div>
+  </div>
+
   <script>
     const slug = window.location.pathname.split('/site/')[1] || 'my-workshop';
     let currentSiteData = null;
@@ -268,16 +279,28 @@
           </div>
         `).join('');
 
-        // Render Gallery
+        // Render Gallery with Click-to-Open Lightbox
         const galContainer = document.getElementById('galleryContainer');
         if (data.gallery && data.gallery.length > 0) {
           galContainer.innerHTML = data.gallery.map((imgUrl, i) => `
-            <div class="aspect-video sm:aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm group">
+            <div class="aspect-video sm:aspect-square rounded-2xl overflow-hidden border border-slate-200 shadow-sm group cursor-pointer relative" onclick="openLightbox('${imgUrl}', 'Workshop Facility Photo ${i + 1}')">
               <img src="${imgUrl}" alt="Facility ${i + 1}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-lg font-bold">
+                <i class="ri-zoom-in-line bg-black/50 p-2 rounded-full"></i>
+              </div>
             </div>
           `).join('');
+          document.getElementById('gallerySection').classList.remove('hidden');
         } else {
           document.getElementById('gallerySection').classList.add('hidden');
+        }
+
+        // Sync Service Options into Appointment Dropdown
+        const selectEl = document.getElementById('custService');
+        if (data.services && data.services.length > 0) {
+          selectEl.innerHTML = data.services.map(s => `
+            <option value="${s.name}">${s.name} ${s.price ? `(${s.price})` : ''}</option>
+          `).join('');
         }
 
       } catch (err) {
@@ -383,6 +406,32 @@ END:VCARD`;
         console.warn('Analytics event capture:', e);
       }
     }
+
+    // Gallery Lightbox Handlers
+    function openLightbox(imgUrl, caption) {
+      const modal = document.getElementById('galleryLightbox');
+      const img = document.getElementById('lightboxImg');
+      const cap = document.getElementById('lightboxCaption');
+      if (modal && img) {
+        img.src = imgUrl;
+        if (cap) cap.innerText = caption || '';
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeLightbox() {
+      const modal = document.getElementById('galleryLightbox');
+      if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
 
     loadPublicSite();
   </script>

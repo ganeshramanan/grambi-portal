@@ -178,6 +178,33 @@
             </p>
           </div>
 
+          <!-- Dynamic Core Services Manager -->
+          <div class="pt-3 border-t border-slate-800/80 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-xs font-bold text-slate-200">Core Services & Pricing</label>
+                <p class="text-[11px] text-slate-500">Add, edit, or remove services offered by your workshop.</p>
+              </div>
+              <button type="button" onclick="addNewServiceRow()" class="px-2.5 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg text-xs font-bold flex items-center gap-1 transition">
+                <i class="ri-add-line"></i> Add Service
+              </button>
+            </div>
+
+            <div id="servicesEditorContainer" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Photo Gallery URLs Manager -->
+          <div class="pt-3 border-t border-slate-800/80 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-slate-200">Workshop Photo Gallery (Image URLs)</label>
+              <span class="text-[10px] text-slate-500 font-mono">1 URL per line</span>
+            </div>
+            <textarea id="siteGalleryUrls" rows="3" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-blue-500" placeholder="https://images.unsplash.com/photo-1613214149922...&#10;https://images.unsplash.com/photo-1486006920..."></textarea>
+            <p class="text-[11px] text-slate-500">Paste links to your workshop/facility photos. Customers can click them to view full-size in an interactive lightbox.</p>
+          </div>
+
           <div id="saveMsg" class="text-xs hidden"></div>
 
           <button type="submit" id="saveBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-blue-500/20">
@@ -502,6 +529,62 @@
       }
     }
 
+    let dynamicServices = [];
+
+    function addNewServiceRow(serviceObj = null) {
+      const s = serviceObj || {
+        id: 'serv_' + Date.now() + Math.random().toString(36).substr(2, 4),
+        name: '',
+        price: '',
+        description: ''
+      };
+
+      if (!serviceObj) {
+        dynamicServices.push(s);
+      }
+
+      renderServicesEditor();
+      updateLivePreview();
+    }
+
+    function removeServiceRow(serviceId) {
+      dynamicServices = dynamicServices.filter(s => s.id !== serviceId);
+      renderServicesEditor();
+      updateLivePreview();
+    }
+
+    function updateServiceField(serviceId, field, val) {
+      const target = dynamicServices.find(s => s.id === serviceId);
+      if (target) {
+        target[field] = val;
+        updateLivePreview();
+      }
+    }
+
+    function renderServicesEditor() {
+      const container = document.getElementById('servicesEditorContainer');
+      if (!container) return;
+
+      if (dynamicServices.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-500 py-3 text-center border border-dashed border-slate-800 rounded-xl">No services added yet. Click "+ Add Service" above.</div>';
+        return;
+      }
+
+      container.innerHTML = dynamicServices.map((s, idx) => `
+        <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-slate-900 text-slate-400 font-bold flex items-center justify-center text-[10px]">${idx + 1}</span>
+            <input type="text" value="${s.name || ''}" oninput="updateServiceField('${s.id}', 'name', this.value)" placeholder="Service Name (e.g. Periodic Oil Service)" class="flex-grow bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500" />
+            <input type="text" value="${s.price || ''}" oninput="updateServiceField('${s.id}', 'price', this.value)" placeholder="Price (₹1,499)" class="w-24 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-blue-500" />
+            <button type="button" onclick="removeServiceRow('${s.id}')" class="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition" title="Delete Service">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+          <input type="text" value="${s.description || ''}" oninput="updateServiceField('${s.id}', 'description', this.value)" placeholder="Brief description (e.g. Engine flush, filter & multi-point checkup)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-[11px] text-slate-300 focus:outline-none focus:border-blue-500" />
+        </div>
+      `).join('');
+    }
+
     async function loadWebsiteData() {
       const token = localStorage.getItem('grambi_token');
       try {
@@ -520,6 +603,16 @@
         document.getElementById('siteHours').value = currentWebsite.hours || '';
         document.getElementById('siteSlug').value = currentWebsite.slug || '';
         if (currentWebsite.theme) document.getElementById('siteTheme').value = currentWebsite.theme;
+
+        // Populate Photo Gallery URLs
+        const galleryUrls = currentWebsite.gallery || [];
+        document.getElementById('siteGalleryUrls').value = galleryUrls.join('\n');
+
+        // Populate Dynamic Services Editor
+        dynamicServices = Array.isArray(currentWebsite.services) && currentWebsite.services.length > 0 
+          ? currentWebsite.services.map(s => typeof s === 'string' ? { id: 's_' + Math.random().toString(36).substr(2, 4), name: s, price: '', description: '' } : s)
+          : [];
+        renderServicesEditor();
 
         document.getElementById('userBadge').innerText = currentWebsite.businessName;
         document.getElementById('publicSiteLink').href = `/site/${currentWebsite.slug}`;
@@ -604,6 +697,24 @@
         bookActionBtn.className = `py-2 px-3 ${themeCfg.heroBtn} text-white font-bold rounded-xl text-xs transition`;
       }
 
+      // Render Dynamic Services in Live Mobile Preview
+      const prevServList = document.getElementById('prevServicesList');
+      if (prevServList) {
+        if (dynamicServices.length > 0) {
+          prevServList.innerHTML = dynamicServices.map(s => `
+            <div class="p-3 rounded-2xl border border-slate-100 bg-slate-50 flex justify-between items-center text-xs">
+              <div>
+                <span class="font-bold text-slate-800">${s.name || 'Untitled Service'}</span>
+                ${s.description ? `<p class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[180px]">${s.description}</p>` : ''}
+              </div>
+              <span class="font-extrabold ${themeCfg.priceColor} text-xs ml-2">${s.price || 'Get Quote'}</span>
+            </div>
+          `).join('');
+        } else {
+          prevServList.innerHTML = '<div class="text-[11px] text-slate-400 py-2 text-center">No services configured yet.</div>';
+        }
+      }
+
       const cleanPhone = phone.replace(/\D/g, '');
       const cleanWa = whatsapp.replace(/\D/g, '');
       document.getElementById('prevCallBtn').href = `tel:${cleanPhone}`;
@@ -620,6 +731,10 @@
       saveBtn.disabled = true;
       saveBtn.innerText = 'Publishing Changes...';
 
+      // Parse Gallery URLs
+      const rawGalleryText = document.getElementById('siteGalleryUrls').value.trim();
+      const gallery = rawGalleryText.split(/[\r\n]+/).map(u => u.trim()).filter(u => u.length > 0);
+
       const payload = {
         businessName: document.getElementById('siteBusinessName').value.trim(),
         tagline: document.getElementById('siteTagline').value.trim(),
@@ -629,7 +744,9 @@
         address: document.getElementById('siteAddress').value.trim(),
         hours: document.getElementById('siteHours').value.trim(),
         theme: document.getElementById('siteTheme').value,
-        slug: document.getElementById('siteSlug').value.trim()
+        slug: document.getElementById('siteSlug').value.trim(),
+        services: dynamicServices,
+        gallery: gallery
       };
 
       try {

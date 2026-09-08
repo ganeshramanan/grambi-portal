@@ -108,7 +108,21 @@
       border-color: #cbd5e1 !important;
     }
 
-    /* Fix Leads & Analytics Cards in Light Mode */
+    /* Fix Services Editor Cards in Light Mode */
+    html.light div#servicesEditorContainer div.bg-slate-950 {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+    html.light div#servicesEditorContainer div.bg-slate-950 input {
+      background-color: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    html.light div#servicesEditorContainer span.bg-slate-900 {
+      background-color: #f1f5f9 !important;
+      color: #334155 !important;
+    }
     html.light div#leadsContainer div.bg-slate-950,
     html.light div#metricViews.text-white,
     html.light div.grid.grid-cols-2.sm\\:grid-cols-4 div.bg-slate-950 {
