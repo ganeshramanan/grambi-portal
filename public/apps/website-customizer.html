@@ -865,42 +865,22 @@
       const tpl = availableTemplates.find(t => t.id === tplId);
       if (!tpl) return;
 
-      const hasExistingServices = dynamicServices && dynamicServices.length > 0;
-      let updateServices = false;
-      
-      if (hasExistingServices) {
-        updateServices = confirm(`Apply "${tpl.name}" template styling?\n\nClick OK to keep your current services and only update Theme & Styling.\nClick CANCEL if you want to replace services with sample ${tpl.category} items.`) === false;
-      } else {
-        updateServices = true;
-      }
-
       selectedTemplateId = tpl.id;
+      document.getElementById('siteTagline').value = tpl.tagline;
+      document.getElementById('siteAbout').value = tpl.about;
       document.getElementById('siteTheme').value = tpl.theme;
 
-      // Only update Tagline/About if customer hasn't typed their own custom content yet
-      const currentTagline = document.getElementById('siteTagline').value.trim();
-      const currentAbout = document.getElementById('siteAbout').value.trim();
-      if (!currentTagline || currentTagline === 'Quality Car & Bike Service Specialist') {
-        document.getElementById('siteTagline').value = tpl.tagline;
-      }
-      if (!currentAbout || currentAbout.startsWith('Dedicated') || currentAbout.startsWith('We provide expert')) {
-        document.getElementById('siteAbout').value = tpl.about;
-      }
+      // Update services with the selected template's services
+      dynamicServices = tpl.defaultServices.map(s => ({
+        id: 's_' + Math.random().toString(36).substr(2, 4),
+        name: s.name,
+        price: s.price,
+        description: s.description
+      }));
+      renderServicesEditor();
 
-      // Replace services only if requested or if none exist
-      if (updateServices) {
-        dynamicServices = tpl.defaultServices.map(s => ({
-          id: 's_' + Math.random().toString(36).substr(2, 4),
-          name: s.name,
-          price: s.price,
-          description: s.description
-        }));
-        renderServicesEditor();
-      }
-
-      // Update gallery if currently empty
-      if (!dynamicGallery || dynamicGallery.length === 0) {
-        dynamicGallery = [...(tpl.defaultGallery || [])];
+      if (tpl.defaultGallery && tpl.defaultGallery.length > 0) {
+        dynamicGallery = [...tpl.defaultGallery];
         renderGalleryThumbnails();
       }
 

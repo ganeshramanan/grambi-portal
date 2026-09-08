@@ -106,18 +106,18 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
           userId: userId!,
           slug: baseSlug,
           businessName: initialName,
-          tagline: 'Quality Car & Bike Service Specialist',
-          about: 'We provide expert automotive maintenance, periodic servicing, diagnostics, and repairs with certified mechanics.',
+          tagline: 'Multi-Brand Two & Four Wheeler Service Specialist',
+          about: 'Dedicated automotive care center equipped with advanced diagnostic tools, genuine OEM spare parts, and certified master technicians for complete vehicle reliability.',
           phone: user?.phone || '+91 9876543210',
           whatsapp: user?.phone || '+91 9876543210',
           address: 'Main Highway Road, Industrial Area',
           hours: 'Mon - Sat: 9:00 AM - 7:00 PM',
-          theme: 'blue',
+          theme: 'amber',
           servicesJson: JSON.stringify([
-            { id: 's1', name: 'General Maintenance & Oil Service', price: '₹1,499', description: 'Full engine inspection, oil change, and 30-point checkup.' },
-            { id: 's2', name: 'Brake Inspection & Pad Replacement', price: '₹999', description: 'Brake pad replacement, disc resurfacing, and fluid flush.' },
-            { id: 's3', name: 'Battery Health & Electrical Diagnosis', price: '₹499', description: 'Alternator testing, battery health check, and wiring diagnostics.' },
-            { id: 's4', name: 'AC Service & Gas Top-up', price: '₹1,299', description: 'Cooling coil cleaning, filter replacement, and refrigerant refill.' }
+            { id: 's1', name: 'Periodic Full Service & Inspection', price: '₹1,499', description: '• Complete engine oil & filter replacement\n• 40-point safety and brake inspection\n• Spark plug, air filter & fluid top-up' },
+            { id: 's2', name: 'Computerized Engine Diagnostics', price: '₹799', description: '• Advanced OBD-II computerized scanning\n• Sensor calibration & error code clearing\n• Fuel injector and performance tuning' },
+            { id: 's3', name: 'Brake Overhaul & Disc Servicing', price: '₹899', description: '• Front & rear brake pad replacement\n• Rotor disc resurfacing & caliper cleaning\n• DOT 4 brake fluid bleeding' },
+            { id: 's4', name: 'Car AC & Cooling System Service', price: '₹1,299', description: '• AC condenser & cooling coil antibacterial cleaning\n• Cabin pollen filter replacement\n• Refrigerant R134a gas refill' }
           ]),
           galleryJson: JSON.stringify([
             'https://images.unsplash.com/photo-1613214149922-f1809c99b414?w=600&auto=format&fit=crop&q=80',
