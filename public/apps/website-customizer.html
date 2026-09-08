@@ -248,14 +248,21 @@
         const leadsBox = document.getElementById('leadsContainer');
         if (currentWebsite.serviceRequests && currentWebsite.serviceRequests.length > 0) {
           leadsBox.innerHTML = currentWebsite.serviceRequests.map(r => `
-            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
-              <div>
-                <div class="font-bold text-white">${r.name} &bull; <span class="text-slate-400">${r.phone}</span></div>
-                <div class="text-[11px] text-blue-400 font-medium">${r.service} ${r.vehicle ? `(${r.vehicle})` : ''}</div>
+            <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2 text-xs">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="font-bold text-white text-sm">${r.name} &bull; <span class="text-slate-400 font-mono text-xs">${r.phone}</span></div>
+                  <div class="text-xs text-blue-400 font-semibold mt-0.5">${r.service} ${r.vehicle && r.vehicle !== 'N/A' ? `(${r.vehicle})` : ''}</div>
+                </div>
+                <a href="https://wa.me/${r.phone.replace(/\D/g, '')}?text=${encodeURIComponent('Hi ' + r.name + ', thank you for contacting ' + currentWebsite.businessName + '! Regarding your ' + r.service + ' requirement...')}" target="_blank" class="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg flex items-center gap-1 font-bold text-xs transition">
+                  <i class="ri-whatsapp-fill"></i> Reply
+                </a>
               </div>
-              <a href="https://wa.me/${r.phone.replace(/\D/g, '')}" target="_blank" class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg flex items-center gap-1 font-bold text-[11px]">
-                <i class="ri-whatsapp-fill"></i> Reply
-              </a>
+              ${r.notes ? `<div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 text-[11px] text-slate-300 italic"><span class="font-semibold text-slate-400 not-italic">Query / Notes:</span> "${r.notes}"</div>` : ''}
+              <div class="text-[10px] text-slate-500 flex justify-between items-center pt-1 border-t border-slate-800/50">
+                <span>Received: ${new Date(r.createdAt).toLocaleString()}</span>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold uppercase">${r.status || 'NEW'}</span>
+              </div>
             </div>
           `).join('');
         } else {

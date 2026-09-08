@@ -90,10 +90,22 @@
       color: #475569 !important;
       border-color: #e2e8f0 !important;
     }
-    /* Campaign Cards in Broadcast Reports */
-    html.light div#campaignList div {
-      background-color: #f8fafc !important;
+    /* Fix Leads / Appointments Cards in Light Mode */
+    html.light div#leadsContainer div.bg-slate-950 {
+      background-color: #ffffff !important;
       border-color: #e2e8f0 !important;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+    }
+    html.light div#leadsContainer div.bg-slate-950 .font-bold.text-white {
+      color: #0f172a !important;
+    }
+    html.light div#leadsContainer div.bg-slate-950 span.text-slate-400 {
+      color: #475569 !important;
+    }
+    html.light div#leadsContainer div.bg-slate-900 {
+      background-color: #f1f5f9 !important;
+      border-color: #e2e8f0 !important;
+      color: #334155 !important;
     }
     html.light div#campaignList span.text-white {
       color: #0f172a !important;
