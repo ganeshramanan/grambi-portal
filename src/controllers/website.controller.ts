@@ -187,6 +187,16 @@ export const submitPublicBooking = async (req: Request, res: Response) => {
       }
     });
 
+    return res.status(201).json({
+      success: true,
+      message: 'Service appointment request submitted successfully!',
+      booking
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to submit booking request: ' + err.message });
+  }
+};
+
 // Update Lead / Appointment Status (e.g. NEW -> REPLIED -> COMPLETED)
 export const updateLeadStatus = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
