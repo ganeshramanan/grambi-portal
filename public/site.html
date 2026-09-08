@@ -358,21 +358,30 @@ END:VCARD`;
       }
     }
 
-    // Lightweight Analytics Beacon / Event Tracker
+    // Robust Cross-Browser Analytics Beacon / Event Tracker
     function trackEvent(eventType) {
+      if (!eventType) return;
       try {
         const payload = JSON.stringify({ eventType });
+        const endpoint = `/api/website/public/${encodeURIComponent(slug)}/event`;
+        
+        // 1. Try sendBeacon with Blob first
         if (navigator.sendBeacon) {
-          navigator.sendBeacon(`/api/website/public/${encodeURIComponent(slug)}/event`, payload);
-        } else {
-          fetch(`/api/website/public/${encodeURIComponent(slug)}/event`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: payload,
-            keepalive: true
-          }).catch(() => {});
+          const blob = new Blob([payload], { type: 'application/json' });
+          const sent = navigator.sendBeacon(endpoint, blob);
+          if (sent) return;
         }
-      } catch (e) {}
+
+        // 2. Fetch with keepalive fallback
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true
+        }).catch(() => {});
+      } catch (e) {
+        console.warn('Analytics event capture:', e);
+      }
     }
 
     loadPublicSite();
