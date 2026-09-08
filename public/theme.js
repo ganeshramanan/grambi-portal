@@ -107,6 +107,19 @@
       border-color: #e2e8f0 !important;
       color: #334155 !important;
     }
+    html.light div#leadsPaginationBar button {
+      background-color: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    html.light div#leadsPaginationBar button:hover:not(:disabled) {
+      background-color: #e2e8f0 !important;
+    }
+    html.light div#leadsContainer select {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
     html.light div#campaignList span.text-white {
       color: #0f172a !important;
     }

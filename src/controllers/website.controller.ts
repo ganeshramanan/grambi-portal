@@ -187,12 +187,29 @@ export const submitPublicBooking = async (req: Request, res: Response) => {
       }
     });
 
-    return res.status(201).json({
-      success: true,
-      message: 'Service appointment request submitted successfully!',
-      booking
+// Update Lead / Appointment Status (e.g. NEW -> REPLIED -> COMPLETED)
+export const updateLeadStatus = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { leadId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const website = await prisma.website.findUnique({ where: { userId } });
+    if (!website) return res.status(404).json({ error: 'Website not found' });
+
+    const lead = await prisma.serviceRequest.findFirst({
+      where: { id: leadId, websiteId: website.id }
     });
+
+    if (!lead) return res.status(404).json({ error: 'Lead not found' });
+
+    const updated = await prisma.serviceRequest.update({
+      where: { id: leadId },
+      data: { status: status || 'REPLIED' }
+    });
+
+    return res.json({ success: true, lead: updated });
   } catch (err: any) {
-    return res.status(500).json({ error: 'Failed to submit booking request.' });
+    return res.status(500).json({ error: 'Failed to update lead status: ' + err.message });
   }
 };

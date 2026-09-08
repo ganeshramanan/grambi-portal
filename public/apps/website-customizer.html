@@ -120,16 +120,41 @@
       <!-- Live Incoming Leads / Appointments Table -->
       <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
         <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
-          <h3 class="text-sm font-bold text-white flex items-center gap-2">
-            <i class="ri-user-follow-line text-emerald-400"></i> Customer Appointments & Leads
-          </h3>
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="ri-user-follow-line text-emerald-400"></i> Customer Appointments & Leads
+            </h3>
+            <span id="leadsCountBadge" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-mono font-bold">0 Total</span>
+          </div>
           <button onclick="loadWebsiteData()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
             <i class="ri-refresh-line"></i> Refresh
           </button>
         </div>
 
-        <div id="leadsContainer" class="space-y-2.5 max-h-[260px] overflow-y-auto">
+        <!-- Filter Tabs: All, New, Attended/Replied, Completed -->
+        <div class="flex gap-1.5 text-xs font-semibold pb-1 overflow-x-auto">
+          <button type="button" onclick="setLeadFilter('ALL')" id="tabFilterALL" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold transition">All</button>
+          <button type="button" onclick="setLeadFilter('NEW')" id="tabFilterNEW" class="px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[11px] transition">New (<span id="countNew">0</span>)</button>
+          <button type="button" onclick="setLeadFilter('REPLIED')" id="tabFilterREPLIED" class="px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[11px] transition">Replied (<span id="countReplied">0</span>)</button>
+          <button type="button" onclick="setLeadFilter('COMPLETED')" id="tabFilterCOMPLETED" class="px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[11px] transition">Completed (<span id="countCompleted">0</span>)</button>
+        </div>
+
+        <div id="leadsContainer" class="space-y-2.5 max-h-[380px] overflow-y-auto">
           <div class="text-xs text-slate-500 py-4 text-center">No customer bookings received yet.</div>
+        </div>
+
+        <!-- Pagination Bar -->
+        <div id="leadsPaginationBar" class="hidden flex items-center justify-between border-t border-slate-800/80 pt-3 text-xs text-slate-400">
+          <span id="leadsPaginationInfo">Showing 1-10 of 25</span>
+          <div class="flex gap-1.5">
+            <button type="button" id="btnPrevPage" onclick="changeLeadPage(-1)" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed text-[11px] font-bold flex items-center gap-1">
+              <i class="ri-arrow-left-s-line"></i> Prev
+            </button>
+            <span id="currentPageDisplay" class="px-2.5 py-1 text-slate-300 font-mono text-[11px] font-bold">1 / 1</span>
+            <button type="button" id="btnNextPage" onclick="changeLeadPage(1)" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed text-[11px] font-bold flex items-center gap-1">
+              Next <i class="ri-arrow-right-s-line"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -222,6 +247,154 @@
   <script>
     let currentWebsite = null;
 
+    let allServiceRequests = [];
+    let currentLeadFilter = 'ALL';
+    let currentLeadPage = 1;
+    const LEADS_PER_PAGE = 10;
+
+    function setLeadFilter(filter) {
+      currentLeadFilter = filter;
+      currentLeadPage = 1;
+
+      // Update Tab Styles
+      ['ALL', 'NEW', 'REPLIED', 'COMPLETED'].forEach(f => {
+        const btn = document.getElementById(`tabFilter${f}`);
+        if (btn) {
+          if (f === filter) {
+            btn.className = 'px-3 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold transition';
+          } else {
+            btn.className = 'px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[11px] transition';
+          }
+        }
+      });
+
+      renderLeads();
+    }
+
+    function changeLeadPage(delta) {
+      currentLeadPage += delta;
+      renderLeads();
+    }
+
+    async function changeLeadStatus(leadId, newStatus) {
+      const token = localStorage.getItem('grambi_token');
+      try {
+        const res = await fetch(`/api/website/leads/${leadId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        if (res.ok) {
+          const item = allServiceRequests.find(r => r.id === leadId);
+          if (item) item.status = newStatus;
+          renderLeads();
+        }
+      } catch (err) {
+        console.error('Failed to update lead status:', err);
+      }
+    }
+
+    function renderLeads() {
+      const leadsBox = document.getElementById('leadsContainer');
+      const paginationBar = document.getElementById('leadsPaginationBar');
+
+      // Update Counts
+      const countNew = allServiceRequests.filter(r => (r.status || 'NEW') === 'NEW').length;
+      const countReplied = allServiceRequests.filter(r => r.status === 'REPLIED').length;
+      const countCompleted = allServiceRequests.filter(r => r.status === 'COMPLETED').length;
+
+      document.getElementById('countNew').innerText = countNew;
+      document.getElementById('countReplied').innerText = countReplied;
+      document.getElementById('countCompleted').innerText = countCompleted;
+      document.getElementById('leadsCountBadge').innerText = `${allServiceRequests.length} Total`;
+
+      // Filter
+      let filtered = allServiceRequests;
+      if (currentLeadFilter === 'NEW') {
+        filtered = allServiceRequests.filter(r => (r.status || 'NEW') === 'NEW');
+      } else if (currentLeadFilter === 'REPLIED') {
+        filtered = allServiceRequests.filter(r => r.status === 'REPLIED');
+      } else if (currentLeadFilter === 'COMPLETED') {
+        filtered = allServiceRequests.filter(r => r.status === 'COMPLETED');
+      }
+
+      if (filtered.length === 0) {
+        leadsBox.innerHTML = `<div class="text-xs text-slate-500 py-6 text-center">No ${currentLeadFilter !== 'ALL' ? currentLeadFilter.toLowerCase() : ''} enquiries found.</div>`;
+        paginationBar.classList.add('hidden');
+        return;
+      }
+
+      // Pagination calculation
+      const totalPages = Math.ceil(filtered.length / LEADS_PER_PAGE) || 1;
+      if (currentLeadPage > totalPages) currentLeadPage = totalPages;
+      if (currentLeadPage < 1) currentLeadPage = 1;
+
+      const startIndex = (currentLeadPage - 1) * LEADS_PER_PAGE;
+      const endIndex = Math.min(startIndex + LEADS_PER_PAGE, filtered.length);
+      const pageItems = filtered.slice(startIndex, endIndex);
+
+      // Render items
+      leadsBox.innerHTML = pageItems.map(r => {
+        const status = r.status || 'NEW';
+        const badgeColor = status === 'NEW' ? 'amber' : status === 'REPLIED' ? 'blue' : 'emerald';
+        const phoneDigits = (r.phone || '').replace(/\D/g, '');
+        const whatsappReplyMsg = encodeURIComponent(`Hi ${r.name}, thank you for contacting ${currentWebsite?.businessName || 'our workshop'}! Regarding your ${r.service || 'service'} requirement...`);
+
+        return `
+          <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2 text-xs transition hover:border-slate-700">
+            <div class="flex justify-between items-start gap-2">
+              <div>
+                <div class="font-bold text-white text-sm flex items-center gap-2">
+                  <span>${r.name}</span>
+                  <span class="px-2 py-0.5 rounded-full bg-${badgeColor}-500/10 text-${badgeColor}-400 border border-${badgeColor}-500/20 text-[9px] font-bold uppercase font-mono">
+                    ${status}
+                  </span>
+                </div>
+                <div class="text-slate-400 font-mono text-xs mt-0.5">${r.phone}</div>
+                <div class="text-xs text-blue-400 font-semibold mt-1">${r.service} ${r.vehicle && r.vehicle !== 'N/A' ? `<span class="text-slate-400 font-normal">(${r.vehicle})</span>` : ''}</div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex flex-col sm:flex-row gap-1.5 items-end">
+                <a href="https://wa.me/${phoneDigits}?text=${whatsappReplyMsg}" target="_blank" onclick="changeLeadStatus('${r.id}', 'REPLIED')" class="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg flex items-center gap-1 font-bold text-xs transition">
+                  <i class="ri-whatsapp-fill"></i> Reply
+                </a>
+                
+                <!-- Status Dropdown / Action -->
+                <select onchange="changeLeadStatus('${r.id}', this.value)" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg px-2 py-1 text-[11px] focus:outline-none focus:border-blue-500 cursor-pointer">
+                  <option value="NEW" ${status === 'NEW' ? 'selected' : ''}>New</option>
+                  <option value="REPLIED" ${status === 'REPLIED' ? 'selected' : ''}>Replied</option>
+                  <option value="COMPLETED" ${status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
+                </select>
+              </div>
+            </div>
+
+            ${r.notes ? `<div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800/80 text-[11px] text-slate-300"><span class="font-bold text-slate-400">Customer Query / Notes:</span> "${r.notes}"</div>` : ''}
+
+            <div class="text-[10px] text-slate-500 flex justify-between items-center pt-1 border-t border-slate-800/50">
+              <span>Received: ${new Date(r.createdAt).toLocaleString()}</span>
+              <span class="text-slate-400 font-mono">ID: ${r.id.slice(0, 8)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Show/Hide Pagination
+      if (filtered.length > LEADS_PER_PAGE) {
+        paginationBar.classList.remove('hidden');
+        document.getElementById('leadsPaginationInfo').innerText = `Showing ${startIndex + 1}-${endIndex} of ${filtered.length}`;
+        document.getElementById('currentPageDisplay').innerText = `${currentLeadPage} / ${totalPages}`;
+        document.getElementById('btnPrevPage').disabled = currentLeadPage <= 1;
+        document.getElementById('btnNextPage').disabled = currentLeadPage >= totalPages;
+      } else {
+        paginationBar.classList.add('hidden');
+      }
+    }
+
     async function loadWebsiteData() {
       const token = localStorage.getItem('grambi_token');
       try {
@@ -244,30 +417,9 @@
         document.getElementById('userBadge').innerText = currentWebsite.businessName;
         document.getElementById('publicSiteLink').href = `/site/${currentWebsite.slug}`;
 
-        // Render Service Requests / Leads
-        const leadsBox = document.getElementById('leadsContainer');
-        if (currentWebsite.serviceRequests && currentWebsite.serviceRequests.length > 0) {
-          leadsBox.innerHTML = currentWebsite.serviceRequests.map(r => `
-            <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2 text-xs">
-              <div class="flex justify-between items-start">
-                <div>
-                  <div class="font-bold text-white text-sm">${r.name} &bull; <span class="text-slate-400 font-mono text-xs">${r.phone}</span></div>
-                  <div class="text-xs text-blue-400 font-semibold mt-0.5">${r.service} ${r.vehicle && r.vehicle !== 'N/A' ? `(${r.vehicle})` : ''}</div>
-                </div>
-                <a href="https://wa.me/${r.phone.replace(/\D/g, '')}?text=${encodeURIComponent('Hi ' + r.name + ', thank you for contacting ' + currentWebsite.businessName + '! Regarding your ' + r.service + ' requirement...')}" target="_blank" class="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg flex items-center gap-1 font-bold text-xs transition">
-                  <i class="ri-whatsapp-fill"></i> Reply
-                </a>
-              </div>
-              ${r.notes ? `<div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 text-[11px] text-slate-300 italic"><span class="font-semibold text-slate-400 not-italic">Query / Notes:</span> "${r.notes}"</div>` : ''}
-              <div class="text-[10px] text-slate-500 flex justify-between items-center pt-1 border-t border-slate-800/50">
-                <span>Received: ${new Date(r.createdAt).toLocaleString()}</span>
-                <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold uppercase">${r.status || 'NEW'}</span>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          leadsBox.innerHTML = '<div class="text-xs text-slate-500 py-4 text-center">No customer bookings received yet.</div>';
-        }
+        // Populate and render leads with pagination
+        allServiceRequests = currentWebsite.serviceRequests || [];
+        renderLeads();
 
         updateLivePreview();
       } catch (err) {
