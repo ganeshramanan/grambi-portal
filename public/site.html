@@ -282,8 +282,9 @@
         if (data.theme) {
           document.getElementById('siteBody').className = `bg-slate-50 text-slate-900 min-h-screen flex flex-col theme-${data.theme}`;
           const heroBgEl = document.getElementById('heroBgImage');
-          if (heroBgEl && THEME_HERO_BG[data.theme]) {
-            heroBgEl.style.backgroundImage = `url('${THEME_HERO_BG[data.theme]}')`;
+          if (heroBgEl) {
+            const tplHeroBg = (data.gallery && data.gallery.length > 0) ? data.gallery[0] : (THEME_HERO_BG[data.theme] || THEME_HERO_BG.amber);
+            heroBgEl.style.backgroundImage = `url('${tplHeroBg}')`;
           }
 
           const heroEnquireBtn = document.getElementById('heroEnquireBtn');

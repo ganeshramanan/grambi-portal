@@ -1086,7 +1086,7 @@
         logo: currentLogoUrl || null,
         slug: document.getElementById('siteSlug').value.trim(),
         services: dynamicServices,
-        gallery: dynamicGallery
+        gallery: (dynamicGallery && dynamicGallery.length > 0) ? dynamicGallery : (selectedTemplateId && availableTemplates.find(t => t.id === selectedTemplateId)?.defaultGallery) || []
       };
 
       try {
