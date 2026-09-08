@@ -832,22 +832,38 @@
       const tpl = availableTemplates.find(t => t.id === tplId);
       if (!tpl) return;
 
-      const confirmMsg = `Apply "${tpl.name}" template?\n\nThis will update your Tagline, Theme (${tpl.theme.toUpperCase()}), About description, and prefill sample featured services for ${tpl.category}. You can still edit and customize everything.`;
-      if (!confirm(confirmMsg)) return;
+      const hasExistingServices = dynamicServices && dynamicServices.length > 0;
+      let updateServices = false;
+      
+      if (hasExistingServices) {
+        updateServices = confirm(`Apply "${tpl.name}" template styling?\n\nClick OK to keep your current services and only update Theme & Styling.\nClick CANCEL if you want to replace services with sample ${tpl.category} items.`) === false;
+      } else {
+        updateServices = true;
+      }
 
       selectedTemplateId = tpl.id;
-      document.getElementById('siteTagline').value = tpl.tagline;
-      document.getElementById('siteAbout').value = tpl.about;
       document.getElementById('siteTheme').value = tpl.theme;
 
-      // Update services
-      dynamicServices = tpl.defaultServices.map(s => ({
-        id: 's_' + Math.random().toString(36).substr(2, 4),
-        name: s.name,
-        price: s.price,
-        description: s.description
-      }));
-      renderServicesEditor();
+      // Only update Tagline/About if customer hasn't typed their own custom content yet
+      const currentTagline = document.getElementById('siteTagline').value.trim();
+      const currentAbout = document.getElementById('siteAbout').value.trim();
+      if (!currentTagline || currentTagline === 'Quality Car & Bike Service Specialist') {
+        document.getElementById('siteTagline').value = tpl.tagline;
+      }
+      if (!currentAbout || currentAbout.startsWith('Dedicated') || currentAbout.startsWith('We provide expert')) {
+        document.getElementById('siteAbout').value = tpl.about;
+      }
+
+      // Replace services only if requested or if none exist
+      if (updateServices) {
+        dynamicServices = tpl.defaultServices.map(s => ({
+          id: 's_' + Math.random().toString(36).substr(2, 4),
+          name: s.name,
+          price: s.price,
+          description: s.description
+        }));
+        renderServicesEditor();
+      }
 
       // Update gallery if currently empty
       if (!dynamicGallery || dynamicGallery.length === 0) {
@@ -856,9 +872,6 @@
       }
 
       updateLivePreview();
-
-      // Smooth scroll to editor to see applied changes
-      document.getElementById('siteBusinessName').focus();
     }
 
     async function loadWebsiteData() {

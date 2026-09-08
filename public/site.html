@@ -10,21 +10,21 @@
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     
-    /* Theme Palettes */
-    .theme-blue { --p-color: #2563eb; --p-dark: #1e40af; --p-light: #eff6ff; }
-    .theme-emerald { --p-color: #059669; --p-dark: #065f46; --p-light: #ecfdf5; }
-    .theme-purple { --p-color: #7c3aed; --p-dark: #5b21b6; --p-light: #f5f3ff; }
-    .theme-amber { --p-color: #d97706; --p-dark: #92400e; --p-light: #fffbeb; }
-    .theme-rose { --p-color: #e11d48; --p-dark: #9f1239; --p-light: #fff1f2; }
+    /* Theme Palettes & Dynamic Accents */
+    .theme-blue { --p-color: #2563eb; --p-dark: #1e40af; --p-light: #eff6ff; --p-border: #93c5fd; }
+    .theme-emerald { --p-color: #059669; --p-dark: #065f46; --p-light: #ecfdf5; --p-border: #6ee7b7; }
+    .theme-purple { --p-color: #7c3aed; --p-dark: #5b21b6; --p-light: #f5f3ff; --p-border: #c4b5fd; }
+    .theme-amber { --p-color: #d97706; --p-dark: #92400e; --p-light: #fffbeb; --p-border: #fcd34d; }
+    .theme-rose { --p-color: #e11d48; --p-dark: #9f1239; --p-light: #fff1f2; --p-border: #fda4af; }
   </style>
 </head>
-<body id="siteBody" class="bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-blue-600 selection:text-white theme-blue">
+<body id="siteBody" class="bg-slate-50 text-slate-900 min-h-screen flex flex-col selection:bg-amber-500 selection:text-white theme-amber">
 
   <!-- Top Sticky Navigation Bar -->
   <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-xs">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div id="siteLogoBox" class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-500/20 overflow-hidden shrink-0">
+        <div id="siteLogoBox" class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-xl shadow-md overflow-hidden shrink-0">
           <span id="siteLogoFallback">G</span>
         </div>
         <div>
@@ -36,10 +36,10 @@
       <!-- Quick Header Actions -->
       <div class="flex items-center gap-2 sm:gap-3">
         <a id="saveContactVCard" href="#" onclick="downloadVCard(event)" class="hidden sm:flex px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition items-center gap-1.5" title="Save vCard to Contacts">
-          <i class="ri-contacts-book-2-line text-blue-600"></i> Save Contact
+          <i class="ri-contacts-book-2-line text-amber-500"></i> Save Contact
         </a>
         <a id="headerCallBtn" href="#" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-          <i class="ri-phone-fill text-blue-600"></i> <span class="hidden sm:inline">Call</span>
+          <i class="ri-phone-fill text-amber-500"></i> <span class="hidden sm:inline">Call</span>
         </a>
         <a id="headerWaBtn" href="#" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5">
           <i class="ri-whatsapp-fill"></i> <span class="hidden sm:inline">WhatsApp</span>
@@ -50,37 +50,37 @@
 
   <main class="flex-grow">
     <!-- Hero Banner with vCard Action Bar -->
-    <section id="heroSection" class="relative text-white py-14 sm:py-20 px-6 text-center overflow-hidden bg-slate-950">
-      <!-- Background Image with Readability Overlay -->
-      <div id="heroBgImage" class="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-105" style="background-image: url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?q=80&w=1600&auto=format&fit=crop');"></div>
-      <div id="heroBgOverlay" class="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/80 to-slate-950/95 backdrop-blur-[2px]"></div>
+    <section id="heroSection" class="relative text-white py-16 sm:py-24 px-6 text-center overflow-hidden bg-slate-950">
+      <!-- Background Image with Readability Gradient Overlay -->
+      <div id="heroBgImage" class="absolute inset-0 bg-cover bg-center transition-all duration-700" style="background-image: url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?q=80&w=1600&auto=format&fit=crop');"></div>
+      <div id="heroBgOverlay" class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950/70"></div>
 
       <div class="max-w-3xl mx-auto space-y-6 relative z-10">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 text-white/90 border border-white/20 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
-          <i class="ri-shield-check-line"></i> <span id="siteBadgeText">Verified Professional Business</span>
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md text-amber-400 border border-amber-500/30 text-xs font-bold uppercase tracking-wider shadow-lg">
+          <i class="ri-shield-check-fill text-amber-400 text-sm"></i> <span id="siteBadgeText">Verified Professional Business</span>
         </div>
         
-        <h2 id="heroTitle" class="text-3xl sm:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
+        <h2 id="heroTitle" class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight drop-shadow-md">
           Welcome to Our Business
         </h2>
         
-        <p id="heroAbout" class="text-sm sm:text-base text-slate-200 max-w-2xl mx-auto leading-relaxed drop-shadow-sm">
+        <p id="heroAbout" class="text-sm sm:text-base text-slate-200 max-w-2xl mx-auto leading-relaxed drop-shadow-sm font-medium">
           Dedicated quality services, reliable support, and customer satisfaction.
         </p>
 
         <!-- Digital vCard Quick Buttons -->
-        <div class="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg mx-auto text-xs font-bold">
-          <a id="heroCallBtn" href="#" class="p-3 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md border border-white/10 flex flex-col items-center gap-1.5 transition">
-            <i class="ri-phone-fill text-xl text-blue-400"></i> Call Now
+        <div class="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto text-xs font-bold">
+          <a id="heroCallBtn" href="#" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md border border-white/15 flex flex-col items-center gap-1.5 transition shadow-lg hover:scale-102">
+            <i class="ri-phone-fill text-2xl text-blue-400"></i> Call Now
           </a>
-          <a id="heroWaBtn" href="#" class="p-3 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md border border-white/10 flex flex-col items-center gap-1.5 transition">
-            <i class="ri-whatsapp-fill text-xl text-emerald-400"></i> WhatsApp
+          <a id="heroWaBtn" href="#" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md border border-white/15 flex flex-col items-center gap-1.5 transition shadow-lg hover:scale-102">
+            <i class="ri-whatsapp-fill text-2xl text-emerald-400"></i> WhatsApp
           </a>
-          <a id="heroMapBtn" href="#" target="_blank" class="p-3 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md border border-white/10 flex flex-col items-center gap-1.5 transition">
-            <i class="ri-direction-fill text-xl text-amber-400"></i> Directions
+          <a id="heroMapBtn" href="#" target="_blank" class="p-3.5 bg-white/10 hover:bg-white/20 rounded-2xl backdrop-blur-md border border-white/15 flex flex-col items-center gap-1.5 transition shadow-lg hover:scale-102">
+            <i class="ri-direction-fill text-2xl text-amber-400"></i> Directions
           </a>
-          <a href="#bookSection" class="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl shadow-lg shadow-blue-600/30 flex flex-col items-center gap-1.5 transition">
-            <i class="ri-mail-send-fill text-xl"></i> Enquire
+          <a href="#bookSection" id="heroEnquireBtn" class="p-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-2xl shadow-xl shadow-amber-500/25 flex flex-col items-center gap-1.5 transition hover:scale-102">
+            <i class="ri-mail-send-fill text-2xl"></i> Enquire Now
           </a>
         </div>
       </div>
@@ -268,12 +268,32 @@
           purple: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop'
         };
 
+        const THEME_COLOR_MAP = {
+          amber: { logoBg: 'bg-amber-500', textAccent: 'text-amber-500', heroBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-amber-500/25', iconBg: 'bg-amber-50 text-amber-600', badgeBorder: 'border-amber-500/30 text-amber-400', badgeIcon: 'text-amber-400' },
+          emerald: { logoBg: 'bg-emerald-600', textAccent: 'text-emerald-600', heroBtn: 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-emerald-500/25', iconBg: 'bg-emerald-50 text-emerald-600', badgeBorder: 'border-emerald-500/30 text-emerald-400', badgeIcon: 'text-emerald-400' },
+          blue: { logoBg: 'bg-blue-600', textAccent: 'text-blue-600', heroBtn: 'bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-blue-500/25', iconBg: 'bg-blue-50 text-blue-600', badgeBorder: 'border-blue-500/30 text-blue-400', badgeIcon: 'text-blue-400' },
+          rose: { logoBg: 'bg-rose-600', textAccent: 'text-rose-600', heroBtn: 'bg-rose-600 hover:bg-rose-500 text-white font-bold shadow-rose-500/25', iconBg: 'bg-rose-50 text-rose-600', badgeBorder: 'border-rose-500/30 text-rose-400', badgeIcon: 'text-rose-400' },
+          purple: { logoBg: 'bg-purple-600', textAccent: 'text-purple-600', heroBtn: 'bg-purple-600 hover:bg-purple-500 text-white font-bold shadow-purple-500/25', iconBg: 'bg-purple-50 text-purple-600', badgeBorder: 'border-purple-500/30 text-purple-400', badgeIcon: 'text-purple-400' }
+        };
+
+        const tCfg = THEME_COLOR_MAP[data.theme] || THEME_COLOR_MAP.blue;
+
         // Update Theme & Hero Background
         if (data.theme) {
           document.getElementById('siteBody').className = `bg-slate-50 text-slate-900 min-h-screen flex flex-col theme-${data.theme}`;
           const heroBgEl = document.getElementById('heroBgImage');
           if (heroBgEl && THEME_HERO_BG[data.theme]) {
             heroBgEl.style.backgroundImage = `url('${THEME_HERO_BG[data.theme]}')`;
+          }
+
+          const heroEnquireBtn = document.getElementById('heroEnquireBtn');
+          if (heroEnquireBtn) {
+            heroEnquireBtn.className = `p-3.5 ${tCfg.heroBtn} rounded-2xl shadow-xl flex flex-col items-center gap-1.5 transition hover:scale-102`;
+          }
+
+          const bookSubmitBtn = document.getElementById('bookSubmitBtn');
+          if (bookSubmitBtn) {
+            bookSubmitBtn.className = `w-full py-3.5 ${tCfg.heroBtn} rounded-xl text-sm transition shadow-lg cursor-pointer`;
           }
         }
 
@@ -331,13 +351,13 @@
           return `
             <div class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:shadow-md transition">
               <div>
-                <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold mb-3">
+                <div class="w-10 h-10 rounded-2xl ${tCfg.iconBg} flex items-center justify-center font-bold mb-3">
                   <i class="ri-check-line text-lg"></i>
                 </div>
                 <h4 class="font-extrabold text-slate-900 text-base">${s.name}</h4>
                 ${formattedDesc}
               </div>
-              ${s.price ? `<div class="text-base font-black text-blue-600 border-t border-slate-100 pt-3">${s.price}</div>` : ''}
+              ${s.price ? `<div class="text-base font-black ${tCfg.textAccent} border-t border-slate-100 pt-3">${s.price}</div>` : ''}
             </div>
           `;
         }).join('');
