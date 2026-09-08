@@ -103,7 +103,7 @@ export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
         address: address || undefined,
         hours: hours || undefined,
         theme: theme || undefined,
-        logo: logo || undefined,
+        logo: logo !== undefined ? logo : undefined,
         slug: finalSlug || undefined,
         servicesJson: services ? JSON.stringify(services) : undefined,
         galleryJson: gallery ? JSON.stringify(gallery) : undefined
