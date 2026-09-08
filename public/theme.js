@@ -74,22 +74,40 @@
       background-color: #ffffff !important;
       border-color: #10b981 !important;
     }
-    /* Fix Buttons & Dark Badges in Light Mode */
+
+    /* ALL FILTER TABS & BUTTONS IN LIGHT MODE (Fixes Black Buttons) */
+    html.light button.bg-slate-800,
+    html.light button.bg-slate-900,
     html.light button.bg-slate-950,
-    html.light div.bg-slate-950 button {
+    html.light button[id^="tabFilter"]:not(.bg-blue-600) {
       background-color: #f1f5f9 !important;
-      border-color: #cbd5e1 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #334155 !important;
+    }
+    html.light button.bg-slate-800:hover,
+    html.light button.bg-slate-900:hover,
+    html.light button.bg-slate-950:hover,
+    html.light button[id^="tabFilter"]:not(.bg-blue-600):hover {
+      background-color: #e2e8f0 !important;
       color: #0f172a !important;
     }
-    html.light button.bg-slate-950:hover {
-      background-color: #e2e8f0 !important;
+
+    /* Active blue tab in light mode */
+    html.light button.bg-blue-600,
+    html.light button[id^="tabFilter"].bg-blue-600 {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+      border: 1px solid #1d4ed8 !important;
     }
+
+    /* Fix Badges & Counters */
     html.light span.bg-slate-900,
     html.light span.bg-slate-800 {
       background-color: #f1f5f9 !important;
       color: #475569 !important;
-      border-color: #e2e8f0 !important;
+      border-color: #cbd5e1 !important;
     }
+
     /* Fix Leads / Appointments Cards in Light Mode */
     html.light div#leadsContainer div.bg-slate-950 {
       background-color: #ffffff !important;
@@ -120,9 +138,16 @@
       border-color: #cbd5e1 !important;
       color: #0f172a !important;
     }
+
+    /* Broadcast Campaign Cards */
+    html.light div#campaignList div {
+      background-color: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+    }
     html.light div#campaignList span.text-white {
       color: #0f172a !important;
     }
+
     /* Primary Emerald Action Button */
     html.light button#sendBtn,
     html.light button.bg-emerald-400 {
@@ -133,6 +158,7 @@
     html.light button.bg-emerald-400:hover {
       background-color: #059669 !important;
     }
+
     /* Typography Overrides */
     html.light .text-white {
       color: #0f172a !important;

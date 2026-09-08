@@ -133,10 +133,10 @@
 
         <!-- Filter Tabs: All, New, Attended/Replied, Completed -->
         <div class="flex gap-1.5 text-xs font-semibold pb-1 overflow-x-auto">
-          <button type="button" onclick="setLeadFilter('ALL')" id="tabFilterALL" class="px-3 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold transition">All</button>
-          <button type="button" onclick="setLeadFilter('NEW')" id="tabFilterNEW" class="px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[11px] transition">New (<span id="countNew">0</span>)</button>
-          <button type="button" onclick="setLeadFilter('REPLIED')" id="tabFilterREPLIED" class="px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[11px] transition">Replied (<span id="countReplied">0</span>)</button>
-          <button type="button" onclick="setLeadFilter('COMPLETED')" id="tabFilterCOMPLETED" class="px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[11px] transition">Completed (<span id="countCompleted">0</span>)</button>
+          <button type="button" onclick="setLeadFilter('ALL')" id="tabFilterALL" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition">All</button>
+          <button type="button" onclick="setLeadFilter('NEW')" id="tabFilterNEW" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white text-xs transition">New (<span id="countNew">0</span>)</button>
+          <button type="button" onclick="setLeadFilter('REPLIED')" id="tabFilterREPLIED" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white text-xs transition">Replied (<span id="countReplied">0</span>)</button>
+          <button type="button" onclick="setLeadFilter('COMPLETED')" id="tabFilterCOMPLETED" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white text-xs transition">Completed (<span id="countCompleted">0</span>)</button>
         </div>
 
         <div id="leadsContainer" class="space-y-2.5 max-h-[380px] overflow-y-auto">
@@ -261,9 +261,9 @@
         const btn = document.getElementById(`tabFilter${f}`);
         if (btn) {
           if (f === filter) {
-            btn.className = 'px-3 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold transition';
+            btn.className = 'px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold transition';
           } else {
-            btn.className = 'px-3 py-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[11px] transition';
+            btn.className = 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:text-white text-xs transition';
           }
         }
       });
