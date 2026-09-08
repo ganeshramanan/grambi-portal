@@ -224,6 +224,52 @@ export const updateLeadStatus = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Delete a single lead / enquiry
+export const deleteLead = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { leadId } = req.params;
+
+  try {
+    const website = await prisma.website.findUnique({ where: { userId } });
+    if (!website) return res.status(404).json({ error: 'Website not found' });
+
+    const lead = await prisma.serviceRequest.findFirst({
+      where: { id: leadId, websiteId: website.id }
+    });
+
+    if (!lead) return res.status(404).json({ error: 'Lead not found' });
+
+    await prisma.serviceRequest.delete({
+      where: { id: leadId }
+    });
+
+    return res.json({ success: true, message: 'Enquiry deleted successfully' });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to delete enquiry: ' + err.message });
+  }
+};
+
+// Clear all attended / completed enquiries
+export const clearCompletedLeads = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+
+  try {
+    const website = await prisma.website.findUnique({ where: { userId } });
+    if (!website) return res.status(404).json({ error: 'Website not found' });
+
+    const result = await prisma.serviceRequest.deleteMany({
+      where: {
+        websiteId: website.id,
+        status: { in: ['COMPLETED', 'REPLIED'] }
+      }
+    });
+
+    return res.json({ success: true, count: result.count, message: `Cleared ${result.count} attended enquiries` });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to clear enquiries: ' + err.message });
+  }
+};
+
 // Record Public Analytics Event (Page view, Call Click, WhatsApp Click, Map Directions)
 export const recordAnalyticsEvent = async (req: Request, res: Response) => {
   const { slug } = req.params;

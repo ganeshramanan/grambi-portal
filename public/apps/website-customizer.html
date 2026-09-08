@@ -246,13 +246,18 @@
         <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
           <div class="flex items-center gap-2">
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="ri-user-follow-line text-emerald-400"></i> Customer Appointments & Leads
+              <i class="ri-user-follow-line text-emerald-400"></i> Customer Enquiries & Leads
             </h3>
             <span id="leadsCountBadge" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-mono font-bold">0 Total</span>
           </div>
-          <button onclick="loadWebsiteData()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
-            <i class="ri-refresh-line"></i> Refresh
-          </button>
+          <div class="flex items-center gap-2">
+            <button onclick="clearAttendedLeads()" id="btnClearAttended" title="Clear all replied and completed enquiries" class="text-xs px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 flex items-center gap-1 transition">
+              <i class="ri-delete-bin-line"></i> Clear Attended
+            </button>
+            <button onclick="loadWebsiteData()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
+              <i class="ri-refresh-line"></i> Refresh
+            </button>
+          </div>
         </div>
 
         <!-- Filter Tabs: All, New, Attended/Replied, Completed -->
@@ -414,6 +419,55 @@
       }
     }
 
+    async function deleteSingleLead(leadId) {
+      if (!confirm('Are you sure you want to delete this enquiry?')) return;
+      const token = localStorage.getItem('grambi_token');
+      try {
+        const res = await fetch(`/api/website/leads/${leadId}`, {
+          method: 'DELETE',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+
+        if (res.ok) {
+          allServiceRequests = allServiceRequests.filter(r => r.id !== leadId);
+          renderLeads();
+        } else {
+          const err = await res.json();
+          alert('Failed to delete enquiry: ' + (err.error || 'Server error'));
+        }
+      } catch (err) {
+        console.error('Failed to delete lead:', err);
+      }
+    }
+
+    async function clearAttendedLeads() {
+      const attendedCount = allServiceRequests.filter(r => r.status === 'REPLIED' || r.status === 'COMPLETED').length;
+      if (attendedCount === 0) {
+        alert('No attended (replied/completed) enquiries to clear.');
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to delete all ${attendedCount} attended enquiries? This cannot be undone.`)) return;
+
+      const token = localStorage.getItem('grambi_token');
+      try {
+        const res = await fetch('/api/website/leads/completed', {
+          method: 'DELETE',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+
+        if (res.ok) {
+          allServiceRequests = allServiceRequests.filter(r => r.status !== 'REPLIED' && r.status !== 'COMPLETED');
+          renderLeads();
+        } else {
+          const err = await res.json();
+          alert('Failed to clear enquiries: ' + (err.error || 'Server error'));
+        }
+      } catch (err) {
+        console.error('Failed to clear attended leads:', err);
+      }
+    }
+
     function renderLeads() {
       const leadsBox = document.getElementById('leadsContainer');
       const paginationBar = document.getElementById('leadsPaginationBar');
@@ -486,6 +540,11 @@
                   <option value="REPLIED" ${status === 'REPLIED' ? 'selected' : ''}>Replied</option>
                   <option value="COMPLETED" ${status === 'COMPLETED' ? 'selected' : ''}>Completed</option>
                 </select>
+
+                <!-- Delete Lead Button -->
+                <button type="button" onclick="deleteSingleLead('${r.id}')" title="Delete this enquiry" class="px-2 py-1 bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-800 hover:border-rose-500/30 rounded-lg transition text-xs">
+                  <i class="ri-delete-bin-line"></i>
+                </button>
               </div>
             </div>
 
