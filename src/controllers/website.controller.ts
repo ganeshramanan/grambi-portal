@@ -1,8 +1,17 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import { INDUSTRY_TEMPLATES } from '../config/templates.preset';
 
 const prisma = new PrismaClient();
+
+// List All Preset & Configured Website Templates
+export const getWebsiteTemplates = async (req: Request, res: Response) => {
+  return res.json({
+    success: true,
+    templates: INDUSTRY_TEMPLATES
+  });
+};
 
 const createSlug = (val: string) => {
   return String(val || '')

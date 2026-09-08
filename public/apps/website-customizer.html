@@ -110,6 +110,24 @@
         </div>
       </div>
 
+      <!-- Industry Template Selector (1-Click Switcher) -->
+      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <i class="ri-magic-line text-amber-400"></i> Industry Website Templates
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Choose a pre-styled template tailored to your business vertical</p>
+          </div>
+          <span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-mono font-bold">1-Click Apply</span>
+        </div>
+
+        <div id="templatesGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <!-- Injected via JavaScript from /api/website/templates -->
+          <div class="text-xs text-slate-500 py-3 text-center col-span-3">Loading templates...</div>
+        </div>
+      </div>
+
       <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-5">
         <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
           <h2 class="text-base font-bold text-white flex items-center gap-2">
@@ -776,6 +794,73 @@
       `).join('');
     }
 
+    let availableTemplates = [];
+    let selectedTemplateId = null;
+
+    async function loadIndustryTemplates() {
+      const grid = document.getElementById('templatesGrid');
+      try {
+        const res = await fetch('/api/website/templates');
+        if (!res.ok) throw new Error('Failed to load templates');
+        const data = await res.json();
+        availableTemplates = data.templates || [];
+
+        grid.innerHTML = availableTemplates.map(tpl => `
+          <div onclick="applyTemplate('${tpl.id}')" class="group relative rounded-xl border border-slate-800 bg-slate-950 p-2.5 cursor-pointer hover:border-amber-500/50 hover:bg-slate-900 transition flex flex-col justify-between">
+            <div class="aspect-video w-full rounded-lg overflow-hidden relative mb-2">
+              <img src="${tpl.previewThumb}" alt="${tpl.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent"></div>
+              <span class="absolute bottom-1 left-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-${tpl.theme === 'amber' ? 'amber' : tpl.theme === 'emerald' ? 'emerald' : tpl.theme === 'rose' ? 'rose' : tpl.theme === 'purple' ? 'purple' : 'blue'}-500 text-slate-950 uppercase font-mono">
+                ${tpl.category}
+              </span>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white group-hover:text-amber-400 transition truncate">${tpl.name}</h4>
+              <p class="text-[10px] text-slate-400 line-clamp-1 mt-0.5">${tpl.tagline}</p>
+            </div>
+            <button type="button" class="mt-2 w-full py-1 bg-slate-900 group-hover:bg-amber-500 group-hover:text-slate-950 text-slate-300 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
+              <i class="ri-check-line"></i> Apply Style
+            </button>
+          </div>
+        `).join('');
+      } catch (err) {
+        grid.innerHTML = '<div class="text-xs text-rose-400 py-3 text-center col-span-3">Failed to load industry templates.</div>';
+      }
+    }
+
+    function applyTemplate(tplId) {
+      const tpl = availableTemplates.find(t => t.id === tplId);
+      if (!tpl) return;
+
+      const confirmMsg = `Apply "${tpl.name}" template?\n\nThis will update your Tagline, Theme (${tpl.theme.toUpperCase()}), About description, and prefill sample featured services for ${tpl.category}. You can still edit and customize everything.`;
+      if (!confirm(confirmMsg)) return;
+
+      selectedTemplateId = tpl.id;
+      document.getElementById('siteTagline').value = tpl.tagline;
+      document.getElementById('siteAbout').value = tpl.about;
+      document.getElementById('siteTheme').value = tpl.theme;
+
+      // Update services
+      dynamicServices = tpl.defaultServices.map(s => ({
+        id: 's_' + Math.random().toString(36).substr(2, 4),
+        name: s.name,
+        price: s.price,
+        description: s.description
+      }));
+      renderServicesEditor();
+
+      // Update gallery if currently empty
+      if (!dynamicGallery || dynamicGallery.length === 0) {
+        dynamicGallery = [...(tpl.defaultGallery || [])];
+        renderGalleryThumbnails();
+      }
+
+      updateLivePreview();
+
+      // Smooth scroll to editor to see applied changes
+      document.getElementById('siteBusinessName').focus();
+    }
+
     async function loadWebsiteData() {
       const token = localStorage.getItem('grambi_token');
       try {
@@ -1002,6 +1087,7 @@
       }
     }
 
+    loadIndustryTemplates();
     loadWebsiteData();
   </script>
 </body>

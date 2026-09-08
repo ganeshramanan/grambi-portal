@@ -50,17 +50,21 @@
 
   <main class="flex-grow">
     <!-- Hero Banner with vCard Action Bar -->
-    <section class="bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white py-14 sm:py-20 px-6 text-center relative overflow-hidden">
+    <section id="heroSection" class="relative text-white py-14 sm:py-20 px-6 text-center overflow-hidden bg-slate-950">
+      <!-- Background Image with Readability Overlay -->
+      <div id="heroBgImage" class="absolute inset-0 bg-cover bg-center transition-all duration-700 scale-105" style="background-image: url('https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?q=80&w=1600&auto=format&fit=crop');"></div>
+      <div id="heroBgOverlay" class="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/80 to-slate-950/95 backdrop-blur-[2px]"></div>
+
       <div class="max-w-3xl mx-auto space-y-6 relative z-10">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-semibold uppercase tracking-wider">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 text-white/90 border border-white/20 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
           <i class="ri-shield-check-line"></i> <span id="siteBadgeText">Verified Professional Business</span>
         </div>
         
-        <h2 id="heroTitle" class="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+        <h2 id="heroTitle" class="text-3xl sm:text-5xl font-black tracking-tight leading-tight drop-shadow-sm">
           Welcome to Our Business
         </h2>
         
-        <p id="heroAbout" class="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+        <p id="heroAbout" class="text-sm sm:text-base text-slate-200 max-w-2xl mx-auto leading-relaxed drop-shadow-sm">
           Dedicated quality services, reliable support, and customer satisfaction.
         </p>
 
@@ -255,9 +259,22 @@
           badgeSpan.innerText = data.tagline ? `Verified • ${data.tagline}` : 'Verified Business';
         }
 
-        // Update Theme
+        // Theme Map for Hero Backdrops and Accents
+        const THEME_HERO_BG = {
+          amber: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?q=80&w=1600&auto=format&fit=crop',
+          emerald: 'https://images.unsplash.com/photo-1586015555751-63bb77f4322a?q=80&w=1600&auto=format&fit=crop',
+          blue: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1600&auto=format&fit=crop',
+          rose: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1600&auto=format&fit=crop',
+          purple: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop'
+        };
+
+        // Update Theme & Hero Background
         if (data.theme) {
           document.getElementById('siteBody').className = `bg-slate-50 text-slate-900 min-h-screen flex flex-col theme-${data.theme}`;
+          const heroBgEl = document.getElementById('heroBgImage');
+          if (heroBgEl && THEME_HERO_BG[data.theme]) {
+            heroBgEl.style.backgroundImage = `url('${THEME_HERO_BG[data.theme]}')`;
+          }
         }
 
         // Action URLs
