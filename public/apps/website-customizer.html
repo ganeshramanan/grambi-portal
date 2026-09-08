@@ -10,6 +10,13 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    /* Dynamic Preview Theme Palettes */
+    .prev-theme-blue { --h-grad: from-slate-950 via-blue-950 to-slate-900; --act-btn: #2563eb; --txt-accent: #2563eb; }
+    .prev-theme-emerald { --h-grad: from-slate-950 via-emerald-950 to-slate-900; --act-btn: #059669; --txt-accent: #059669; }
+    .prev-theme-purple { --h-grad: from-slate-950 via-purple-950 to-slate-900; --act-btn: #7c3aed; --txt-accent: #7c3aed; }
+    .prev-theme-amber { --h-grad: from-slate-950 via-amber-950 to-slate-900; --act-btn: #d97706; --txt-accent: #d97706; }
+    .prev-theme-rose { --h-grad: from-slate-950 via-rose-950 to-slate-900; --act-btn: #e11d48; --txt-accent: #e11d48; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
@@ -427,6 +434,39 @@
       }
     }
 
+    const THEME_MAP = {
+      blue: {
+        gradient: 'from-slate-950 via-blue-950 to-slate-900',
+        heroBtn: 'bg-blue-600',
+        textAccent: 'text-blue-600',
+        priceColor: 'text-blue-600'
+      },
+      emerald: {
+        gradient: 'from-slate-950 via-emerald-950 to-slate-900',
+        heroBtn: 'bg-emerald-600',
+        textAccent: 'text-emerald-600',
+        priceColor: 'text-emerald-600'
+      },
+      purple: {
+        gradient: 'from-slate-950 via-purple-950 to-slate-900',
+        heroBtn: 'bg-purple-600',
+        textAccent: 'text-purple-600',
+        priceColor: 'text-purple-600'
+      },
+      amber: {
+        gradient: 'from-slate-950 via-amber-950 to-slate-900',
+        heroBtn: 'bg-amber-600',
+        textAccent: 'text-amber-600',
+        priceColor: 'text-amber-600'
+      },
+      rose: {
+        gradient: 'from-slate-950 via-rose-950 to-slate-900',
+        heroBtn: 'bg-rose-600',
+        textAccent: 'text-rose-600',
+        priceColor: 'text-rose-600'
+      }
+    };
+
     function updateLivePreview() {
       const name = document.getElementById('siteBusinessName').value || 'My Workshop';
       const tagline = document.getElementById('siteTagline').value || 'Automotive Service Specialist';
@@ -435,12 +475,31 @@
       const whatsapp = document.getElementById('siteWhatsapp').value || '+91 9876543210';
       const address = document.getElementById('siteAddress').value || 'Main Highway Road';
       const hours = document.getElementById('siteHours').value || 'Mon - Sat: 9:00 AM - 7:00 PM';
+      const themeKey = document.getElementById('siteTheme').value || 'blue';
+      const themeCfg = THEME_MAP[themeKey] || THEME_MAP.blue;
 
       document.getElementById('prevTitle').innerText = name;
       document.getElementById('prevTagline').innerText = tagline;
       document.getElementById('prevAbout').innerText = about;
       document.getElementById('prevAddress').innerText = address;
       document.getElementById('prevHours').innerText = hours;
+
+      // Real-time Theme Color Update in Live Preview
+      const heroBox = document.getElementById('prevHeroBox');
+      if (heroBox) {
+        heroBox.className = `bg-gradient-to-br ${themeCfg.gradient} p-6 text-white text-center space-y-3 transition-all duration-300`;
+      }
+
+      // Update Section Labels and Buttons in Preview
+      const sectionLabels = document.querySelectorAll('#prevHeroBox ~ div span[class*="uppercase"]');
+      sectionLabels.forEach(lbl => {
+        lbl.className = `text-[10px] font-bold uppercase ${themeCfg.textAccent} tracking-wider`;
+      });
+
+      const bookActionBtn = document.querySelector('#prevBookCard div');
+      if (bookActionBtn) {
+        bookActionBtn.className = `py-2 px-3 ${themeCfg.heroBtn} text-white font-bold rounded-xl text-xs transition`;
+      }
 
       const cleanPhone = phone.replace(/\D/g, '');
       const cleanWa = whatsapp.replace(/\D/g, '');
