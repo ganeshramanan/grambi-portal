@@ -930,6 +930,17 @@
           document.getElementById('removeLogoBtn').classList.remove('hidden');
         }
 
+        // Auto-detect & set Category dropdown filter to match business
+        const industryFilter = document.getElementById('industryCategoryFilter');
+        if (industryFilter) {
+          const bName = (currentWebsite.businessName || '').toLowerCase();
+          const tLine = (currentWebsite.tagline || '').toLowerCase();
+          if (bName.includes('motor') || bName.includes('auto') || bName.includes('garage') || bName.includes('bike') || bName.includes('car') || tLine.includes('wheeler') || tLine.includes('auto')) {
+            industryFilter.value = 'Automotive';
+            filterTemplatesByCategory('Automotive');
+          }
+        }
+
         // Populate Photo Gallery URLs & Visual Thumbnails
         dynamicGallery = Array.isArray(currentWebsite.gallery) ? currentWebsite.gallery : [];
         renderGalleryThumbnails();
