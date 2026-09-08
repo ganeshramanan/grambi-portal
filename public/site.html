@@ -275,7 +275,7 @@
               <h4 class="font-extrabold text-slate-900 text-sm">${s.name}</h4>
               <p class="text-xs text-slate-500 mt-1 leading-relaxed">${s.description || 'Certified technicians and multi-point quality inspection.'}</p>
             </div>
-            <div class="text-base font-black text-blue-600 border-t border-slate-100 pt-3">${s.price || 'Get Quote'}</div>
+            ${s.price ? `<div class="text-base font-black text-blue-600 border-t border-slate-100 pt-3">${s.price}</div>` : ''}
           </div>
         `).join('');
 

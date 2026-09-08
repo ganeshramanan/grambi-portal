@@ -195,14 +195,31 @@
             </div>
           </div>
 
-          <!-- Photo Gallery URLs Manager -->
-          <div class="pt-3 border-t border-slate-800/80 space-y-2">
+          <!-- Photo Gallery Manager (Local File Upload + URLs) -->
+          <div class="pt-3 border-t border-slate-800/80 space-y-3">
             <div class="flex items-center justify-between">
-              <label class="block text-xs font-bold text-slate-200">Workshop Photo Gallery (Image URLs)</label>
-              <span class="text-[10px] text-slate-500 font-mono">1 URL per line</span>
+              <div>
+                <label class="block text-xs font-bold text-slate-200">Workshop Photo Gallery</label>
+                <p class="text-[11px] text-slate-500">Upload photos from device or add image URLs.</p>
+              </div>
+              <label class="cursor-pointer px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow transition">
+                <i class="ri-upload-cloud-2-line"></i> Upload Photos
+                <input type="file" id="localGalleryUpload" accept="image/*" multiple onchange="handleLocalGalleryUpload(event)" class="hidden" />
+              </label>
             </div>
-            <textarea id="siteGalleryUrls" rows="3" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-blue-500" placeholder="https://images.unsplash.com/photo-1613214149922...&#10;https://images.unsplash.com/photo-1486006920..."></textarea>
-            <p class="text-[11px] text-slate-500">Paste links to your workshop/facility photos. Customers can click them to view full-size in an interactive lightbox.</p>
+
+            <!-- Visual Grid of Gallery Thumbnails -->
+            <div id="galleryThumbnailsContainer" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Optional Manual URL Input -->
+            <div class="pt-1">
+              <details class="text-[11px] text-slate-400 cursor-pointer">
+                <summary class="hover:text-slate-200">Or paste image URLs manually</summary>
+                <textarea id="siteGalleryUrls" rows="2" oninput="syncGalleryFromTextarea()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs font-mono text-white focus:outline-none focus:border-blue-500 mt-2" placeholder="https://images.unsplash.com/photo...&#10;https://images.unsplash.com/photo..."></textarea>
+              </details>
+            </div>
           </div>
 
           <div id="saveMsg" class="text-xs hidden"></div>
@@ -529,7 +546,64 @@
       }
     }
 
-    let dynamicServices = [];
+    let dynamicGallery = [];
+
+    function handleLocalGalleryUpload(e) {
+      const files = Array.from(e.target.files || []);
+      if (files.length === 0) return;
+
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          dynamicGallery.push(event.target.result);
+          renderGalleryThumbnails();
+          updateLivePreview();
+        };
+        reader.readAsDataURL(file);
+      });
+      e.target.value = '';
+    }
+
+    function removeGalleryPhoto(idx) {
+      dynamicGallery.splice(idx, 1);
+      renderGalleryThumbnails();
+      updateLivePreview();
+    }
+
+    function renderGalleryThumbnails() {
+      const container = document.getElementById('galleryThumbnailsContainer');
+      const textarea = document.getElementById('siteGalleryUrls');
+      if (textarea) {
+        textarea.value = dynamicGallery.filter(u => u.startsWith('http')).join('\n');
+      }
+
+      if (!container) return;
+
+      if (dynamicGallery.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-xs text-slate-500 py-3 text-center border border-dashed border-slate-800 rounded-xl">No photos added yet. Click "Upload Photos" above.</div>';
+        return;
+      }
+
+      container.innerHTML = dynamicGallery.map((imgUrl, idx) => `
+        <div class="relative aspect-square rounded-xl overflow-hidden border border-slate-800 group shadow-sm bg-slate-900">
+          <img src="${imgUrl}" alt="Photo ${idx + 1}" class="w-full h-full object-cover" />
+          <button type="button" onclick="removeGalleryPhoto(${idx})" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-rose-600/90 text-white flex items-center justify-center text-xs opacity-80 hover:opacity-100 transition shadow" title="Delete Photo">
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function syncGalleryFromTextarea() {
+      const text = document.getElementById('siteGalleryUrls').value.trim();
+      const urls = text.split(/[\r\n]+/).map(u => u.trim()).filter(u => u.length > 0);
+      
+      // Keep data URLs (locally uploaded) + merge text URLs
+      const localDataUrls = dynamicGallery.filter(u => u.startsWith('data:'));
+      dynamicGallery = [...localDataUrls, ...urls];
+      renderGalleryThumbnails();
+      updateLivePreview();
+    }
 
     function addNewServiceRow(serviceObj = null) {
       const s = serviceObj || {
@@ -604,9 +678,9 @@
         document.getElementById('siteSlug').value = currentWebsite.slug || '';
         if (currentWebsite.theme) document.getElementById('siteTheme').value = currentWebsite.theme;
 
-        // Populate Photo Gallery URLs
-        const galleryUrls = currentWebsite.gallery || [];
-        document.getElementById('siteGalleryUrls').value = galleryUrls.join('\n');
+        // Populate Photo Gallery URLs & Visual Thumbnails
+        dynamicGallery = Array.isArray(currentWebsite.gallery) ? currentWebsite.gallery : [];
+        renderGalleryThumbnails();
 
         // Populate Dynamic Services Editor
         dynamicServices = Array.isArray(currentWebsite.services) && currentWebsite.services.length > 0 
@@ -707,7 +781,7 @@
                 <span class="font-bold text-slate-800">${s.name || 'Untitled Service'}</span>
                 ${s.description ? `<p class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[180px]">${s.description}</p>` : ''}
               </div>
-              <span class="font-extrabold ${themeCfg.priceColor} text-xs ml-2">${s.price || 'Get Quote'}</span>
+              ${s.price ? `<span class="font-extrabold ${themeCfg.priceColor} text-xs ml-2">${s.price}</span>` : ''}
             </div>
           `).join('');
         } else {
@@ -731,10 +805,6 @@
       saveBtn.disabled = true;
       saveBtn.innerText = 'Publishing Changes...';
 
-      // Parse Gallery URLs
-      const rawGalleryText = document.getElementById('siteGalleryUrls').value.trim();
-      const gallery = rawGalleryText.split(/[\r\n]+/).map(u => u.trim()).filter(u => u.length > 0);
-
       const payload = {
         businessName: document.getElementById('siteBusinessName').value.trim(),
         tagline: document.getElementById('siteTagline').value.trim(),
@@ -746,7 +816,7 @@
         theme: document.getElementById('siteTheme').value,
         slug: document.getElementById('siteSlug').value.trim(),
         services: dynamicServices,
-        gallery: gallery
+        gallery: dynamicGallery
       };
 
       try {
