@@ -362,32 +362,29 @@
           }
         }
 
-        // Action URLs
+        // Action URLs (Safe lookup to prevent crashing on missing elements)
         const cleanPhone = (data.phone || '').replace(/\D/g, '');
         const cleanWa = (data.whatsapp || '').replace(/\D/g, '');
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((data.businessName || '') + ' ' + (data.address || ''))}`;
 
-        document.getElementById('headerCallBtn').href = `tel:${cleanPhone}`;
-        document.getElementById('heroCallBtn').href = `tel:${cleanPhone}`;
-        document.getElementById('mobileCall').href = `tel:${cleanPhone}`;
+        const setSafeHref = (id, href, onClickHandler) => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.href = href;
+            if (onClickHandler) el.onclick = onClickHandler;
+          }
+        };
 
-        document.getElementById('headerCallBtn').onclick = () => trackEvent('CALL_CLICK');
-        document.getElementById('heroCallBtn').onclick = () => trackEvent('CALL_CLICK');
-        document.getElementById('mobileCall').onclick = () => trackEvent('CALL_CLICK');
+        setSafeHref('headerCallBtn', `tel:${cleanPhone}`, () => trackEvent('CALL_CLICK'));
+        setSafeHref('heroCallBtn', `tel:${cleanPhone}`, () => trackEvent('CALL_CLICK'));
+        setSafeHref('mobileCall', `tel:${cleanPhone}`, () => trackEvent('CALL_CLICK'));
 
-        document.getElementById('headerWaBtn').href = `https://wa.me/${cleanWa}`;
-        document.getElementById('heroWaBtn').href = `https://wa.me/${cleanWa}`;
-        document.getElementById('mobileWa').href = `https://wa.me/${cleanWa}`;
+        setSafeHref('headerWaBtn', `https://wa.me/${cleanWa}`, () => trackEvent('WHATSAPP_CLICK'));
+        setSafeHref('heroWaBtn', `https://wa.me/${cleanWa}`, () => trackEvent('WHATSAPP_CLICK'));
+        setSafeHref('mobileWa', `https://wa.me/${cleanWa}`, () => trackEvent('WHATSAPP_CLICK'));
 
-        document.getElementById('headerWaBtn').onclick = () => trackEvent('WHATSAPP_CLICK');
-        document.getElementById('heroWaBtn').onclick = () => trackEvent('WHATSAPP_CLICK');
-        document.getElementById('mobileWa').onclick = () => trackEvent('WHATSAPP_CLICK');
-
-        document.getElementById('heroMapBtn').href = mapsUrl;
-        document.getElementById('getDirectionsBtn').href = mapsUrl;
-
-        document.getElementById('heroMapBtn').onclick = () => trackEvent('MAP_CLICK');
-        document.getElementById('getDirectionsBtn').onclick = () => trackEvent('MAP_CLICK');
+        setSafeHref('heroMapBtn', mapsUrl, () => trackEvent('MAP_CLICK'));
+        setSafeHref('getDirectionsBtn', mapsUrl, () => trackEvent('MAP_CLICK'));
 
         // Record Initial Page View Analytics
         trackEvent('PAGE_VIEW');
