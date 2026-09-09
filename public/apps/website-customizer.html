@@ -904,7 +904,7 @@
 
         document.getElementById('siteBusinessName').value = currentWebsite.businessName || '';
         document.getElementById('siteTagline').value = currentWebsite.tagline || '';
-        document.getElementById('siteHeadline').value = currentWebsite.tagline || '';
+        document.getElementById('siteHeadline').value = currentWebsite.headline || currentWebsite.tagline || '';
         document.getElementById('siteAbout').value = currentWebsite.about || '';
         document.getElementById('sitePhone').value = currentWebsite.phone || '';
         document.getElementById('siteWhatsapp').value = currentWebsite.whatsapp || '';
@@ -1087,7 +1087,8 @@
 
       const payload = {
         businessName: document.getElementById('siteBusinessName').value.trim(),
-        tagline: headline || tagline,
+        tagline: tagline,
+        headline: headline,
         about: document.getElementById('siteAbout').value.trim(),
         phone: document.getElementById('sitePhone').value.trim(),
         whatsapp: document.getElementById('siteWhatsapp').value.trim(),

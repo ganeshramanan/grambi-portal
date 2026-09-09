@@ -29,7 +29,7 @@
         </div>
         <div>
           <h1 id="siteName" class="font-extrabold text-base sm:text-lg text-slate-900 leading-tight">Business Name</h1>
-          <p id="siteTag" class="text-[11px] text-slate-500 font-medium truncate max-w-[160px] sm:max-w-xs"></p>
+          <p id="siteTag" class="text-xs text-slate-500 font-semibold block mt-0.5"></p>
         </div>
       </div>
 
@@ -235,7 +235,7 @@
         document.title = data.businessName;
         document.getElementById('siteName').innerText = data.businessName;
         document.getElementById('siteTag').innerText = data.tagline || '';
-        document.getElementById('heroTitle').innerText = data.tagline || data.businessName;
+        document.getElementById('heroTitle').innerText = data.headline || data.tagline || data.businessName;
         document.getElementById('heroAbout').innerText = data.about || 'Dedicated to providing reliable services and customer satisfaction.';
         document.getElementById('siteAddress').innerText = data.address || 'Location provided upon appointment confirmation.';
         document.getElementById('siteHours').innerText = data.hours || 'Mon - Sat: 9:00 AM - 7:00 PM';

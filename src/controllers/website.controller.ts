@@ -143,7 +143,7 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
 // Update Website Customizer Configuration
 export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
-  const { businessName, tagline, about, phone, whatsapp, address, hours, theme, logo, services, gallery, slug } = req.body;
+  const { businessName, tagline, headline, about, phone, whatsapp, address, hours, theme, logo, services, gallery, slug } = req.body;
 
   try {
     let finalSlug: string | undefined = undefined;
@@ -162,7 +162,8 @@ export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
       where: { userId },
       data: {
         businessName: businessName || undefined,
-        tagline: tagline || undefined,
+        tagline: tagline !== undefined ? tagline : undefined,
+        headline: headline !== undefined ? headline : undefined,
         about: about || undefined,
         phone: phone || undefined,
         whatsapp: whatsapp || undefined,
@@ -213,6 +214,7 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
       slug: website.slug,
       businessName: website.businessName,
       tagline: website.tagline,
+      headline: website.headline,
       about: website.about,
       phone: website.phone,
       whatsapp: website.whatsapp,

@@ -34,6 +34,7 @@ model Website {
   slug            String            @unique
   businessName    String
   tagline         String?
+  headline        String?
   about           String?
   phone           String?
   whatsapp        String?
