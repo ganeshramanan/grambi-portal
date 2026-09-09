@@ -167,8 +167,13 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Tagline / Headline</label>
-            <input type="text" id="siteTagline" oninput="updateLivePreview()" placeholder="e.g. Professional Healthcare & Wellness Specialist" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Business Tagline (Shown in Header & vCard)</label>
+            <input type="text" id="siteTagline" oninput="updateLivePreview()" placeholder="e.g. Multi-Brand Two & Four Wheeler Specialist" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Hero Main Headline (Large Banner Title)</label>
+            <input type="text" id="siteHeadline" oninput="updateLivePreview()" placeholder="e.g. Premium Auto Care & Repairs You Can Trust" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-amber-500" />
           </div>
 
           <div>
@@ -867,6 +872,7 @@
 
       selectedTemplateId = tpl.id;
       document.getElementById('siteTagline').value = tpl.tagline;
+      document.getElementById('siteHeadline').value = tpl.tagline;
       document.getElementById('siteAbout').value = tpl.about;
       document.getElementById('siteTheme').value = tpl.theme;
 
@@ -898,6 +904,7 @@
 
         document.getElementById('siteBusinessName').value = currentWebsite.businessName || '';
         document.getElementById('siteTagline').value = currentWebsite.tagline || '';
+        document.getElementById('siteHeadline').value = currentWebsite.tagline || '';
         document.getElementById('siteAbout').value = currentWebsite.about || '';
         document.getElementById('sitePhone').value = currentWebsite.phone || '';
         document.getElementById('siteWhatsapp').value = currentWebsite.whatsapp || '';
@@ -983,6 +990,7 @@
     function updateLivePreview() {
       const name = document.getElementById('siteBusinessName').value || 'My Workshop';
       const tagline = document.getElementById('siteTagline').value || 'Automotive Service Specialist';
+      const headline = document.getElementById('siteHeadline').value || tagline || name;
       const about = document.getElementById('siteAbout').value || 'We provide expert automotive maintenance.';
       const phone = document.getElementById('sitePhone').value || '+91 9876543210';
       const whatsapp = document.getElementById('siteWhatsapp').value || '+91 9876543210';
@@ -1074,9 +1082,12 @@
       saveBtn.disabled = true;
       saveBtn.innerText = 'Publishing Changes...';
 
+      const headline = document.getElementById('siteHeadline').value.trim();
+      const tagline = document.getElementById('siteTagline').value.trim();
+
       const payload = {
         businessName: document.getElementById('siteBusinessName').value.trim(),
-        tagline: document.getElementById('siteTagline').value.trim(),
+        tagline: headline || tagline,
         about: document.getElementById('siteAbout').value.trim(),
         phone: document.getElementById('sitePhone').value.trim(),
         whatsapp: document.getElementById('siteWhatsapp').value.trim(),
