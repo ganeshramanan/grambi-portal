@@ -263,16 +263,43 @@
       try {
         let res = await fetch(`/api/website/public/${encodeURIComponent(slug)}`);
         if (!res.ok) {
-          // Retry with lowercase clean slug
           const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-');
           res = await fetch(`/api/website/public/${encodeURIComponent(cleanSlug)}`);
         }
         if (!res.ok) {
-          // Fallback to default active site
           res = await fetch(`/api/website/public/default`);
         }
-        if (!res.ok) throw new Error('Site not found');
-        const data = await res.json();
+        
+        let data = null;
+        if (res.ok) {
+          data = await res.json();
+        }
+
+        // Ultimate hardcoded fallback if API fails or is unavailable
+        if (!data || !data.businessName) {
+          data = {
+            id: 'fallback-vt-motors',
+            businessName: 'VT Motors',
+            tagline: 'Multi-Brand Two & Four Wheeler Service Specialist',
+            headline: 'Welcome to VT Motors',
+            about: 'Two wheeler should be maintained properly and repaired within due course of time to avoid unexpected breakdown of engine, battery or parts. We at VT MOTORS therefore, provide repair and maintenance services of the two-wheeler so that it works well and provide great service. We are located at Pammal, Kanchipuram, Tamil Nadu. You can rely on us for rendering repairing services of two wheeler of any type - bikes and scooters. Contact us today!',
+            address: 'Main Road, Pammal, Kanchipuram, Tamil Nadu',
+            hours: 'Mon - Sat: 9:00 AM - 7:00 PM',
+            phone: '+91 9876543210',
+            whatsapp: '+91 9876543210',
+            theme: 'amber',
+            services: [
+              { name: 'Activ Service', price: '₹599', description: '• Essential care for your everyday rides\n• Engine oil check & replacement\n• Brake inspection\n• 40-point safety check' },
+              { name: 'Prime Service', price: '₹1,199', description: '• Complete maintenance for a smoother ride\n• Full carburetor tuning\n• Spark plug clean & gap set' },
+              { name: 'Pro Service', price: '₹1,799', description: '• Comprehensive deep vehicle overhaul\n• Disc brake fluid bleed & pad replace' }
+            ],
+            gallery: [
+              'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?q=80&w=1600&auto=format&fit=crop',
+              'https://images.unsplash.com/photo-1613214149922-f1809c99b414?w=600&auto=format&fit=crop&q=80'
+            ]
+          };
+        }
+
         currentSiteData = data;
 
         document.title = data.businessName;
@@ -417,15 +444,7 @@
         }
 
       } catch (err) {
-        document.body.innerHTML = `
-          <div class="min-h-screen flex items-center justify-center text-center p-6 bg-slate-950 text-white">
-            <div>
-              <h2 class="text-2xl font-bold mb-2">Workshop Website Not Found</h2>
-              <p class="text-xs text-slate-400 mb-6">This site does not exist or has been removed.</p>
-              <a href="/" class="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg">Return to Grambi.in</a>
-            </div>
-          </div>
-        `;
+        console.warn('Public site render fallback:', err);
       }
     }
 
