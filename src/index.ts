@@ -103,8 +103,8 @@ app.get('/api/website/public/:slug', getPublicWebsite);
 app.post('/api/website/public/:slug/book', submitPublicBooking);
 app.post('/api/website/public/:slug/event', recordAnalyticsEvent);
 
-// Direct Public Website View: /site/:slug
-app.get('/site/:slug', (req, res) => {
+// Direct Public Website View: /site/:slug or /site
+app.get(['/site/:slug', '/site'], (req, res) => {
   res.sendFile(path.join(__dirname, '../public/site.html'));
 });
 

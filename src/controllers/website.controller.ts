@@ -232,6 +232,7 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
       slug: website.slug,
       businessName: website.businessName,
       tagline: website.tagline,
+      headline: website.headline || website.tagline || website.businessName,
       about: website.about,
       phone: website.phone,
       whatsapp: website.whatsapp,

@@ -252,7 +252,11 @@
   </div>
 
   <script>
-    const slug = window.location.pathname.split('/site/')[1] || 'my-workshop';
+    let slug = 'vt-motors';
+    const pathParts = window.location.pathname.split('/site/');
+    if (pathParts.length > 1 && pathParts[1]) {
+      slug = pathParts[1].replace(/\/+$/, '');
+    }
     let currentSiteData = null;
 
     async function loadPublicSite() {
@@ -262,6 +266,10 @@
           // Retry with lowercase clean slug
           const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-');
           res = await fetch(`/api/website/public/${encodeURIComponent(cleanSlug)}`);
+        }
+        if (!res.ok) {
+          // Fallback to default active site
+          res = await fetch(`/api/website/public/default`);
         }
         if (!res.ok) throw new Error('Site not found');
         const data = await res.json();
