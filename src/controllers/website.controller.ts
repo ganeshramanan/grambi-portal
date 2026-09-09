@@ -196,7 +196,7 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
   const { slug } = req.params;
 
   try {
-    const website = await prisma.website.findUnique({
+    let website = await prisma.website.findUnique({
       where: { slug },
       include: {
         user: {
@@ -204,6 +204,24 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
         }
       }
     });
+
+    if (!website) {
+      // Fallback 1: Case-insensitive / slugified match
+      const cleaned = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      website = await prisma.website.findFirst({
+        where: {
+          OR: [
+            { slug: { contains: cleaned } },
+            { businessName: { contains: slug.replace(/-/g, ' ') } }
+          ]
+        },
+        include: {
+          user: {
+            select: { businessName: true, email: true }
+          }
+        }
+      });
+    }
 
     if (!website) {
       return res.status(404).json({ error: 'Workshop website not found.' });
@@ -214,7 +232,6 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
       slug: website.slug,
       businessName: website.businessName,
       tagline: website.tagline,
-      headline: website.headline,
       about: website.about,
       phone: website.phone,
       whatsapp: website.whatsapp,
