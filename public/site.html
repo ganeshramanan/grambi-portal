@@ -56,10 +56,6 @@
       <div id="heroBgOverlay" class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950/70"></div>
 
       <div class="max-w-3xl mx-auto space-y-6 relative z-10">
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 backdrop-blur-md text-amber-400 border border-amber-500/30 text-xs font-bold uppercase tracking-wider shadow-lg">
-          <i class="ri-shield-check-fill text-amber-400 text-sm"></i> <span id="siteBadgeText">Verified Professional Business</span>
-        </div>
-        
         <h2 id="heroTitle" class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight drop-shadow-md">
           Welcome to Our Business
         </h2>
@@ -251,12 +247,6 @@
         } else {
           const initial = (data.businessName || 'G').trim().charAt(0).toUpperCase();
           logoBox.innerHTML = `<span class="font-black text-xl text-white">${initial}</span>`;
-        }
-
-        // Custom Business Category Badge
-        const badgeSpan = document.getElementById('siteBadgeText');
-        if (badgeSpan) {
-          badgeSpan.innerText = data.tagline ? `Verified • ${data.tagline}` : 'Verified Business';
         }
 
         // Theme Map for Hero Backdrops and Accents
