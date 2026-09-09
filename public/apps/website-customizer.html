@@ -110,37 +110,6 @@
         </div>
       </div>
 
-      <!-- Industry Template Selector (Filtered by Vertical) -->
-      <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
-          <div>
-            <h2 class="text-base font-bold text-white flex items-center gap-2">
-              <i class="ri-magic-line text-amber-400"></i> Industry Website Templates
-            </h2>
-            <p class="text-xs text-slate-400 mt-0.5">Select your industry vertical to see matching curated design templates</p>
-          </div>
-          
-          <!-- Category Dropdown Filter -->
-          <div class="flex items-center gap-2">
-            <label for="industryCategoryFilter" class="text-[11px] font-semibold text-slate-400 shrink-0">Industry:</label>
-            <select id="industryCategoryFilter" onchange="filterTemplatesByCategory(this.value)" class="bg-slate-950 border border-slate-800 text-white text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-500 cursor-pointer font-medium">
-              <option value="Automotive">🚗 Automotive & Garage</option>
-              <option value="Healthcare & Pharma">💊 Pharmacy & Medical Store</option>
-              <option value="Clinic & Healthcare">🩺 Doctor Clinic & Healthcare</option>
-              <option value="Retail & Grocery">🛒 Supermarket & Grocery</option>
-              <option value="Beauty & Wellness">✂️ Salon & Beauty Lounge</option>
-              <option value="Professional Services">💼 Corporate & Advisory</option>
-              <option value="ALL">🌐 Show All Templates</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="templatesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <!-- Injected via JavaScript based on selected category -->
-          <div class="text-xs text-slate-500 py-3 text-center col-span-3">Loading templates...</div>
-        </div>
-      </div>
-
       <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-5">
         <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
           <h2 class="text-base font-bold text-white flex items-center gap-2">
@@ -812,87 +781,6 @@
       `).join('');
     }
 
-    let availableTemplates = [];
-    let selectedTemplateId = null;
-    let selectedCategory = 'Automotive';
-
-    async function loadIndustryTemplates() {
-      try {
-        const res = await fetch('/api/website/templates');
-        if (!res.ok) throw new Error('Failed to load templates');
-        const data = await res.json();
-        availableTemplates = data.templates || [];
-        renderFilteredTemplates();
-      } catch (err) {
-        document.getElementById('templatesGrid').innerHTML = '<div class="text-xs text-rose-400 py-3 text-center col-span-3">Failed to load industry templates.</div>';
-      }
-    }
-
-    function filterTemplatesByCategory(category) {
-      selectedCategory = category;
-      renderFilteredTemplates();
-    }
-
-    function renderFilteredTemplates() {
-      const grid = document.getElementById('templatesGrid');
-      let filtered = availableTemplates;
-
-      if (selectedCategory && selectedCategory !== 'ALL') {
-        filtered = availableTemplates.filter(t => t.category.toLowerCase().includes(selectedCategory.toLowerCase()));
-      }
-
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div class="text-xs text-slate-500 py-6 text-center col-span-3">No templates found for this industry. Contact Admin to add new templates.</div>`;
-        return;
-      }
-
-      grid.innerHTML = filtered.map(tpl => `
-        <div onclick="applyTemplate('${tpl.id}')" class="group relative rounded-xl border border-slate-800 bg-slate-950 p-2.5 cursor-pointer hover:border-amber-500/50 hover:bg-slate-900 transition flex flex-col justify-between">
-          <div class="aspect-video w-full rounded-lg overflow-hidden relative mb-2">
-            <img src="${tpl.previewThumb}" alt="${tpl.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent"></div>
-            <span class="absolute bottom-1 left-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-${tpl.theme === 'amber' ? 'amber' : tpl.theme === 'emerald' ? 'emerald' : tpl.theme === 'rose' ? 'rose' : tpl.theme === 'purple' ? 'purple' : 'blue'}-500 text-slate-950 uppercase font-mono">
-              ${tpl.category}
-            </span>
-          </div>
-          <div>
-            <h4 class="text-xs font-bold text-white group-hover:text-amber-400 transition truncate">${tpl.name}</h4>
-            <p class="text-[10px] text-slate-400 line-clamp-1 mt-0.5">${tpl.tagline}</p>
-          </div>
-          <button type="button" class="mt-2 w-full py-1.5 bg-slate-900 group-hover:bg-amber-500 group-hover:text-slate-950 text-slate-300 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1 shadow">
-            <i class="ri-check-line"></i> Apply Style
-          </button>
-        </div>
-      `).join('');
-    }
-
-    function applyTemplate(tplId) {
-      const tpl = availableTemplates.find(t => t.id === tplId);
-      if (!tpl) return;
-
-      selectedTemplateId = tpl.id;
-      document.getElementById('siteTagline').value = tpl.tagline;
-      document.getElementById('siteHeadline').value = tpl.tagline;
-      document.getElementById('siteAbout').value = tpl.about;
-      document.getElementById('siteTheme').value = tpl.theme;
-
-      // Update services with the selected template's services
-      dynamicServices = tpl.defaultServices.map(s => ({
-        id: 's_' + Math.random().toString(36).substr(2, 4),
-        name: s.name,
-        price: s.price,
-        description: s.description
-      }));
-      renderServicesEditor();
-
-      if (tpl.defaultGallery && tpl.defaultGallery.length > 0) {
-        dynamicGallery = [...tpl.defaultGallery];
-        renderGalleryThumbnails();
-      }
-
-      updateLivePreview();
-    }
-
     async function loadWebsiteData() {
       const token = localStorage.getItem('grambi_token');
       try {
@@ -915,17 +803,6 @@
         if (currentWebsite.logo) {
           currentLogoUrl = currentWebsite.logo;
           document.getElementById('removeLogoBtn').classList.remove('hidden');
-        }
-
-        // Auto-detect & set Category dropdown filter to match business
-        const industryFilter = document.getElementById('industryCategoryFilter');
-        if (industryFilter) {
-          const bName = (currentWebsite.businessName || '').toLowerCase();
-          const tLine = (currentWebsite.tagline || '').toLowerCase();
-          if (bName.includes('motor') || bName.includes('auto') || bName.includes('garage') || bName.includes('bike') || bName.includes('car') || tLine.includes('wheeler') || tLine.includes('auto')) {
-            industryFilter.value = 'Automotive';
-            filterTemplatesByCategory('Automotive');
-          }
         }
 
         // Populate Photo Gallery URLs & Visual Thumbnails
@@ -1136,7 +1013,6 @@
       }
     }
 
-    loadIndustryTemplates();
     loadWebsiteData();
   </script>
 </body>
