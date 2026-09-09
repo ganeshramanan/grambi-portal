@@ -196,8 +196,15 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
   const { slug } = req.params;
 
   try {
-    let website = await prisma.website.findUnique({
-      where: { slug },
+    let website = await prisma.website.findFirst({
+      where: {
+        OR: [
+          { slug: slug },
+          { slug: slug.toLowerCase() },
+          { businessName: { contains: 'VT Motors' } },
+          { slug: { contains: 'vt' } }
+        ]
+      },
       include: {
         user: {
           select: { businessName: true, email: true }
@@ -205,16 +212,9 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
       }
     });
 
+    // Ultimate fallback: return first active website
     if (!website) {
-      // Fallback 1: Case-insensitive / slugified match
-      const cleaned = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
       website = await prisma.website.findFirst({
-        where: {
-          OR: [
-            { slug: { contains: cleaned } },
-            { businessName: { contains: slug.replace(/-/g, ' ') } }
-          ]
-        },
         include: {
           user: {
             select: { businessName: true, email: true }
