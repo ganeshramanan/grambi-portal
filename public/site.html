@@ -82,8 +82,23 @@
       </div>
     </section>
 
+    <!-- About Us Section -->
+    <section id="aboutSection" class="py-12 max-w-6xl mx-auto px-6 scroll-mt-20">
+      <div class="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+            <i class="ri-information-line text-lg"></i>
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">About Our Business</span>
+        </div>
+        <p id="aboutContentText" class="text-sm text-slate-700 leading-relaxed font-normal">
+          Loading about details...
+        </p>
+      </div>
+    </section>
+
     <!-- Services Section -->
-    <section class="py-16 max-w-6xl mx-auto px-6">
+    <section id="servicesSection" class="py-16 max-w-6xl mx-auto px-6 scroll-mt-20">
       <div class="text-center mb-12">
         <span class="text-xs font-bold uppercase tracking-wider text-blue-600">What We Offer</span>
         <h3 id="servicesHeading" class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Our Featured Services</h3>
@@ -191,20 +206,35 @@
     </section>
   </main>
 
-  <!-- Sticky Bottom Contact Bar (Optimized for Mobile/vCard view) -->
-  <div class="sticky bottom-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 sm:hidden shadow-lg">
-    <div class="grid grid-cols-3 gap-2 text-xs font-bold text-center">
-      <a id="mobileCall" href="#" class="py-2.5 bg-slate-100 text-slate-900 rounded-xl flex items-center justify-center gap-1">
-        <i class="ri-phone-fill text-blue-600"></i> Call
+  <!-- Sticky Bottom Mobile Navigation Bar (Miki vCard Style) -->
+  <nav id="mobileBottomNav" class="sticky bottom-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-2 sm:hidden shadow-2xl">
+    <div class="grid grid-cols-6 gap-1 text-center">
+      <a href="#heroSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
+        <i class="ri-home-4-fill text-lg"></i>
+        <span class="text-[9px] font-bold tracking-tight mt-0.5">Home</span>
       </a>
-      <a id="mobileWa" href="#" class="py-2.5 bg-emerald-600 text-white rounded-xl flex items-center justify-center gap-1 shadow-md shadow-emerald-500/20">
-        <i class="ri-whatsapp-fill"></i> WhatsApp
+      <a href="#aboutSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
+        <i class="ri-user-3-fill text-lg"></i>
+        <span class="text-[9px] font-bold tracking-tight mt-0.5">About</span>
       </a>
-      <a href="#bookSection" class="py-2.5 bg-blue-600 text-white rounded-xl flex items-center justify-center gap-1 shadow-md shadow-blue-500/20">
-        <i class="ri-mail-send-fill"></i> Enquire
+      <a href="#servicesSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
+        <i class="ri-service-fill text-lg"></i>
+        <span class="text-[9px] font-bold tracking-tight mt-0.5">Services</span>
       </a>
+      <a href="#gallerySection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
+        <i class="ri-image-2-fill text-lg"></i>
+        <span class="text-[9px] font-bold tracking-tight mt-0.5">Gallery</span>
+      </a>
+      <a href="#bookSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
+        <i class="ri-mail-send-fill text-lg"></i>
+        <span class="text-[9px] font-bold tracking-tight mt-0.5">Enquiry</span>
+      </a>
+      <button type="button" onclick="handleMobileShare()" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95 cursor-pointer">
+        <i class="ri-share-forward-fill text-lg"></i>
+        <span class="text-[9px] font-bold tracking-tight mt-0.5">Share</span>
+      </button>
     </div>
-  </div>
+  </nav>
 
   <footer class="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
     <p>Powered by <a href="https://grambi.in" class="font-bold text-slate-800 hover:text-blue-600">Grambi Platform</a> &copy; 2026</p>
@@ -237,6 +267,10 @@
         document.getElementById('siteTag').innerText = data.tagline || '';
         document.getElementById('heroTitle').innerText = data.headline || data.tagline || data.businessName;
         document.getElementById('heroAbout').innerText = data.about || 'Dedicated to providing reliable services and customer satisfaction.';
+        const aboutEl = document.getElementById('aboutContentText');
+        if (aboutEl) {
+          aboutEl.innerText = data.about || 'Dedicated to providing reliable services and customer satisfaction.';
+        }
         document.getElementById('siteAddress').innerText = data.address || 'Location provided upon appointment confirmation.';
         document.getElementById('siteHours').innerText = data.hours || 'Mon - Sat: 9:00 AM - 7:00 PM';
 
@@ -496,6 +530,31 @@ END:VCARD`;
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeLightbox();
     });
+
+    // Mobile Native Web Share / QR Sheet Handler
+    async function handleMobileShare() {
+      trackEvent('SHARE_CLICK');
+      const shareData = {
+        title: currentSiteData?.businessName || document.title,
+        text: currentSiteData?.tagline || 'Visit our business profile and services online:',
+        url: window.location.href
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+        } catch (err) {
+          // Fallback to clipboard if user dismissed or cancelled
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          alert('Link copied to clipboard! Share it with anyone on WhatsApp or SMS.');
+        } catch (e) {
+          prompt('Copy profile link:', window.location.href);
+        }
+      }
+    }
 
     loadPublicSite();
   </script>
