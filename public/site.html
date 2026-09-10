@@ -305,8 +305,8 @@
         document.title = data.businessName;
         document.getElementById('siteName').innerText = data.businessName;
         document.getElementById('siteTag').innerText = data.tagline || '';
-        document.getElementById('heroTitle').innerText = data.headline || data.tagline || data.businessName;
-        document.getElementById('heroAbout').innerText = data.about || 'Dedicated to providing reliable services and customer satisfaction.';
+        document.getElementById('heroTitle').innerText = data.headline || data.businessName;
+        document.getElementById('heroAbout').innerText = data.tagline || 'Dedicated to providing reliable services and customer satisfaction.';
         const aboutEl = document.getElementById('aboutContentText');
         if (aboutEl) {
           aboutEl.innerText = data.about || 'Dedicated to providing reliable services and customer satisfaction.';
