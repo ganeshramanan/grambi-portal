@@ -3,17 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grambi — Social Media Post Creator & Occasions Hub</title>
+  <title>Grambi — Social Media Studio & Marketing Calendar</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
   <script src="/theme.js"></script>
-  <!-- HTML2Canvas for 1-Click Instant High-Res Image Export -->
+  <!-- HTML2Canvas for High-Resolution Instant PNG Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&family=Montserrat:wght@800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Montserrat:wght@700;800;900&family=Outfit:wght@600;700;800;900&display=swap');
+    
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .font-serif-luxury { font-family: 'Playfair Display', serif; }
     .font-bold-display { font-family: 'Montserrat', sans-serif; }
+    .font-modern-outfit { font-family: 'Outfit', sans-serif; }
+
+    /* Custom range slider styling */
+    input[type=range] {
+      accent-color: #ec4899;
+    }
+
+    .cal-day-cell {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 10px;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+
+    .cal-day-cell.has-event {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.25), rgba(168, 85, 247, 0.35));
+      border: 1px solid rgba(236, 72, 153, 0.6);
+      color: #fdf2f8;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .cal-day-cell.has-event:hover {
+      transform: scale(1.08);
+      border-color: #f472b6;
+      box-shadow: 0 0 12px rgba(236, 72, 153, 0.4);
+    }
+
+    .cal-day-cell.active-selected-day {
+      background: #ec4899 !important;
+      color: #ffffff !important;
+      border-color: #fbcfe8 !important;
+      box-shadow: 0 0 16px rgba(236, 72, 153, 0.6);
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
@@ -25,18 +66,21 @@
         <a href="/portal.html" class="text-slate-400 hover:text-white flex items-center gap-1 text-xs border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2">
           <i class="ri-arrow-left-line"></i> Launchpad
         </a>
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-pink-500/20">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-500 via-rose-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-pink-500/20">
           <i class="ri-magic-line"></i>
         </div>
-        <span class="font-bold text-base">Social Media Post Generator</span>
+        <div>
+          <span class="font-bold text-base block leading-none">Social Media Studio</span>
+          <span class="text-[10px] text-pink-400 font-mono">Occasions Calendar & Post Designer</span>
+        </div>
       </div>
 
       <div class="flex items-center gap-3">
         <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
           <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
         </button>
-        <button onclick="downloadGeneratedImage()" class="px-4 py-1.5 text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition">
-          <i class="ri-download-2-line"></i> Export Image
+        <button onclick="downloadGeneratedImage()" class="px-4 py-1.5 text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition cursor-pointer">
+          <i class="ri-download-2-line text-sm"></i> Export High-Res Image
         </button>
         <span id="userBadge" class="text-xs text-slate-400 px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Loading...</span>
       </div>
@@ -46,130 +90,360 @@
   <!-- Main Workspace -->
   <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
     
-    <!-- Left: Controls, Occasion Picker & Image Upload (5 Cols) -->
+    <!-- Left: Calendar & Design Controls (5 Cols) -->
     <div class="lg:col-span-5 space-y-6">
       
-      <!-- Occasion / Calendar Suggestions -->
+      <!-- 1. Interactive Monthly Marketing & Occasion Calendar -->
       <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-bold text-white flex items-center gap-2">
-            <i class="ri-calendar-event-line text-pink-400"></i> September Occasions & Festivals
-          </h2>
-          <span class="text-[11px] text-purple-400 font-mono">Auto-Sync</span>
+        <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center text-sm font-bold">
+              <i class="ri-calendar-event-line"></i>
+            </div>
+            <div>
+              <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300">Marketing & Occasion Calendar</h2>
+              <span id="currentMonthYearLabel" class="text-sm font-extrabold text-white">September 2026</span>
+            </div>
+          </div>
+          
+          <!-- Month Navigation -->
+          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <button type="button" onclick="changeMonth(-1)" class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-slate-800 text-slate-300 text-xs transition" title="Previous Month">
+              <i class="ri-arrow-left-s-line"></i>
+            </button>
+            <button type="button" onclick="resetToCurrentMonth()" class="px-2 text-[10px] font-bold text-pink-400 hover:text-pink-300" title="Go to Current Month">Today</button>
+            <button type="button" onclick="changeMonth(1)" class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-slate-800 text-slate-300 text-xs transition" title="Next Month">
+              <i class="ri-arrow-right-s-line"></i>
+            </button>
+          </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2" id="occasionGrid">
-          <!-- Injected via JS -->
+        <!-- 7-Day Day Header -->
+        <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase text-slate-400">
+          <span class="text-rose-400">Su</span>
+          <span>Mo</span>
+          <span>Tu</span>
+          <span>We</span>
+          <span>Th</span>
+          <span>Fr</span>
+          <span class="text-emerald-400">Sa</span>
+        </div>
+
+        <!-- Days Grid -->
+        <div id="calendarDaysGrid" class="grid grid-cols-7 gap-1">
+          <!-- Dynamically populated via renderCalendar() -->
+        </div>
+
+        <!-- Active Month Occasions Quick List -->
+        <div class="pt-2 border-t border-slate-800/80 space-y-2">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+            <span>Special Dates & Offers This Month</span>
+            <span id="occasionCountBadge" class="text-pink-400">0 events</span>
+          </span>
+          <div id="activeMonthOccasionCards" class="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
+            <!-- Dynamically populated -->
+          </div>
         </div>
       </div>
 
-      <!-- Customization Controls -->
+      <!-- 2. Post Content & Branding -->
       <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
-        <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider">Post Text & Branding</h3>
+        <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+          <i class="ri-edit-2-line text-pink-400"></i> Post Text & Typography
+        </h3>
 
         <div class="space-y-3">
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Headline / Festival Greeting</label>
-            <input type="text" id="ctrlHeading" oninput="updateLivePost()" value="Happy Teachers' Day!" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500" />
+            <input type="text" id="ctrlHeading" oninput="updateLivePost()" value="Happy Teachers' Day!" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500 font-bold" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Offer / Subtitle Message</label>
-            <textarea id="ctrlSubtitle" rows="2" oninput="updateLivePost()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-pink-500">Special gratitude discounts on all services for educators this week!</textarea>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Special Offer / Subtitle Message</label>
+            <textarea id="ctrlSubtitle" rows="2" oninput="updateLivePost()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-pink-500 leading-relaxed">Special gratitude discounts on all services for educators & teachers this week!</textarea>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Business Name</label>
-              <input type="text" id="ctrlBrand" oninput="updateLivePost()" value="Grambi Auto Works" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500" />
+              <input type="text" id="ctrlBrand" oninput="updateLivePost()" value="VT Motors" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Contact Phone / WhatsApp</label>
-              <input type="text" id="ctrlContact" oninput="updateLivePost()" value="+91 9876543210" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500" />
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Contact Phone</label>
+              <input type="text" id="ctrlContact" oninput="updateLivePost()" value="+91 9876543210" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500 font-mono" />
             </div>
           </div>
 
-          <!-- Border / Frame Styles -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Font Style</label>
+              <select id="ctrlFont" onchange="updateLivePost()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500 cursor-pointer">
+                <option value="font-serif-luxury">Luxury Serif (Playfair)</option>
+                <option value="font-bold-display">Modern Display (Montserrat)</option>
+                <option value="font-modern-outfit">High-Impact Sans (Outfit)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Badge Tag</label>
+              <input type="text" id="ctrlBadge" oninput="updateLivePost()" value="🎉 Festival Greeting" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Photo Upload, Crop, Zoom & Framing -->
+      <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
+        <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+          <i class="ri-crop-line text-pink-400"></i> Photo Overlay & Crop Tools
+        </h3>
+
+        <div class="space-y-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Select Decorative Frame / Border</label>
-            <div class="grid grid-cols-3 gap-2 text-xs">
-              <button type="button" onclick="setFrame('gold')" class="p-2 bg-slate-950 border border-amber-500/40 rounded-xl text-amber-300 hover:bg-slate-900 font-semibold text-[11px]">Gold Luxury</button>
-              <button type="button" onclick="setFrame('emerald')" class="p-2 bg-slate-950 border border-emerald-500/40 rounded-xl text-emerald-300 hover:bg-slate-900 font-semibold text-[11px]">Emerald Glow</button>
-              <button type="button" onclick="setFrame('minimal')" class="p-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-300 hover:bg-slate-900 font-semibold text-[11px]">Clean Modern</button>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Upload Photo (Vehicle, Workshop, Facility)</label>
+            <div class="flex items-center gap-2">
+              <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer" />
+              <button type="button" id="btnRemovePhoto" onclick="removePhoto()" class="hidden px-2.5 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg border border-rose-500/20" title="Remove Photo">
+                <i class="ri-delete-bin-line"></i>
+              </button>
             </div>
           </div>
 
-          <!-- Image Upload / Background -->
+          <!-- Zoom / Scale Slider -->
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Upload Photo (Auto-Crop into Post)</label>
-            <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer" />
+            <div class="flex justify-between items-center text-xs font-medium text-slate-300 mb-1">
+              <span>Zoom & Crop Scale</span>
+              <span id="zoomVal" class="text-pink-400 font-mono">100%</span>
+            </div>
+            <input type="range" id="cropZoom" min="100" max="250" value="100" oninput="updatePhotoTransform()" class="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer" />
+          </div>
+
+          <!-- Position Alignment -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Vertical Alignment</label>
+              <select id="cropPosY" onchange="updatePhotoTransform()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500 cursor-pointer">
+                <option value="center">Center (Default)</option>
+                <option value="top">Top Focus</option>
+                <option value="bottom">Bottom Focus</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Darkness / Readability</label>
+              <select id="photoOpacity" onchange="updatePhotoTransform()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500 cursor-pointer">
+                <option value="0.35">Subtle (35% Opacity)</option>
+                <option value="0.55" selected>Medium (55% Opacity)</option>
+                <option value="0.75">Strong (75% Opacity)</option>
+                <option value="0.90">Heavy Overlay (90%)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Luxury Borders & Frames -->
+      <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4">
+        <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+          <i class="ri-layout-grid-line text-pink-400"></i> Frame & Border Styles
+        </h3>
+
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <button type="button" onclick="setFrameStyle('gold_luxury')" id="btnFrame_gold_luxury" class="p-2.5 bg-slate-950 border-2 border-amber-500 rounded-xl text-amber-300 hover:bg-slate-900 font-bold text-[11px] text-center shadow-md shadow-amber-500/20">
+            Gold Luxury
+          </button>
+          <button type="button" onclick="setFrameStyle('festive_rose')" id="btnFrame_festive_rose" class="p-2.5 bg-slate-950 border border-rose-500/40 rounded-xl text-rose-300 hover:bg-slate-900 font-semibold text-[11px] text-center">
+            Festive Rose
+          </button>
+          <button type="button" onclick="setFrameStyle('emerald_glow')" id="btnFrame_emerald_glow" class="p-2.5 bg-slate-950 border border-emerald-500/40 rounded-xl text-emerald-300 hover:bg-slate-900 font-semibold text-[11px] text-center">
+            Emerald Glow
+          </button>
+          <button type="button" onclick="setFrameStyle('sapphire_modern')" id="btnFrame_sapphire_modern" class="p-2.5 bg-slate-950 border border-blue-500/40 rounded-xl text-blue-300 hover:bg-slate-900 font-semibold text-[11px] text-center">
+            Sapphire Studio
+          </button>
+          <button type="button" onclick="setFrameStyle('minimal_glass')" id="btnFrame_minimal_glass" class="p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-300 hover:bg-slate-900 font-semibold text-[11px] text-center">
+            Clean Inset
+          </button>
+          <button type="button" onclick="setFrameStyle('none')" id="btnFrame_none" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-400 hover:bg-slate-900 font-semibold text-[11px] text-center">
+            Full Bleed
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Border Thickness</label>
+            <select id="ctrlBorderWidth" onchange="updateLivePost()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500 cursor-pointer">
+              <option value="4px">Slim (4px)</option>
+              <option value="8px" selected>Classic (8px)</option>
+              <option value="12px">Bold (12px)</option>
+              <option value="16px">Heavy Luxury (16px)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Corner Radius</label>
+            <select id="ctrlBorderRadius" onchange="updateLivePost()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500 cursor-pointer">
+              <option value="0px">Sharp Square (0px)</option>
+              <option value="16px">Subtle Rounded (16px)</option>
+              <option value="28px" selected>Smooth Modern (28px)</option>
+              <option value="40px">Extra Soft (40px)</option>
+            </select>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Right: Real-time Live Post Canvas Preview (7 Cols) -->
-    <div class="lg:col-span-7 flex flex-col items-center justify-center">
-      <div class="w-full flex justify-between items-center mb-3 max-w-[480px]">
-        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Canvas Export Preview</span>
-        <span class="text-[11px] text-pink-400 font-mono">1080 &times; 1080 (1:1)</span>
+    <div class="lg:col-span-7 flex flex-col items-center">
+      
+      <!-- Ratio Selector & Info Bar -->
+      <div class="w-full flex flex-wrap justify-between items-center mb-4 max-w-[500px] gap-2">
+        <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+          <button type="button" onclick="setAspectRatio('1:1')" id="btnRatio_1_1" class="px-3 py-1 bg-pink-600 text-white font-bold rounded-lg transition text-[11px]">
+            1:1 Square
+          </button>
+          <button type="button" onclick="setAspectRatio('9:16')" id="btnRatio_9_16" class="px-3 py-1 text-slate-400 hover:text-white font-semibold rounded-lg transition text-[11px]">
+            9:16 Story
+          </button>
+          <button type="button" onclick="setAspectRatio('16:9')" id="btnRatio_16_9" class="px-3 py-1 text-slate-400 hover:text-white font-semibold rounded-lg transition text-[11px]">
+            16:9 Banner
+          </button>
+        </div>
+
+        <span id="canvasDimLabel" class="text-[11px] text-pink-400 font-mono bg-pink-500/10 px-2.5 py-1 rounded border border-pink-500/20">
+          1080 &times; 1080 (Instagram / WhatsApp DP)
+        </span>
       </div>
 
-      <!-- The Exportable Post Box (Square 1:1) -->
-      <div id="postCanvas" class="w-full max-w-[480px] aspect-square rounded-3xl p-7 flex flex-col justify-between relative overflow-hidden shadow-2xl transition-all duration-300 select-none bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-950 text-white" style="border: 6px solid #f59e0b; box-shadow: 0 0 25px rgba(245, 158, 11, 0.25);">
-        
-        <!-- Background Overlay Image (if uploaded) -->
-        <div id="bgImageOverlay" class="absolute inset-0 bg-cover bg-center opacity-30 pointer-events-none"></div>
+      <!-- The Exportable Post Box -->
+      <div class="w-full flex justify-center py-2">
+        <div 
+          id="postCanvas" 
+          class="w-full max-w-[500px] aspect-square p-7 flex flex-col justify-between relative overflow-hidden shadow-2xl transition-all duration-300 select-none bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-950 text-white"
+          style="border: 8px solid #f59e0b; border-radius: 28px; box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);"
+        >
+          <!-- Background Image Container with Dynamic Crop & Scale -->
+          <div id="bgImageOverlay" class="absolute inset-0 bg-cover bg-center opacity-55 pointer-events-none transition-all duration-300"></div>
+          
+          <!-- Subtle Luxury Ambient Glow Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/50 pointer-events-none"></div>
 
-        <!-- Top Header: Brand Name & Logo -->
-        <div class="relative z-10 flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center font-extrabold text-white text-base shadow">
-              G
+          <!-- Top Header: Brand Name, Logo, & Category Badge -->
+          <div class="relative z-10 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div id="canvasLogoBox" class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center font-extrabold text-white text-base shadow border border-white/20">
+                V
+              </div>
+              <div>
+                <span id="canvasBrand" class="font-extrabold text-sm sm:text-base tracking-tight drop-shadow block leading-tight text-white">VT Motors</span>
+                <span class="text-[10px] text-slate-300 tracking-wider font-semibold flex items-center gap-1">
+                  <i class="ri-checkbox-circle-fill text-emerald-400 text-xs"></i> Certified Care Center
+                </span>
+              </div>
             </div>
-            <span id="canvasBrand" class="font-extrabold text-sm tracking-tight drop-shadow">Grambi Auto Works</span>
+
+            <span id="canvasBadge" class="px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-[10px] sm:text-xs font-bold uppercase tracking-wider border border-white/25 text-amber-300 shadow-sm">
+              🎉 Festival Greeting
+            </span>
           </div>
 
-          <span class="px-2.5 py-0.5 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider border border-white/20">
-            Special Occasion
-          </span>
-        </div>
-
-        <!-- Middle Body: Greeting & Special Offer -->
-        <div class="relative z-10 text-center my-auto space-y-3 px-2">
-          <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md mx-auto flex items-center justify-center text-2xl text-amber-300 shadow-inner">
-            <i class="ri-sparkling-fill"></i>
+          <!-- Middle Body: Greeting & Special Offer -->
+          <div class="relative z-10 text-center my-auto space-y-3 px-3 py-4">
+            <div id="canvasIconBox" class="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md mx-auto flex items-center justify-center text-2xl text-amber-300 shadow-inner border border-white/20">
+              <i class="ri-sparkling-fill"></i>
+            </div>
+            
+            <h1 id="canvasHeading" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight font-serif-luxury leading-tight drop-shadow-lg text-amber-200">
+              Happy Teachers' Day!
+            </h1>
+            
+            <p id="canvasSubtitle" class="text-xs sm:text-sm text-slate-100 max-w-sm mx-auto leading-relaxed drop-shadow-md font-medium">
+              Special gratitude discounts on all services for educators & teachers this week!
+            </p>
           </div>
-          <h1 id="canvasHeading" class="text-2xl sm:text-3xl font-extrabold tracking-tight font-serif-luxury leading-snug drop-shadow-md text-amber-200">
-            Happy Teachers' Day!
-          </h1>
-          <p id="canvasSubtitle" class="text-xs sm:text-sm text-slate-200 max-w-xs mx-auto leading-relaxed drop-shadow">
-            Special gratitude discounts on all services for educators this week!
-          </p>
-        </div>
 
-        <!-- Bottom Footer: Call to Action & Phone -->
-        <div class="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-          <div class="flex items-center gap-1.5 text-slate-300">
-            <i class="ri-phone-fill text-emerald-400"></i>
-            <span id="canvasContact" class="font-bold font-mono">+91 9876543210</span>
-          </div>
-          <div class="flex items-center gap-1 text-[11px] font-bold text-amber-300">
-            <span>Book Today</span> <i class="ri-arrow-right-line"></i>
+          <!-- Bottom Footer: Call to Action, Phone & Location -->
+          <div class="relative z-10 pt-3.5 border-t border-white/20 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2 text-white">
+              <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm border border-emerald-500/30">
+                <i class="ri-phone-fill"></i>
+              </div>
+              <div>
+                <span class="text-[9px] text-slate-300 uppercase tracking-wider block font-bold">Call / WhatsApp</span>
+                <span id="canvasContact" class="font-bold font-mono text-xs sm:text-sm">+91 9876543210</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition">
+              <span>Book Service</span> <i class="ri-arrow-right-line"></i>
+            </div>
           </div>
         </div>
       </div>
 
-      <p class="text-[11px] text-slate-500 mt-4 text-center">
-        Click <strong class="text-slate-300">"Export Image"</strong> in the top header to save this ready-to-post graphic as a PNG.
+      <p class="text-xs text-slate-500 mt-4 text-center max-w-md">
+        💡 Click <strong class="text-pink-400">"Export High-Res Image"</strong> to download this graphic ready for Instagram, WhatsApp status, and Facebook posts.
       </p>
     </div>
   </main>
 
   <script>
-    let activeGradient = 'from-purple-900 via-indigo-900 to-slate-950';
+    // State
+    let allOccasions = [];
+    let currentDisplayYear = 2026;
+    let currentDisplayMonth = 9; // 1-based (Sep = 9)
+    let selectedOccasionId = 'occ_teacher_day';
+    let currentAspectRatio = '1:1';
+    let currentFrame = 'gold_luxury';
+    let activeGradient = 'from-purple-950 via-indigo-950 to-slate-950';
+    let uploadedImageUrl = null;
+
+    const MONTH_NAMES = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    const FRAME_CONFIGS = {
+      gold_luxury: {
+        border: 'solid #f59e0b',
+        boxShadow: '0 0 30px rgba(245, 158, 11, 0.35)',
+        textHighlight: 'text-amber-200',
+        badgeBg: 'text-amber-300'
+      },
+      festive_rose: {
+        border: 'solid #f43f5e',
+        boxShadow: '0 0 30px rgba(244, 63, 94, 0.4)',
+        textHighlight: 'text-rose-200',
+        badgeBg: 'text-rose-300'
+      },
+      emerald_glow: {
+        border: 'solid #10b981',
+        boxShadow: '0 0 30px rgba(16, 185, 129, 0.4)',
+        textHighlight: 'text-emerald-200',
+        badgeBg: 'text-emerald-300'
+      },
+      sapphire_modern: {
+        border: 'solid #3b82f6',
+        boxShadow: '0 0 30px rgba(59, 130, 246, 0.4)',
+        textHighlight: 'text-blue-200',
+        badgeBg: 'text-blue-300'
+      },
+      minimal_glass: {
+        border: 'solid rgba(255, 255, 255, 0.4)',
+        boxShadow: '0 25px 30px -5px rgba(0, 0, 0, 0.5)',
+        textHighlight: 'text-white',
+        badgeBg: 'text-white'
+      },
+      none: {
+        border: 'none',
+        boxShadow: '0 25px 30px -5px rgba(0, 0, 0, 0.5)',
+        textHighlight: 'text-white',
+        badgeBg: 'text-white'
+      }
+    };
 
     async function initSocialApp() {
+      const now = new Date();
+      currentDisplayYear = now.getFullYear();
+      currentDisplayMonth = now.getMonth() + 1;
+
       const token = localStorage.getItem('grambi_token');
       try {
         const res = await fetch('/api/auth/me', {
@@ -181,6 +455,8 @@
           if (user.businessName) {
             document.getElementById('ctrlBrand').value = user.businessName;
             document.getElementById('canvasBrand').innerText = user.businessName;
+            const initial = user.businessName.trim().charAt(0).toUpperCase();
+            document.getElementById('canvasLogoBox').innerText = initial;
           }
           if (user.phone) {
             document.getElementById('ctrlContact').value = user.phone;
@@ -189,62 +465,218 @@
         }
       } catch (e) {}
 
-      loadOccasions();
+      await loadOccasions();
+      renderCalendar();
+      updateLivePost();
     }
 
     async function loadOccasions() {
       try {
-        const res = await fetch('/api/social/occasions');
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/social/occasions', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         const data = await res.json();
-        const grid = document.getElementById('occasionGrid');
-
-        grid.innerHTML = (data.occasions || []).map(occ => `
-          <button type="button" onclick="selectOccasion('${encodeURIComponent(JSON.stringify(occ))}')" class="p-3 text-left rounded-xl border border-slate-800 bg-slate-950 hover:border-pink-500/50 hover:bg-slate-900 transition flex flex-col justify-between">
-            <div>
-              <span class="text-[9px] font-bold uppercase text-pink-400">${occ.category}</span>
-              <h4 class="text-xs font-bold text-white truncate">${occ.title}</h4>
-            </div>
-            <span class="text-[10px] text-slate-500 mt-2">1-Click Apply →</span>
-          </button>
-        `).join('');
-      } catch (e) {}
+        allOccasions = data.allOccasions || data.occasions || [];
+      } catch (e) {
+        console.warn('Failed to load occasions:', e);
+      }
     }
 
-    function selectOccasion(jsonStr) {
-      const occ = JSON.parse(decodeURIComponent(jsonStr));
+    function changeMonth(delta) {
+      currentDisplayMonth += delta;
+      if (currentDisplayMonth > 12) {
+        currentDisplayMonth = 1;
+        currentDisplayYear += 1;
+      } else if (currentDisplayMonth < 1) {
+        currentDisplayMonth = 12;
+        currentDisplayYear -= 1;
+      }
+      renderCalendar();
+    }
+
+    function resetToCurrentMonth() {
+      const now = new Date();
+      currentDisplayYear = now.getFullYear();
+      currentDisplayMonth = now.getMonth() + 1;
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      document.getElementById('currentMonthYearLabel').innerText = `${MONTH_NAMES[currentDisplayMonth - 1]} ${currentDisplayYear}`;
+      
+      const firstDayOfMonth = new Date(currentDisplayYear, currentDisplayMonth - 1, 1).getDay();
+      const daysInMonth = new Date(currentDisplayYear, currentDisplayMonth, 0).getDate();
+
+      const grid = document.getElementById('calendarDaysGrid');
+      grid.innerHTML = '';
+
+      // Month occasions lookup: day -> Occasion[]
+      const monthOccasions = allOccasions.filter(o => o.month === currentDisplayMonth);
+      const dayOccasionMap = {};
+      monthOccasions.forEach(occ => {
+        if (!dayOccasionMap[occ.day]) dayOccasionMap[occ.day] = [];
+        dayOccasionMap[occ.day].push(occ);
+      });
+
+      // Pad leading empty cells
+      for (let i = 0; i < firstDayOfMonth; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'cal-day-cell opacity-20 text-slate-600';
+        grid.appendChild(emptyCell);
+      }
+
+      // Render actual days
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        const hasEvent = !!dayOccasionMap[day];
+        const isSelected = hasEvent && dayOccasionMap[day].some(o => o.id === selectedOccasionId);
+
+        cell.className = `cal-day-cell ${hasEvent ? 'has-event' : 'text-slate-400 hover:bg-slate-800/60'} ${isSelected ? 'active-selected-day' : ''}`;
+        
+        let indicatorHtml = '';
+        if (hasEvent) {
+          const occ = dayOccasionMap[day][0];
+          indicatorHtml = `<span class="w-1.5 h-1.5 rounded-full bg-pink-400 mt-0.5 shadow-sm"></span>`;
+          cell.title = `${occ.title} (${occ.category})`;
+          cell.onclick = () => selectOccasion(occ);
+        }
+
+        cell.innerHTML = `
+          <span>${day}</span>
+          ${indicatorHtml}
+        `;
+        grid.appendChild(cell);
+      }
+
+      // Render Active Month Cards
+      renderMonthOccasionsList(monthOccasions);
+    }
+
+    function renderMonthOccasionsList(monthOccasions) {
+      const container = document.getElementById('activeMonthOccasionCards');
+      const badge = document.getElementById('occasionCountBadge');
+
+      if (monthOccasions.length === 0) {
+        badge.innerText = '0 events';
+        container.innerHTML = '<div class="col-span-2 text-center py-4 text-[11px] text-slate-500">No major public holidays mapped for this month. Try next month!</div>';
+        return;
+      }
+
+      badge.innerText = `${monthOccasions.length} event${monthOccasions.length > 1 ? 's' : ''}`;
+      container.innerHTML = monthOccasions.map(occ => `
+        <button type="button" onclick='selectOccasion(${JSON.stringify(occ).replace(/'/g, "&#39;")})' class="p-2.5 text-left rounded-xl border ${occ.id === selectedOccasionId ? 'border-pink-500 bg-pink-500/10' : 'border-slate-800 bg-slate-950 hover:border-pink-500/40 hover:bg-slate-900'} transition flex flex-col justify-between group">
+          <div>
+            <div class="flex items-center justify-between">
+              <span class="text-[9px] font-extrabold uppercase text-pink-400">${MONTH_NAMES[occ.month - 1].slice(0,3)} ${occ.day}</span>
+              <span class="text-[8px] font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">${occ.category}</span>
+            </div>
+            <h4 class="text-xs font-bold text-white truncate mt-1 group-hover:text-pink-200">${occ.title}</h4>
+          </div>
+          <span class="text-[10px] text-slate-400 group-hover:text-pink-400 font-bold mt-2 flex items-center gap-1">1-Click Apply →</span>
+        </button>
+      `).join('');
+    }
+
+    function selectOccasion(occ) {
+      selectedOccasionId = occ.id;
       document.getElementById('ctrlHeading').value = occ.suggestedHeading;
       document.getElementById('ctrlSubtitle').value = occ.suggestedSubheading;
-      activeGradient = occ.bgGradient || 'from-purple-900 via-indigo-900 to-slate-950';
+      document.getElementById('ctrlBadge').value = `🎉 ${occ.title}`;
+      
+      activeGradient = occ.bgGradient || 'from-purple-950 via-indigo-950 to-slate-950';
+
+      // Pick appropriate frame theme
+      if (occ.category === 'Festival') {
+        setFrameStyle('gold_luxury');
+      } else if (occ.category === 'National') {
+        setFrameStyle('emerald_glow');
+      } else if (occ.category === 'Promotional') {
+        setFrameStyle('festive_rose');
+      }
+
+      renderCalendar();
       updateLivePost();
     }
 
     function updateLivePost() {
       const heading = document.getElementById('ctrlHeading').value || 'Special Offer';
       const subtitle = document.getElementById('ctrlSubtitle').value || '';
-      const brand = document.getElementById('ctrlBrand').value || 'Grambi Business';
+      const brand = document.getElementById('ctrlBrand').value || 'VT Motors';
       const contact = document.getElementById('ctrlContact').value || '+91 9876543210';
+      const fontClass = document.getElementById('ctrlFont').value || 'font-serif-luxury';
+      const badgeText = document.getElementById('ctrlBadge').value || 'Special Event';
+      const borderWidth = document.getElementById('ctrlBorderWidth').value || '8px';
+      const borderRadius = document.getElementById('ctrlBorderRadius').value || '28px';
 
-      document.getElementById('canvasHeading').innerText = heading;
+      const canvas = document.getElementById('postCanvas');
+      const canvasHeading = document.getElementById('canvasHeading');
+      
+      canvasHeading.innerText = heading;
+      canvasHeading.className = `text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight ${fontClass} leading-tight drop-shadow-lg text-amber-200`;
+      
       document.getElementById('canvasSubtitle').innerText = subtitle;
       document.getElementById('canvasBrand').innerText = brand;
       document.getElementById('canvasContact').innerText = contact;
+      document.getElementById('canvasBadge').innerText = badgeText;
 
-      const canvas = document.getElementById('postCanvas');
-      canvas.className = `w-full max-w-[480px] aspect-square rounded-3xl p-7 flex flex-col justify-between relative overflow-hidden shadow-2xl transition-all duration-300 select-none bg-gradient-to-br ${activeGradient} text-white`;
+      const initial = (brand || 'V').trim().charAt(0).toUpperCase();
+      document.getElementById('canvasLogoBox').innerText = initial;
+
+      // Apply frame styling
+      const frameCfg = FRAME_CONFIGS[currentFrame] || FRAME_CONFIGS.gold_luxury;
+      
+      if (currentFrame === 'none') {
+        canvas.style.border = 'none';
+      } else {
+        canvas.style.border = `${borderWidth} ${frameCfg.border}`;
+      }
+
+      canvas.style.borderRadius = borderRadius;
+      canvas.style.boxShadow = frameCfg.boxShadow;
+      canvas.className = `w-full max-w-[500px] ${getAspectClass(currentAspectRatio)} p-7 flex flex-col justify-between relative overflow-hidden shadow-2xl transition-all duration-300 select-none bg-gradient-to-br ${activeGradient} text-white`;
     }
 
-    function setFrame(frameType) {
-      const canvas = document.getElementById('postCanvas');
-      if (frameType === 'gold') {
-        canvas.style.border = '6px solid #f59e0b';
-        canvas.style.boxShadow = '0 0 25px rgba(245, 158, 11, 0.35)';
-      } else if (frameType === 'emerald') {
-        canvas.style.border = '6px solid #10b981';
-        canvas.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.4)';
-      } else {
-        canvas.style.border = '2px solid rgba(255, 255, 255, 0.3)';
-        canvas.style.boxShadow = '0 20px 25px -5px rgb(0 0 0 / 0.5)';
-      }
+    function getAspectClass(ratio) {
+      if (ratio === '9:16') return 'aspect-[9/16] min-h-[600px]';
+      if (ratio === '16:9') return 'aspect-[16/9]';
+      return 'aspect-square';
+    }
+
+    function setAspectRatio(ratio) {
+      currentAspectRatio = ratio;
+      ['1_1', '9_16', '16_9'].forEach(r => {
+        const btn = document.getElementById(`btnRatio_${r}`);
+        if (r === ratio.replace(':', '_')) {
+          btn.className = 'px-3 py-1 bg-pink-600 text-white font-bold rounded-lg transition text-[11px]';
+        } else {
+          btn.className = 'px-3 py-1 text-slate-400 hover:text-white font-semibold rounded-lg transition text-[11px]';
+        }
+      });
+
+      const labelMap = {
+        '1:1': '1080 × 1080 (Instagram / WhatsApp DP)',
+        '9:16': '1080 × 1920 (WhatsApp Status / IG Story)',
+        '16:9': '1200 × 675 (Facebook / LinkedIn Banner)'
+      };
+      document.getElementById('canvasDimLabel').innerText = labelMap[ratio];
+
+      updateLivePost();
+    }
+
+    function setFrameStyle(frameKey) {
+      currentFrame = frameKey;
+      Object.keys(FRAME_CONFIGS).forEach(key => {
+        const btn = document.getElementById(`btnFrame_${key}`);
+        if (btn) {
+          if (key === frameKey) {
+            btn.className = 'p-2.5 bg-slate-950 border-2 border-pink-500 rounded-xl text-pink-300 font-bold text-[11px] text-center shadow-md shadow-pink-500/20';
+          } else {
+            btn.className = 'p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-400 hover:bg-slate-900 font-semibold text-[11px] text-center';
+          }
+        }
+      });
+      updateLivePost();
     }
 
     function handleImageUpload(e) {
@@ -253,24 +685,49 @@
 
       const reader = new FileReader();
       reader.onload = (event) => {
+        uploadedImageUrl = event.target.result;
         const overlay = document.getElementById('bgImageOverlay');
-        overlay.style.backgroundImage = `url(${event.target.result})`;
-        overlay.style.opacity = '0.45';
+        overlay.style.backgroundImage = `url('${uploadedImageUrl}')`;
+        document.getElementById('btnRemovePhoto').classList.remove('hidden');
+        updatePhotoTransform();
       };
       reader.readAsDataURL(file);
+    }
+
+    function removePhoto() {
+      uploadedImageUrl = null;
+      document.getElementById('imageFileInput').value = '';
+      const overlay = document.getElementById('bgImageOverlay');
+      overlay.style.backgroundImage = 'none';
+      document.getElementById('btnRemovePhoto').classList.add('hidden');
+    }
+
+    function updatePhotoTransform() {
+      const zoom = document.getElementById('cropZoom').value;
+      const posY = document.getElementById('cropPosY').value;
+      const opacity = document.getElementById('photoOpacity').value;
+
+      document.getElementById('zoomVal').innerText = `${zoom}%`;
+
+      const overlay = document.getElementById('bgImageOverlay');
+      overlay.style.opacity = opacity;
+      overlay.style.backgroundSize = `${zoom}%`;
+      overlay.style.backgroundPosition = `center ${posY}`;
     }
 
     async function downloadGeneratedImage() {
       const canvasEl = document.getElementById('postCanvas');
       try {
         const canvas = await html2canvas(canvasEl, {
-          scale: 2, // High resolution output
+          scale: 2.5, // Razor-sharp 4K / High DPI rendering
           useCORS: true,
-          backgroundColor: null
+          backgroundColor: null,
+          logging: false
         });
 
         const link = document.createElement('a');
-        link.download = `Grambi_Social_Post_${Date.now()}.png`;
+        const filenameHeading = (document.getElementById('ctrlHeading').value || 'Social_Post').replace(/[^a-z0-9]/gi, '_');
+        link.download = `${filenameHeading}_${Date.now()}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       } catch (err) {
