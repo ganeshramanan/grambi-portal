@@ -319,7 +319,10 @@
 
     async function loadCampaigns() {
       try {
-        const res = await fetch('/api/whatsapp/campaigns');
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/whatsapp/campaigns', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         const data = await res.json();
         const list = document.getElementById('campaignList');
 
@@ -328,22 +331,38 @@
           return;
         }
 
-        list.innerHTML = data.campaigns.map(c => `
+        list.innerHTML = data.campaigns.map(c => {
+          const dateStr = c.createdAt 
+            ? new Date(c.createdAt).toLocaleString(undefined, { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: true 
+              })
+            : '';
+
+          return `
           <div class="p-4 rounded-xl border border-slate-800 bg-slate-950/60 space-y-2.5">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-white text-xs truncate max-w-[200px]">${c.name}</span>
-              <a href="/api/whatsapp/campaigns/${c.id}/export" class="text-[10px] text-emerald-400 hover:underline flex items-center gap-1">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="font-bold text-white text-xs block truncate max-w-[200px]">${c.name}</span>
+                ${dateStr ? `<span class="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5"><i class="ri-time-line text-slate-500"></i> ${dateStr}</span>` : ''}
+              </div>
+              <a href="/api/whatsapp/campaigns/${c.id}/export" class="text-[10px] text-emerald-400 hover:underline flex items-center gap-1 shrink-0 ml-2">
                 <i class="ri-download-2-line"></i> Export CSV
               </a>
             </div>
-            <div class="flex gap-2 text-[11px]">
+            <div class="flex flex-wrap gap-2 text-[11px]">
               <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${c.templateName}</span>
               <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${c.stats.sent} Sent</span>
               ${c.stats.delivered ? `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">${c.stats.delivered} Delivered</span>` : ''}
               ${c.stats.failed ? `<span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">${c.stats.failed} Failed</span>` : ''}
             </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
       } catch (e) {}
     }
 
