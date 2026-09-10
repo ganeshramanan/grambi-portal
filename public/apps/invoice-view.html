@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Invoice & Bill Receipt — Grambi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #invoiceBox, #invoiceBox * {
+        visibility: visible;
+      }
+      #invoiceBox {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col items-center py-8 px-4">
+
+  <!-- Main Invoice Card -->
+  <div id="invoiceBox" class="w-full max-w-2xl bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-10 space-y-6">
+    
+    <!-- Header: Business Info & Invoice ID -->
+    <div class="flex justify-between items-start border-b border-slate-100 pb-6">
+      <div class="flex items-start gap-3.5">
+        <div id="merchantLogoBox" class="w-14 h-14 rounded-2xl bg-amber-500 text-slate-950 font-black flex items-center justify-center text-2xl shadow-md border border-amber-400">
+          G
+        </div>
+        <div>
+          <h1 id="merchantName" class="font-black text-xl text-slate-900 leading-tight">Grambi Business</h1>
+          <p id="merchantTagline" class="text-xs text-slate-500 mt-0.5">Authorized Service Specialist</p>
+          <p id="merchantPhone" class="text-xs text-slate-500 font-mono mt-0.5">+91 9876543210</p>
+          <p id="merchantAddress" class="text-[11px] text-slate-400 mt-0.5">Chennai, Tamil Nadu</p>
+        </div>
+      </div>
+
+      <div class="text-right">
+        <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">Tax Invoice / Bill</span>
+        <span id="invNumber" class="text-base font-mono font-black text-slate-900 block">INV-2026-0001</span>
+        <span id="invDate" class="text-xs text-slate-500 block mt-0.5">10 Sep 2026</span>
+        <span id="invStatusBadge" class="inline-block mt-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
+          PENDING
+        </span>
+      </div>
+    </div>
+
+    <!-- Billed To & Job Reference -->
+    <div class="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
+      <div>
+        <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Billed To</span>
+        <div id="custName" class="font-extrabold text-slate-900 text-sm">Customer Name</div>
+        <div id="custPhone" class="text-slate-600 font-mono mt-0.5">+91 9876543210</div>
+      </div>
+      <div class="text-right">
+        <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Reference / Job Info</span>
+        <div id="refNo" class="font-extrabold text-slate-900 font-mono text-sm">TN 10 AB 1234</div>
+        <div id="payMode" class="text-slate-500 text-[11px] mt-0.5">Payment: UPI</div>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="overflow-hidden rounded-2xl border border-slate-200">
+      <table class="w-full text-left text-xs">
+        <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+          <tr>
+            <th class="p-3.5">Item / Service Description</th>
+            <th class="p-3.5 text-center">Qty</th>
+            <th class="p-3.5 text-right">Rate</th>
+            <th class="p-3.5 text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="itemsTableBody" class="divide-y divide-slate-100 text-slate-800">
+          <!-- Injected via JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Calculations & UPI Payment Section -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center pt-2">
+      <!-- UPI QR Code Payment Box -->
+      <div id="upiPaymentSection" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-3.5">
+        <img id="upiQrImage" src="" alt="UPI QR" class="w-20 h-20 rounded-xl border border-emerald-200 bg-white p-1 shrink-0" />
+        <div>
+          <span class="text-[10px] font-bold uppercase text-emerald-700 flex items-center gap-1">
+            <i class="ri-qr-code-line"></i> Scan & Pay via UPI
+          </span>
+          <span id="upiIdText" class="text-xs font-mono font-bold text-slate-900 block truncate max-w-[170px] mt-0.5">merchant@upi</span>
+          <a id="directUpiPayBtn" href="#" class="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow transition">
+            <i class="ri-wallet-3-line"></i> Pay in UPI App
+          </a>
+        </div>
+      </div>
+
+      <!-- Totals Summary -->
+      <div class="space-y-2 text-xs text-right font-medium">
+        <div class="flex justify-between text-slate-500">
+          <span>Subtotal:</span>
+          <span id="txtSubtotal" class="font-mono text-slate-800">₹0</span>
+        </div>
+        <div id="rowDiscount" class="flex justify-between text-slate-500">
+          <span>Discount:</span>
+          <span id="txtDiscount" class="font-mono text-rose-600">-₹0</span>
+        </div>
+        <div id="rowTax" class="flex justify-between text-slate-500">
+          <span id="txtTaxLabel">GST (18%):</span>
+          <span id="txtTaxAmount" class="font-mono text-slate-800">₹0</span>
+        </div>
+        <div class="flex justify-between text-base font-black text-slate-900 border-t border-slate-200 pt-2.5">
+          <span>Grand Total:</span>
+          <span id="txtGrandTotal" class="font-mono text-amber-600 text-xl font-black">₹0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes & Advice -->
+    <div id="notesBox" class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 leading-relaxed">
+      <span class="font-bold block mb-0.5">📝 Notes / Advice:</span>
+      <span id="txtNotes">Thank you for choosing our services!</span>
+    </div>
+
+    <!-- Actions Bar -->
+    <div class="pt-4 border-t border-slate-100 flex flex-wrap justify-between items-center gap-3 no-print">
+      <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition">
+        <i class="ri-printer-line text-sm"></i> Print / Save as PDF
+      </button>
+
+      <a id="btnContactMerchant" href="#" target="_blank" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow transition">
+        <i class="ri-whatsapp-fill text-sm"></i> Contact Business
+      </a>
+    </div>
+  </div>
+
+  <footer class="mt-8 text-center text-xs text-slate-400 no-print">
+    Powered by <a href="/" class="font-bold text-slate-600 hover:underline">Grambi.in</a> Digital Commerce
+  </footer>
+
+  <script>
+    async function loadPublicInvoice() {
+      const pathParts = window.location.pathname.split('/');
+      const invoiceId = pathParts[pathParts.length - 1];
+
+      try {
+        const res = await fetch(`/api/invoices/public/${encodeURIComponent(invoiceId)}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Invoice not found');
+
+        const inv = data.invoice;
+        const m = data.merchant;
+
+        document.title = `Bill #${inv.invoiceNumber} — ${m.name}`;
+
+        // Merchant Details
+        document.getElementById('merchantName').innerText = m.name;
+        document.getElementById('merchantTagline').innerText = m.tagline || 'Quality Business Services';
+        document.getElementById('merchantPhone').innerText = m.phone || '';
+        document.getElementById('merchantAddress').innerText = m.address || '';
+        
+        if (m.name) {
+          document.getElementById('merchantLogoBox').innerText = m.name.trim().charAt(0).toUpperCase();
+        }
+
+        // Invoice Meta
+        document.getElementById('invNumber').innerText = inv.invoiceNumber;
+        document.getElementById('invDate').innerText = new Date(inv.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+
+        // Status Badge
+        const badge = document.getElementById('invStatusBadge');
+        const upiSection = document.getElementById('upiPaymentSection');
+        if (inv.status === 'PAID') {
+          badge.className = 'inline-block mt-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300';
+          badge.innerText = '✅ PAID IN FULL';
+          if (upiSection) upiSection.classList.add('hidden');
+        } else {
+          badge.className = 'inline-block mt-2 px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300';
+          badge.innerText = '⏳ PAYMENT PENDING';
+        }
+
+        // Customer Info
+        document.getElementById('custName').innerText = inv.customerName;
+        document.getElementById('custPhone').innerText = inv.customerPhone;
+        document.getElementById('refNo').innerText = inv.referenceNo || '—';
+        document.getElementById('payMode').innerText = `Payment Mode: ${inv.paymentMethod || 'UPI / Cash'}`;
+
+        // Line Items
+        const tbody = document.getElementById('itemsTableBody');
+        tbody.innerHTML = (inv.items || []).map(it => `
+          <tr class="hover:bg-slate-50">
+            <td class="p-3.5 font-semibold text-slate-900">${it.name}</td>
+            <td class="p-3.5 text-center font-mono text-slate-600">${it.qty}</td>
+            <td class="p-3.5 text-right font-mono text-slate-600">₹${(it.rate || 0).toLocaleString('en-IN')}</td>
+            <td class="p-3.5 text-right font-mono font-bold text-slate-900">₹${((it.qty || 1) * (it.rate || 0)).toLocaleString('en-IN')}</td>
+          </tr>
+        `).join('');
+
+        // Totals
+        document.getElementById('txtSubtotal').innerText = `₹${(inv.subtotal || 0).toLocaleString('en-IN')}`;
+        document.getElementById('txtDiscount').innerText = `-₹${(inv.discount || 0).toLocaleString('en-IN')}`;
+        document.getElementById('txtTaxLabel').innerText = `GST (${inv.taxPercent || 0}%):`;
+        document.getElementById('txtTaxAmount').innerText = `₹${(inv.taxAmount || 0).toLocaleString('en-IN')}`;
+        document.getElementById('txtGrandTotal').innerText = `₹${(inv.totalAmount || 0).toLocaleString('en-IN')}`;
+
+        // Notes
+        if (inv.notes) {
+          document.getElementById('txtNotes').innerText = inv.notes;
+        } else {
+          document.getElementById('notesBox').classList.add('hidden');
+        }
+
+        // UPI Pay URL & QR
+        const upiId = inv.upiId || 'merchant@upi';
+        document.getElementById('upiIdText').innerText = upiId;
+        const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(m.name)}&am=${inv.totalAmount}&cu=INR`;
+        document.getElementById('upiQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiUri)}`;
+        document.getElementById('directUpiPayBtn').href = upiUri;
+
+        // Contact Button
+        const cleanPhone = (m.phone || '').replace(/\D/g, '');
+        document.getElementById('btnContactMerchant').href = `https://wa.me/${cleanPhone}?text=Hi%20${encodeURIComponent(m.name)},%20I%20have%20a%20question%20regarding%20invoice%20${encodeURIComponent(inv.invoiceNumber)}`;
+
+      } catch (err) {
+        document.getElementById('invoiceBox').innerHTML = `
+          <div class="text-center py-12 space-y-3">
+            <i class="ri-error-warning-line text-4xl text-rose-500"></i>
+            <h2 class="text-lg font-bold text-slate-900">Invoice Not Found</h2>
+            <p class="text-xs text-slate-500">This invoice link may be invalid or deleted by the merchant.</p>
+          </div>
+        `;
+      }
+    }
+
+    loadPublicInvoice();
+  </script>
+</body>
+</html>

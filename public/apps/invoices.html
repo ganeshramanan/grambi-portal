@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grambi — Universal Digital Invoicing & WhatsApp Billing Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <script src="/theme.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printableInvoice, #printableInvoice * {
+        visibility: visible;
+      }
+      #printableInvoice {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 20px;
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/portal.html" class="text-slate-400 hover:text-white flex items-center gap-1 text-xs border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2">
+          <i class="ri-arrow-left-line"></i> Launchpad
+        </a>
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-orange-600 text-slate-950 flex items-center justify-center font-black text-lg shadow-md shadow-amber-500/20">
+          <i class="ri-bill-line"></i>
+        </div>
+        <div>
+          <span class="font-bold text-base block leading-none">Universal Digital Invoicing</span>
+          <span class="text-[10px] text-amber-400 font-mono">WhatsApp Billing & UPI Pay</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
+          <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
+        </button>
+        <button onclick="window.print()" class="px-3.5 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg flex items-center gap-1.5 transition">
+          <i class="ri-printer-line"></i> Print Bill
+        </button>
+        <span id="userBadge" class="text-xs text-slate-400 px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Loading...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full space-y-8">
+    
+    <!-- Top Stats Row -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 no-print">
+      <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-1">
+        <span class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Total Billed</span>
+        <div id="statTotalBilled" class="text-2xl font-black text-white font-mono">₹0</div>
+        <span class="text-[10px] text-slate-500">Gross revenue generated</span>
+      </div>
+      <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-1">
+        <span class="text-[11px] font-bold uppercase text-emerald-400 tracking-wider">Total Collected</span>
+        <div id="statTotalCollected" class="text-2xl font-black text-emerald-400 font-mono">₹0</div>
+        <span class="text-[10px] text-emerald-500/80">Received via UPI / Cash</span>
+      </div>
+      <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-1">
+        <span class="text-[11px] font-bold uppercase text-amber-400 tracking-wider">Pending / Due</span>
+        <div id="statTotalPending" class="text-2xl font-black text-amber-400 font-mono">₹0</div>
+        <span class="text-[10px] text-amber-500/80">Outstanding payments</span>
+      </div>
+      <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-1">
+        <span class="text-[11px] font-bold uppercase text-blue-400 tracking-wider">Invoices Created</span>
+        <div id="statTotalInvoices" class="text-2xl font-black text-blue-400 font-mono">0</div>
+        <span class="text-[10px] text-slate-500">Digital records stored</span>
+      </div>
+    </div>
+
+    <!-- Workspace Grid: Invoice Builder (Left 6 Cols) vs Live Preview & Pay QR (Right 6 Cols) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 no-print">
+      
+      <!-- Left: Invoice Generator Form (6 Cols) -->
+      <div class="lg:col-span-6 space-y-6">
+        <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-5">
+          
+          <!-- Industry Preset Selector -->
+          <div class="space-y-2 border-b border-slate-800/80 pb-4">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">1-Click Industry Preset</label>
+              <span class="text-[10px] text-amber-400 font-mono">Auto-populates items</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-xs" id="presetButtonsContainer">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+
+          <!-- Customer & Reference Details -->
+          <form onsubmit="handleCreateInvoice(event)" class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Customer Full Name *</label>
+                <input type="text" id="custName" required oninput="updateLivePreview()" placeholder="e.g. Ramesh Kumar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-medium" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp Phone Number *</label>
+                <input type="tel" id="custPhone" required oninput="updateLivePreview()" placeholder="919876543210" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-mono" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label id="refLabel" class="block text-xs font-semibold text-slate-300 mb-1">Reference / Vehicle No.</label>
+                <input type="text" id="refNo" oninput="updateLivePreview()" placeholder="e.g. TN 10 AB 1234 / Bill Ref" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Merchant UPI ID (For QR Pay)</label>
+                <input type="text" id="upiId" oninput="updateLivePreview()" placeholder="e.g. yourname@okaxis" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-mono text-amber-300" />
+              </div>
+            </div>
+
+            <!-- Dynamic Line Items Table -->
+            <div class="space-y-2 pt-2 border-t border-slate-800/80">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Bill Items & Services</span>
+                <button type="button" onclick="addLineItem()" class="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1">
+                  <i class="ri-add-circle-line"></i> + Add Item
+                </button>
+              </div>
+
+              <div id="lineItemsList" class="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <!-- Discounts & Tax (GST) -->
+            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800/80">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Discount Amount (₹)</label>
+                <input type="number" id="billDiscount" min="0" value="0" oninput="calculateTotals()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">GST / Tax Rate</label>
+                <select id="billTaxPercent" onchange="calculateTotals()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 cursor-pointer">
+                  <option value="0">0% (No Tax / Composition)</option>
+                  <option value="5">5% GST</option>
+                  <option value="12">12% GST</option>
+                  <option value="18" selected>18% GST (Standard)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Status & Payment Method -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Payment Status</label>
+                <select id="billStatus" onchange="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 cursor-pointer font-bold">
+                  <option value="PAID">PAID (Settled)</option>
+                  <option value="PENDING" selected>PENDING (Payment Due)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Payment Method</label>
+                <select id="billPaymentMethod" onchange="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 cursor-pointer">
+                  <option value="UPI">UPI (GPay / PhonePe / Paytm)</option>
+                  <option value="CASH">Cash at Counter</option>
+                  <option value="CARD">Credit / Debit Card</option>
+                  <option value="NET_BANKING">Bank Transfer / IMPS</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Notes & Reminder -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Notes & Follow-up Reminder</label>
+              <textarea id="billNotes" rows="2" oninput="updateLivePreview()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 leading-relaxed" placeholder="e.g. Next service due in 3 months. Warranty valid for 6 months."></textarea>
+            </div>
+
+            <div id="invoiceSaveStatus" class="text-xs hidden"></div>
+
+            <button type="submit" id="btnSaveInvoice" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-amber-500/20 cursor-pointer">
+              <i class="ri-check-double-line"></i> Save & Generate Digital Invoice
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right: Live Digital Invoice Preview & WhatsApp Action Bar (6 Cols) -->
+      <div class="lg:col-span-6 space-y-4">
+        <div class="flex items-center justify-between px-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Live Customer Invoice Preview</span>
+          <span class="text-[11px] text-emerald-400 font-mono">Dynamic UPI Pay Ready</span>
+        </div>
+
+        <!-- The Live Printable / Exportable Invoice Card -->
+        <div id="printableInvoice" class="p-6 sm:p-8 rounded-3xl bg-white text-slate-900 border border-slate-200 shadow-2xl space-y-6">
+          
+          <!-- Invoice Header -->
+          <div class="flex justify-between items-start border-b border-slate-100 pb-5">
+            <div class="flex items-start gap-3">
+              <div id="prevLogoBox" class="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 font-black flex items-center justify-center text-2xl shadow-md">
+                V
+              </div>
+              <div>
+                <h3 id="prevBusinessName" class="font-black text-lg text-slate-900 leading-tight">VT Motors</h3>
+                <p id="prevBusinessTag" class="text-xs text-slate-500">Authorized Care & Service Center</p>
+                <p id="prevBusinessContact" class="text-[11px] text-slate-400 font-mono mt-0.5">+91 9876543210</p>
+              </div>
+            </div>
+
+            <div class="text-right">
+              <span id="prevInvoiceNumber" class="text-xs font-mono font-bold text-slate-400 block">INV-2026-0001</span>
+              <span id="prevInvoiceDate" class="text-[11px] text-slate-500 font-medium block">10 Sep 2026</span>
+              <span id="prevStatusBadge" class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300">
+                PENDING
+              </span>
+            </div>
+          </div>
+
+          <!-- Billed To & Vehicle / Ref -->
+          <div class="grid grid-cols-2 gap-4 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div>
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Billed To</span>
+              <div id="prevCustName" class="font-extrabold text-slate-900">Ramesh Kumar</div>
+              <div id="prevCustPhone" class="text-slate-600 font-mono">+91 9876543210</div>
+            </div>
+            <div class="text-right">
+              <span id="prevRefLabel" class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Vehicle / Ref No.</span>
+              <div id="prevRefNo" class="font-extrabold text-slate-900 font-mono">TN 10 AB 1234</div>
+              <div id="prevPaymentMethod" class="text-slate-500 text-[11px]">Mode: UPI</div>
+            </div>
+          </div>
+
+          <!-- Items Table -->
+          <div class="overflow-hidden rounded-2xl border border-slate-100">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100/80 text-slate-600 font-bold border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Item / Service Description</th>
+                  <th class="p-3 text-center">Qty</th>
+                  <th class="p-3 text-right">Rate</th>
+                  <th class="p-3 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="prevItemsTableBody" class="divide-y divide-slate-100 text-slate-700">
+                <!-- Dynamically updated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Calculation Summary & UPI QR Code -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center pt-2">
+            <!-- Left: Dynamic Scan & Pay UPI QR -->
+            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3">
+              <img id="prevUpiQrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=upi://pay?pa=vt-motors@upi&pn=VT%20Motors&am=1499&cu=INR" alt="UPI QR" class="w-16 h-16 rounded-xl border border-slate-200 bg-white p-1" />
+              <div>
+                <span class="text-[10px] font-bold uppercase text-emerald-600 flex items-center gap-1">
+                  <i class="ri-qr-code-line"></i> Scan & Pay via UPI
+                </span>
+                <span id="prevUpiId" class="text-[11px] font-mono font-bold text-slate-800 block truncate max-w-[140px]">vt-motors@upi</span>
+                <span class="text-[9px] text-slate-400">GPay, PhonePe, Paytm, BHIM</span>
+              </div>
+            </div>
+
+            <!-- Right: Subtotal, GST & Total -->
+            <div class="space-y-1.5 text-xs text-right font-medium">
+              <div class="flex justify-between text-slate-500">
+                <span>Subtotal:</span>
+                <span id="prevSubtotal" class="font-mono text-slate-800">₹0</span>
+              </div>
+              <div class="flex justify-between text-slate-500">
+                <span>Discount:</span>
+                <span id="prevDiscount" class="font-mono text-rose-600">-₹0</span>
+              </div>
+              <div class="flex justify-between text-slate-500">
+                <span id="prevTaxLabel">GST (18%):</span>
+                <span id="prevTaxAmount" class="font-mono text-slate-800">₹0</span>
+              </div>
+              <div class="flex justify-between text-base font-black text-slate-900 border-t border-slate-200 pt-2">
+                <span>Grand Total:</span>
+                <span id="prevGrandTotal" class="font-mono text-amber-600 text-lg">₹0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes / Service Reminder -->
+          <div id="prevNotesBox" class="p-3 bg-amber-50/70 border border-amber-200 rounded-2xl text-[11px] text-amber-900 leading-relaxed">
+            <span class="font-bold block mb-0.5">📝 Notes & Advice:</span>
+            <span id="prevNotesText">Thank you for your business! Next periodic service recommended in 3 months.</span>
+          </div>
+        </div>
+
+        <!-- Action Bar: Send on WhatsApp / Print Bill -->
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button type="button" onclick="sendInvoiceOnWhatsApp()" class="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition cursor-pointer">
+            <i class="ri-whatsapp-fill text-base"></i> Send Bill on WhatsApp
+          </button>
+          <button type="button" onclick="window.print()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition cursor-pointer">
+            <i class="ri-printer-fill text-base"></i> Print / Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Section: Invoice History & Records Table (With Multi-Delete) -->
+    <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4 no-print">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+        <div class="flex items-center gap-2.5">
+          <input type="checkbox" id="selectAllInvoices" onchange="toggleSelectAllInvoices(this)" class="rounded bg-slate-950 border-slate-700 text-amber-500 focus:ring-0 cursor-pointer w-3.5 h-3.5" title="Select All Invoices" />
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="ri-history-line text-amber-400"></i> Invoice History & Bills Archive
+          </h3>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btnBulkDeleteInvoices" onclick="deleteSelectedInvoices()" class="hidden px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1">
+            <i class="ri-delete-bin-line"></i> Delete (<span id="selectedInvoicesCount">0</span>)
+          </button>
+          <input type="text" id="searchInvoicesInput" oninput="loadInvoices()" placeholder="Search customer, phone or bill no..." class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 w-48 sm:w-64" />
+          <button onclick="loadInvoices()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 border border-slate-800 px-2.5 py-1.5 rounded-lg">
+            <i class="ri-refresh-line"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Invoices Table Container -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider text-[10px] border-b border-slate-800">
+            <tr>
+              <th class="p-3 w-8"></th>
+              <th class="p-3">Bill No. & Date</th>
+              <th class="p-3">Customer & Phone</th>
+              <th class="p-3">Reference / Vehicle</th>
+              <th class="p-3 text-right">Amount</th>
+              <th class="p-3 text-center">Status</th>
+              <th class="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="invoicesTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            <tr>
+              <td colspan="7" class="p-6 text-center text-slate-500">Loading invoice records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let industryPresets = [];
+    let currentPresetKey = 'AUTOMOTIVE';
+    let currentLineItems = [];
+    let currentMerchant = {
+      businessName: 'VT Motors',
+      tagline: 'Multi-Brand Two & Four Wheeler Specialist',
+      phone: '+91 9876543210',
+      address: 'Pammal, Chennai',
+      upiId: 'vt-motors@okaxis'
+    };
+    let selectedInvoiceIds = new Set();
+    let savedInvoiceRecord = null;
+
+    async function initInvoicingApp() {
+      const token = localStorage.getItem('grambi_token');
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const user = await res.json();
+          document.getElementById('userBadge').innerText = user.businessName || user.email;
+          currentMerchant.businessName = user.businessName || 'My Business';
+          currentMerchant.phone = user.phone || '+91 9876543210';
+          
+          document.getElementById('prevBusinessName').innerText = currentMerchant.businessName;
+          document.getElementById('prevBusinessContact').innerText = currentMerchant.phone;
+          const initial = currentMerchant.businessName.trim().charAt(0).toUpperCase();
+          document.getElementById('prevLogoBox').innerText = initial;
+          
+          // Generate default UPI ID if blank
+          const cleanSlug = currentMerchant.businessName.toLowerCase().replace(/[^a-z0-9]/g, '');
+          document.getElementById('upiId').value = `${cleanSlug}@upi`;
+          currentMerchant.upiId = `${cleanSlug}@upi`;
+        }
+      } catch (e) {}
+
+      await loadPresets();
+      loadInvoices();
+    }
+
+    async function loadPresets() {
+      try {
+        const res = await fetch('/api/invoices/presets');
+        const data = await res.json();
+        industryPresets = data.presets || [];
+        renderPresetButtons();
+        applyPreset('AUTOMOTIVE');
+      } catch (e) {
+        console.warn('Failed to load industry presets:', e);
+      }
+    }
+
+    function renderPresetButtons() {
+      const container = document.getElementById('presetButtonsContainer');
+      container.innerHTML = industryPresets.map(p => `
+        <button type="button" onclick="applyPreset('${p.key}')" id="btnPreset_${p.key}" class="p-2.5 rounded-xl border ${p.key === currentPresetKey ? 'border-amber-500 bg-amber-500/10 text-amber-300 font-bold' : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 hover:text-white'} transition text-left flex items-center gap-1.5 truncate">
+          <i class="${p.icon} text-sm shrink-0"></i>
+          <span class="truncate text-[11px]">${p.name.split(' ')[0]}</span>
+        </button>
+      `).join('');
+    }
+
+    function applyPreset(presetKey) {
+      currentPresetKey = presetKey;
+      const target = industryPresets.find(p => p.key === presetKey);
+      if (!target) return;
+
+      renderPresetButtons();
+
+      // Update Labels & Notes
+      document.getElementById('refLabel').innerText = target.referenceLabel;
+      document.getElementById('prevRefLabel').innerText = target.referenceLabel.split('(')[0].trim();
+      document.getElementById('billNotes').value = target.defaultNotes;
+
+      // Copy Sample Items
+      currentLineItems = target.sampleItems.map(it => ({ ...it }));
+      renderLineItemsEditor();
+      calculateTotals();
+    }
+
+    function addLineItem() {
+      currentLineItems.push({ name: '', qty: 1, rate: 0, amount: 0 });
+      renderLineItemsEditor();
+    }
+
+    function removeLineItem(idx) {
+      if (currentLineItems.length <= 1) {
+        alert('An invoice must have at least one line item.');
+        return;
+      }
+      currentLineItems.splice(idx, 1);
+      renderLineItemsEditor();
+      calculateTotals();
+    }
+
+    function updateItemField(idx, field, val) {
+      if (!currentLineItems[idx]) return;
+      currentLineItems[idx][field] = val;
+      if (field === 'qty' || field === 'rate') {
+        const q = parseFloat(currentLineItems[idx].qty) || 0;
+        const r = parseFloat(currentLineItems[idx].rate) || 0;
+        currentLineItems[idx].amount = q * r;
+      }
+      calculateTotals();
+    }
+
+    function renderLineItemsEditor() {
+      const list = document.getElementById('lineItemsList');
+      list.innerHTML = currentLineItems.map((it, idx) => `
+        <div class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center gap-2 text-xs">
+          <input type="text" value="${it.name || ''}" oninput="updateItemField(${idx}, 'name', this.value)" placeholder="Item or Service Name" class="flex-grow bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500 font-medium" />
+          <input type="number" min="1" value="${it.qty || 1}" oninput="updateItemField(${idx}, 'qty', this.value)" placeholder="Qty" class="w-14 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white font-mono text-center focus:outline-none focus:border-amber-500" />
+          <input type="number" min="0" value="${it.rate || 0}" oninput="updateItemField(${idx}, 'rate', this.value)" placeholder="Rate (₹)" class="w-20 bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-white font-mono text-right focus:outline-none focus:border-amber-500" />
+          <button type="button" onclick="removeLineItem(${idx})" class="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg" title="Delete Row">
+            <i class="ri-delete-bin-line"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function calculateTotals() {
+      const subtotal = currentLineItems.reduce((acc, it) => acc + ((parseFloat(it.qty) || 1) * (parseFloat(it.rate) || 0)), 0);
+      const discount = parseFloat(document.getElementById('billDiscount').value) || 0;
+      const taxRate = parseFloat(document.getElementById('billTaxPercent').value) || 0;
+
+      const taxable = Math.max(0, subtotal - discount);
+      const taxAmount = (taxable * taxRate) / 100;
+      const grandTotal = Math.round((taxable + taxAmount) * 100) / 100;
+
+      document.getElementById('prevSubtotal').innerText = `₹${subtotal.toLocaleString('en-IN')}`;
+      document.getElementById('prevDiscount').innerText = `-₹${discount.toLocaleString('en-IN')}`;
+      document.getElementById('prevTaxLabel').innerText = `GST (${taxRate}%):`;
+      document.getElementById('prevTaxAmount').innerText = `₹${taxAmount.toLocaleString('en-IN')}`;
+      document.getElementById('prevGrandTotal').innerText = `₹${grandTotal.toLocaleString('en-IN')}`;
+
+      updateLivePreview(grandTotal);
+    }
+
+    function updateLivePreview(grandTotalOverride) {
+      const custName = document.getElementById('custName').value || 'Customer Name';
+      const custPhone = document.getElementById('custPhone').value || '+91 9876543210';
+      const refNo = document.getElementById('refNo').value || 'Ref / Vehicle';
+      const upiId = document.getElementById('upiId').value || currentMerchant.upiId || 'merchant@upi';
+      const status = document.getElementById('billStatus').value;
+      const method = document.getElementById('billPaymentMethod').value;
+      const notes = document.getElementById('billNotes').value;
+
+      document.getElementById('prevCustName').innerText = custName;
+      document.getElementById('prevCustPhone').innerText = custPhone;
+      document.getElementById('prevRefNo').innerText = refNo;
+      document.getElementById('prevPaymentMethod').innerText = `Mode: ${method}`;
+      document.getElementById('prevUpiId').innerText = upiId;
+      document.getElementById('prevNotesText').innerText = notes || 'Thank you for your business!';
+
+      // Status Badge Styling
+      const statusBadge = document.getElementById('prevStatusBadge');
+      if (status === 'PAID') {
+        statusBadge.className = 'inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300';
+        statusBadge.innerText = 'PAID';
+      } else {
+        statusBadge.className = 'inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300';
+        statusBadge.innerText = 'PENDING';
+      }
+
+      // Render Items in Preview Table
+      const tbody = document.getElementById('prevItemsTableBody');
+      tbody.innerHTML = currentLineItems.map(it => `
+        <tr class="hover:bg-slate-50/80">
+          <td class="p-3 font-semibold text-slate-900">${it.name || 'Untitled Service'}</td>
+          <td class="p-3 text-center font-mono text-slate-600">${it.qty || 1}</td>
+          <td class="p-3 text-right font-mono text-slate-600">₹${(parseFloat(it.rate) || 0).toLocaleString('en-IN')}</td>
+          <td class="p-3 text-right font-mono font-bold text-slate-900">₹${((parseFloat(it.qty) || 1) * (parseFloat(it.rate) || 0)).toLocaleString('en-IN')}</td>
+        </tr>
+      `).join('');
+
+      // Dynamic UPI Scan & Pay QR Code
+      const subtotal = currentLineItems.reduce((acc, it) => acc + ((parseFloat(it.qty) || 1) * (parseFloat(it.rate) || 0)), 0);
+      const discount = parseFloat(document.getElementById('billDiscount').value) || 0;
+      const taxRate = parseFloat(document.getElementById('billTaxPercent').value) || 0;
+      const taxable = Math.max(0, subtotal - discount);
+      const grandTotal = grandTotalOverride !== undefined ? grandTotalOverride : Math.round((taxable + (taxable * taxRate) / 100) * 100) / 100;
+
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(currentMerchant.businessName)}&am=${grandTotal}&cu=INR`;
+      document.getElementById('prevUpiQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiUrl)}`;
+    }
+
+    async function handleCreateInvoice(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSaveInvoice');
+      const statusEl = document.getElementById('invoiceSaveStatus');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ri-loader-4-line animate-spin"></i> Saving Digital Bill...';
+
+      const payload = {
+        customerName: document.getElementById('custName').value.trim(),
+        customerPhone: document.getElementById('custPhone').value.trim(),
+        businessCategory: currentPresetKey,
+        referenceNo: document.getElementById('refNo').value.trim(),
+        upiId: document.getElementById('upiId').value.trim(),
+        items: currentLineItems,
+        discount: parseFloat(document.getElementById('billDiscount').value) || 0,
+        taxPercent: parseFloat(document.getElementById('billTaxPercent').value) || 0,
+        status: document.getElementById('billStatus').value,
+        paymentMethod: document.getElementById('billPaymentMethod').value,
+        notes: document.getElementById('billNotes').value.trim()
+      };
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/invoices', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save invoice');
+
+        savedInvoiceRecord = data.invoice;
+        document.getElementById('prevInvoiceNumber').innerText = data.invoice.invoiceNumber;
+        document.getElementById('prevInvoiceDate').innerText = new Date(data.invoice.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+
+        statusEl.className = "text-xs text-emerald-400 block p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl font-semibold";
+        statusEl.innerText = `✅ ${data.message} Ready to send on WhatsApp.`;
+
+        loadInvoices();
+      } catch (err) {
+        statusEl.className = "text-xs text-rose-400 block p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl";
+        statusEl.innerText = `❌ ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-check-double-line"></i> Save & Generate Digital Invoice';
+      }
+    }
+
+    function sendInvoiceOnWhatsApp() {
+      const custPhone = document.getElementById('custPhone').value.replace(/\D/g, '');
+      const custName = document.getElementById('custName').value || 'Customer';
+      const refNo = document.getElementById('refNo').value;
+      const grandTotal = document.getElementById('prevGrandTotal').innerText;
+      const status = document.getElementById('billStatus').value;
+      const invoiceNo = savedInvoiceRecord ? savedInvoiceRecord.invoiceNumber : document.getElementById('prevInvoiceNumber').innerText;
+      const notes = document.getElementById('billNotes').value;
+
+      const itemsSummary = currentLineItems
+        .map(it => `• ${it.name} (x${it.qty}) - ₹${(it.qty * it.rate).toLocaleString('en-IN')}`)
+        .join('\n');
+
+      const invoiceLink = savedInvoiceRecord ? `https://grambi.in/invoice/${savedInvoiceRecord.id}` : `https://grambi.in`;
+
+      const msg = `*${currentMerchant.businessName} — Digital Bill & Receipt* 📄\n\n` +
+        `Dear *${custName}*,\n` +
+        `Thank you for your business! Here is your bill summary:\n\n` +
+        `*Invoice No:* ${invoiceNo}\n` +
+        (refNo ? `*Ref / Vehicle:* ${refNo}\n` : '') +
+        `*Status:* ${status === 'PAID' ? '✅ PAID' : '⏳ PENDING PAYMENT'}\n\n` +
+        `*Items & Services:*\n${itemsSummary}\n\n` +
+        `*Grand Total: ${grandTotal}*\n\n` +
+        (notes ? `*Note:* ${notes}\n\n` : '') +
+        `🔗 *View Full Digital Bill & Pay:* ${invoiceLink}\n\n` +
+        `For questions, call or message us anytime at ${currentMerchant.phone}.`;
+
+      const waUrl = `https://wa.me/${custPhone}?text=${encodeURIComponent(msg)}`;
+      window.open(waUrl, '_blank');
+    }
+
+    async function loadInvoices() {
+      const search = document.getElementById('searchInvoicesInput').value.trim();
+      const tbody = document.getElementById('invoicesTableBody');
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch(`/api/invoices?search=${encodeURIComponent(search)}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        const data = await res.json();
+
+        // Update Stats
+        if (data.stats) {
+          document.getElementById('statTotalBilled').innerText = `₹${data.stats.totalBilled.toLocaleString('en-IN')}`;
+          document.getElementById('statTotalCollected').innerText = `₹${data.stats.totalCollected.toLocaleString('en-IN')}`;
+          document.getElementById('statTotalPending').innerText = `₹${data.stats.totalPending.toLocaleString('en-IN')}`;
+          document.getElementById('statTotalInvoices').innerText = data.stats.totalInvoices;
+        }
+
+        if (!data.invoices || data.invoices.length === 0) {
+          selectedInvoiceIds.clear();
+          updateBulkDeleteUI();
+          tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-500">No invoices found. Generate your first digital bill above!</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.invoices.map(inv => {
+          const isChecked = selectedInvoiceIds.has(inv.id);
+          const dateStr = new Date(inv.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+
+          return `
+            <tr class="hover:bg-slate-900/60 transition">
+              <td class="p-3">
+                <input type="checkbox" value="${inv.id}" onchange="toggleSelectInvoice(this, '${inv.id}')" ${isChecked ? 'checked' : ''} class="invoice-checkbox rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0 cursor-pointer w-3.5 h-3.5" />
+              </td>
+              <td class="p-3 font-mono">
+                <span class="font-bold text-white block">${inv.invoiceNumber}</span>
+                <span class="text-[10px] text-slate-400">${dateStr}</span>
+              </td>
+              <td class="p-3">
+                <span class="font-bold text-white block">${inv.customerName}</span>
+                <span class="text-[11px] text-slate-400 font-mono">${inv.customerPhone}</span>
+              </td>
+              <td class="p-3 font-mono text-slate-300">
+                ${inv.referenceNo || '—'}
+              </td>
+              <td class="p-3 text-right font-mono font-bold text-white">
+                ₹${inv.totalAmount.toLocaleString('en-IN')}
+              </td>
+              <td class="p-3 text-center">
+                <button type="button" onclick="toggleInvoiceStatus('${inv.id}', '${inv.status}')" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition ${inv.status === 'PAID' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'}">
+                  ${inv.status}
+                </button>
+              </td>
+              <td class="p-3 text-right space-x-2">
+                <a href="/invoice/${inv.id}" target="_blank" class="text-amber-400 hover:underline text-[11px] font-bold" title="View Digital Receipt">
+                  <i class="ri-external-link-line"></i> View
+                </a>
+                <button type="button" onclick="deleteSingleInvoice('${inv.id}', '${inv.invoiceNumber}')" class="text-rose-400 hover:text-rose-300 text-[11px]" title="Delete Bill">
+                  <i class="ri-delete-bin-line"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        updateBulkDeleteUI();
+      } catch (err) {
+        console.warn('Failed to load invoices:', err);
+      }
+    }
+
+    async function toggleInvoiceStatus(id, currentStatus) {
+      const newStatus = currentStatus === 'PAID' ? 'PENDING' : 'PAID';
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch(`/api/invoices/${encodeURIComponent(id)}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (!res.ok) throw new Error('Failed to update status');
+        loadInvoices();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function deleteSingleInvoice(id, invNo) {
+      if (!confirm(`Are you sure you want to delete invoice ${invNo}?`)) return;
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch(`/api/invoices/${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error('Failed to delete invoice');
+        selectedInvoiceIds.delete(id);
+        loadInvoices();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    function toggleSelectInvoice(cb, id) {
+      if (cb.checked) selectedInvoiceIds.add(id);
+      else selectedInvoiceIds.delete(id);
+      updateBulkDeleteUI();
+    }
+
+    function toggleSelectAllInvoices(master) {
+      const boxes = document.querySelectorAll('.invoice-checkbox');
+      boxes.forEach(b => {
+        b.checked = master.checked;
+        if (master.checked) selectedInvoiceIds.add(b.value);
+        else selectedInvoiceIds.delete(b.value);
+      });
+      updateBulkDeleteUI();
+    }
+
+    function updateBulkDeleteUI() {
+      const count = selectedInvoiceIds.size;
+      const btn = document.getElementById('btnBulkDeleteInvoices');
+      const countEl = document.getElementById('selectedInvoicesCount');
+      const selectAll = document.getElementById('selectAllInvoices');
+
+      if (countEl) countEl.innerText = count;
+      if (btn) {
+        if (count > 0) btn.classList.remove('hidden');
+        else btn.classList.add('hidden');
+      }
+
+      const allBoxes = document.querySelectorAll('.invoice-checkbox');
+      if (selectAll && allBoxes.length > 0) {
+        selectAll.checked = allBoxes.length === count;
+        selectAll.indeterminate = count > 0 && count < allBoxes.length;
+      } else if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      }
+    }
+
+    async function deleteSelectedInvoices() {
+      const count = selectedInvoiceIds.size;
+      if (count === 0) return;
+
+      if (!confirm(`Are you sure you want to delete ${count} selected invoice(s)? This action cannot be undone.`)) return;
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/invoices/batch-delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ ids: Array.from(selectedInvoiceIds) })
+        });
+        if (!res.ok) throw new Error('Failed to delete selected invoices');
+        selectedInvoiceIds.clear();
+        loadInvoices();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    initInvoicingApp();
+  </script>
+</body>
+</html>

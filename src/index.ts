@@ -8,6 +8,7 @@ import { listAllUsers, updateUserAccess, deleteUser } from './controllers/admin.
 import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSandboxTestMessage, exportCampaignCSV, deleteCampaign, batchDeleteCampaigns } from './controllers/whatsapp.controller';
 import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking, updateLeadStatus, deleteLead, clearCompletedLeads, recordAnalyticsEvent, getWebsiteAnalytics, getWebsiteTemplates, createWebsiteTemplate, removeWebsiteTemplate } from './controllers/website.controller';
 import { getOccasions, getPostTemplates } from './controllers/social.controller';
+import { getIndustryPresets, createInvoice, listInvoices, updateInvoiceStatus, deleteInvoice, batchDeleteInvoices, getPublicInvoice } from './controllers/invoice.controller';
 import { verifyWebhook, handleWebhookEvents } from './controllers/webhook.controller';
 import { authMiddleware, requireAdmin } from './middlewares/auth.middleware';
 import './queues/message.worker';
@@ -113,6 +114,20 @@ app.get(['/site/:slug', '/site'], (req, res) => {
 // --- PRODUCT 3: SOCIAL MEDIA POST GENERATOR & CALENDAR ROUTES ---
 app.get('/api/social/occasions', authMiddleware, getOccasions);
 app.get('/api/social/templates', authMiddleware, getPostTemplates);
+
+// --- PRODUCT 4: UNIVERSAL DIGITAL INVOICING & BILLING ROUTES ---
+app.get('/api/invoices/presets', getIndustryPresets);
+app.post('/api/invoices', authMiddleware, createInvoice);
+app.get('/api/invoices', authMiddleware, listInvoices);
+app.put('/api/invoices/:id/status', authMiddleware, updateInvoiceStatus);
+app.delete('/api/invoices/:id', authMiddleware, deleteInvoice);
+app.post('/api/invoices/batch-delete', authMiddleware, batchDeleteInvoices);
+app.get('/api/invoices/public/:id', getPublicInvoice);
+
+// Direct Public Digital Invoice View: /invoice/:id
+app.get('/invoice/:id', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/apps/invoice-view.html'));
+});
 
 // --- META WEBHOOK ROUTES ---
 app.get('/webhook', verifyWebhook);
