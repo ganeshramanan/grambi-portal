@@ -5,7 +5,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { register, login, getProfile, updateCredentials, logout } from './controllers/auth.controller';
 import { listAllUsers, updateUserAccess, deleteUser } from './controllers/admin.controller';
-import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSandboxTestMessage, exportCampaignCSV, deleteCampaign } from './controllers/whatsapp.controller';
+import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSandboxTestMessage, exportCampaignCSV, deleteCampaign, batchDeleteCampaigns } from './controllers/whatsapp.controller';
 import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking, updateLeadStatus, deleteLead, clearCompletedLeads, recordAnalyticsEvent, getWebsiteAnalytics, getWebsiteTemplates, createWebsiteTemplate, removeWebsiteTemplate } from './controllers/website.controller';
 import { getOccasions, getPostTemplates } from './controllers/social.controller';
 import { verifyWebhook, handleWebhookEvents } from './controllers/webhook.controller';
@@ -89,6 +89,7 @@ app.post('/api/whatsapp/sandbox-test', authMiddleware, sendSandboxTestMessage);
 app.get('/api/whatsapp/campaigns', authMiddleware, listCustomerCampaigns);
 app.get('/api/whatsapp/campaigns/:id/export', authMiddleware, exportCampaignCSV);
 app.delete('/api/whatsapp/campaigns/:id', authMiddleware, deleteCampaign);
+app.post('/api/whatsapp/campaigns/batch-delete', authMiddleware, batchDeleteCampaigns);
 
 // --- PRODUCT 2: WEBSITE CUSTOMIZER & ANALYTICS ROUTES ---
 app.get('/api/website/templates', getWebsiteTemplates);

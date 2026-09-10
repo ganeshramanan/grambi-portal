@@ -100,12 +100,20 @@
     <div class="lg:col-span-5 space-y-6">
       <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 flex flex-col h-full">
         <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
-          <h3 class="text-base font-bold text-white flex items-center gap-2">
-            <i class="ri-history-line text-slate-400"></i> Broadcast Reports
-          </h3>
-          <button onclick="loadCampaigns()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
-            <i class="ri-refresh-line"></i> Refresh
-          </button>
+          <div class="flex items-center gap-2.5">
+            <input type="checkbox" id="selectAllCampaigns" onchange="toggleSelectAllCampaigns(this)" class="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer w-3.5 h-3.5" title="Select All Reports" />
+            <h3 class="text-base font-bold text-white flex items-center gap-1.5">
+              <i class="ri-history-line text-slate-400"></i> Broadcast Reports
+            </h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnBulkDeleteCampaigns" onclick="deleteSelectedCampaigns()" class="hidden px-2.5 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-xs font-bold transition flex items-center gap-1">
+              <i class="ri-delete-bin-line"></i> Delete (<span id="selectedCampaignsCount">0</span>)
+            </button>
+            <button onclick="loadCampaigns()" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
+              <i class="ri-refresh-line"></i> Refresh
+            </button>
+          </div>
         </div>
 
         <div id="campaignList" class="space-y-3 overflow-y-auto max-h-[550px] flex-grow pr-1">
@@ -317,6 +325,55 @@
       }
     }
 
+    let selectedCampaignIds = new Set();
+
+    function updateBulkDeleteUI() {
+      const count = selectedCampaignIds.size;
+      const btn = document.getElementById('btnBulkDeleteCampaigns');
+      const countEl = document.getElementById('selectedCampaignsCount');
+      const selectAll = document.getElementById('selectAllCampaigns');
+
+      if (countEl) countEl.innerText = count;
+      if (btn) {
+        if (count > 0) {
+          btn.classList.remove('hidden');
+        } else {
+          btn.classList.add('hidden');
+        }
+      }
+
+      const allBoxes = document.querySelectorAll('.campaign-checkbox');
+      if (selectAll && allBoxes.length > 0) {
+        selectAll.checked = allBoxes.length === count;
+        selectAll.indeterminate = count > 0 && count < allBoxes.length;
+      } else if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      }
+    }
+
+    function toggleSelectCampaign(checkbox, id) {
+      if (checkbox.checked) {
+        selectedCampaignIds.add(id);
+      } else {
+        selectedCampaignIds.delete(id);
+      }
+      updateBulkDeleteUI();
+    }
+
+    function toggleSelectAllCampaigns(masterCheckbox) {
+      const allBoxes = document.querySelectorAll('.campaign-checkbox');
+      allBoxes.forEach(cb => {
+        cb.checked = masterCheckbox.checked;
+        if (masterCheckbox.checked) {
+          selectedCampaignIds.add(cb.value);
+        } else {
+          selectedCampaignIds.delete(cb.value);
+        }
+      });
+      updateBulkDeleteUI();
+    }
+
     async function loadCampaigns() {
       try {
         const token = localStorage.getItem('grambi_token');
@@ -327,8 +384,16 @@
         const list = document.getElementById('campaignList');
 
         if (!data.campaigns || data.campaigns.length === 0) {
+          selectedCampaignIds.clear();
+          updateBulkDeleteUI();
           list.innerHTML = '<div class="text-center py-10 text-xs text-slate-500">No campaigns sent yet.</div>';
           return;
+        }
+
+        // Clean up any stale IDs from previous loads
+        const currentIds = new Set(data.campaigns.map(c => c.id));
+        for (const id of selectedCampaignIds) {
+          if (!currentIds.has(id)) selectedCampaignIds.delete(id);
         }
 
         list.innerHTML = data.campaigns.map(c => {
@@ -343,12 +408,17 @@
               })
             : '';
 
+          const isChecked = selectedCampaignIds.has(c.id);
+
           return `
           <div class="p-4 rounded-xl border border-slate-800 bg-slate-950/60 space-y-2.5">
-            <div class="flex justify-between items-start">
-              <div>
-                <span class="font-bold text-white text-xs block truncate max-w-[200px]">${c.name}</span>
-                ${dateStr ? `<span class="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5"><i class="ri-time-line text-slate-500"></i> ${dateStr}</span>` : ''}
+            <div class="flex justify-between items-start gap-2">
+              <div class="flex items-start gap-2.5 min-w-0">
+                <input type="checkbox" value="${c.id}" onchange="toggleSelectCampaign(this, '${c.id}')" ${isChecked ? 'checked' : ''} class="campaign-checkbox mt-0.5 rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer w-3.5 h-3.5 shrink-0" />
+                <div class="min-w-0">
+                  <span class="font-bold text-white text-xs block truncate max-w-[190px]">${c.name}</span>
+                  ${dateStr ? `<span class="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5"><i class="ri-time-line text-slate-500"></i> ${dateStr}</span>` : ''}
+                </div>
               </div>
               <div class="flex items-center gap-2.5 shrink-0 ml-2">
                 <a href="/api/whatsapp/campaigns/${c.id}/export" class="text-[10px] text-emerald-400 hover:underline flex items-center gap-1">
@@ -359,7 +429,7 @@
                 </button>
               </div>
             </div>
-            <div class="flex flex-wrap gap-2 text-[11px]">
+            <div class="flex flex-wrap gap-2 text-[11px] pl-6">
               <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${c.templateName}</span>
               <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${c.stats.sent} Sent</span>
               ${c.stats.delivered ? `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">${c.stats.delivered} Delivered</span>` : ''}
@@ -368,6 +438,8 @@
           </div>
         `;
         }).join('');
+
+        updateBulkDeleteUI();
       } catch (e) {}
     }
 
@@ -385,9 +457,51 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to delete campaign');
 
+        selectedCampaignIds.delete(campaignId);
+        updateBulkDeleteUI();
         loadCampaigns();
       } catch (err) {
         alert(`❌ ${err.message}`);
+      }
+    }
+
+    async function deleteSelectedCampaigns() {
+      const count = selectedCampaignIds.size;
+      if (count === 0) return;
+
+      if (!confirm(`Are you sure you want to delete ${count} selected broadcast report(s)? This action cannot be undone.`)) {
+        return;
+      }
+
+      const btn = document.getElementById('btnBulkDeleteCampaigns');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Deleting...';
+      }
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/whatsapp/campaigns/batch-delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ ids: Array.from(selectedCampaignIds) })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete selected reports');
+
+        selectedCampaignIds.clear();
+        updateBulkDeleteUI();
+        loadCampaigns();
+      } catch (err) {
+        alert(`❌ ${err.message}`);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="ri-delete-bin-line"></i> Delete (<span id="selectedCampaignsCount">0</span>)`;
+        }
       }
     }
 

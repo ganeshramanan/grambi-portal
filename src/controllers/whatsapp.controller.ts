@@ -250,3 +250,26 @@ export const deleteCampaign = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ error: 'Failed to delete campaign: ' + err.message });
   }
 };
+
+// Batch Delete Multiple Campaigns
+export const batchDeleteCampaigns = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { ids } = req.body;
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Please provide an array of campaign IDs to delete.' });
+  }
+
+  try {
+    const deleted = await prisma.campaign.deleteMany({
+      where: {
+        id: { in: ids },
+        userId,
+      },
+    });
+
+    return res.json({ success: true, count: deleted.count, message: `Successfully deleted ${deleted.count} broadcast report(s).` });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to batch delete campaigns: ' + err.message });
+  }
+};
