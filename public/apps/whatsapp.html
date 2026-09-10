@@ -350,9 +350,14 @@
                 <span class="font-bold text-white text-xs block truncate max-w-[200px]">${c.name}</span>
                 ${dateStr ? `<span class="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5"><i class="ri-time-line text-slate-500"></i> ${dateStr}</span>` : ''}
               </div>
-              <a href="/api/whatsapp/campaigns/${c.id}/export" class="text-[10px] text-emerald-400 hover:underline flex items-center gap-1 shrink-0 ml-2">
-                <i class="ri-download-2-line"></i> Export CSV
-              </a>
+              <div class="flex items-center gap-2.5 shrink-0 ml-2">
+                <a href="/api/whatsapp/campaigns/${c.id}/export" class="text-[10px] text-emerald-400 hover:underline flex items-center gap-1">
+                  <i class="ri-download-2-line"></i> Export CSV
+                </a>
+                <button type="button" onclick="deleteCampaign('${c.id}', '${(c.name || '').replace(/'/g, "\\'")}')" class="text-[10px] text-rose-400 hover:text-rose-300 hover:underline flex items-center gap-0.5" title="Delete Broadcast Report">
+                  <i class="ri-delete-bin-line"></i> Delete
+                </button>
+              </div>
             </div>
             <div class="flex flex-wrap gap-2 text-[11px]">
               <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">${c.templateName}</span>
@@ -364,6 +369,26 @@
         `;
         }).join('');
       } catch (e) {}
+    }
+
+    async function deleteCampaign(campaignId, campaignName) {
+      if (!confirm(`Are you sure you want to delete the broadcast report for "${campaignName || 'this campaign'}"? This action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch(`/api/whatsapp/campaigns/${encodeURIComponent(campaignId)}`, {
+          method: 'DELETE',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete campaign');
+
+        loadCampaigns();
+      } catch (err) {
+        alert(`❌ ${err.message}`);
+      }
     }
 
     initApp();

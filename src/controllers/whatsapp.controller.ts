@@ -226,3 +226,27 @@ export const getCustomerTemplates = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ error: err.message || 'Failed to sync templates from Meta' });
   }
 };
+
+// Delete a Campaign and its message logs
+export const deleteCampaign = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { id } = req.params;
+
+  try {
+    const campaign = await prisma.campaign.findFirst({
+      where: { id, userId },
+    });
+
+    if (!campaign) {
+      return res.status(404).json({ error: 'Campaign not found or unauthorized.' });
+    }
+
+    await prisma.campaign.delete({
+      where: { id },
+    });
+
+    return res.json({ success: true, message: 'Campaign deleted successfully.' });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to delete campaign: ' + err.message });
+  }
+};
