@@ -44,24 +44,16 @@
 
     const isSuperAdmin = userData?.role === 'ADMIN';
 
-    const linksHtml = NAV_ITEMS.map(item => {
-      const isActive = currentPath.includes(item.path);
-      const isAllowed = isSuperAdmin || (userData?.subscriptions && userData.subscriptions.includes(item.key));
-
-      if (isAllowed) {
+    const linksHtml = NAV_ITEMS
+      .filter(item => isSuperAdmin || (userData?.subscriptions && userData.subscriptions.includes(item.key)))
+      .map(item => {
+        const isActive = currentPath.includes(item.path);
         return `
           <a href="${item.path}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isActive ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-slate-800'}">
             <i class="${item.icon}"></i> <span>${item.name}</span>
           </a>
         `;
-      } else {
-        return `
-          <span class="px-3 py-1.5 text-xs text-slate-600 flex items-center gap-1.5 cursor-not-allowed opacity-50">
-            <i class="${item.icon}"></i> <span>${item.name}</span>
-          </span>
-        `;
-      }
-    }).join('');
+      }).join('');
 
     nav.innerHTML = `
       <div class="flex items-center gap-2 overflow-x-auto">

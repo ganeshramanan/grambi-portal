@@ -125,11 +125,24 @@
       const container = document.getElementById('productGrid');
       container.innerHTML = '';
 
-      PRODUCTS.forEach(p => {
-        const hasAccess = user.role === 'ADMIN' || (user.subscriptions && user.subscriptions.includes(p.key));
+      const authorizedProducts = PRODUCTS.filter(p => user.role === 'ADMIN' || (user.subscriptions && user.subscriptions.includes(p.key)));
 
+      if (authorizedProducts.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-16 text-center border border-dashed border-slate-800 rounded-3xl p-8 bg-slate-900/30">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-2xl mx-auto mb-3">
+              <i class="ri-lock-2-line"></i>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">No Active Modules Yet</h3>
+            <p class="text-xs text-slate-400 max-w-sm mx-auto">Your account is active. Please wait for the admin to enable your requested modules or reach out to support.</p>
+          </div>
+        `;
+        return;
+      }
+
+      authorizedProducts.forEach(p => {
         const card = document.createElement('div');
-        card.className = `p-6 rounded-2xl border ${hasAccess ? 'border-slate-800 bg-slate-900/60' : 'border-slate-800/40 bg-slate-900/20 opacity-70'} flex flex-col justify-between`;
+        card.className = 'p-6 rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-slate-700 transition flex flex-col justify-between';
 
         card.innerHTML = `
           <div>
@@ -137,8 +150,8 @@
               <div class="w-12 h-12 rounded-xl bg-${p.color}-500/10 text-${p.color}-400 flex items-center justify-center text-2xl border border-${p.color}-500/20">
                 <i class="${p.icon}"></i>
               </div>
-              <span class="text-xs px-2.5 py-1 rounded-full ${hasAccess ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}">
-                ${hasAccess ? 'Active Access' : 'Locked'}
+              <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
+                Active
               </span>
             </div>
             <h3 class="text-xl font-bold text-white mb-2">${p.name}</h3>
@@ -146,14 +159,9 @@
           </div>
 
           <div>
-            ${hasAccess 
-              ? `<a href="${p.url}" class="w-full py-2.5 px-4 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition">
-                   Open Application <i class="ri-arrow-right-line"></i>
-                 </a>`
-              : `<button disabled class="w-full py-2.5 px-4 bg-slate-800 text-slate-500 font-semibold rounded-xl text-sm cursor-not-allowed">
-                   Contact Admin for Access
-                 </button>`
-            }
+            <a href="${p.url}" class="w-full py-2.5 px-4 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-emerald-500/10">
+              Open Application <i class="ri-arrow-right-line"></i>
+            </a>
           </div>
         `;
         container.appendChild(card);
