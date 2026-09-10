@@ -712,16 +712,16 @@
 
       const invoiceLink = savedInvoiceRecord ? `https://grambi.in/invoice/${savedInvoiceRecord.id}` : `https://grambi.in`;
 
-      const msg = `*${currentMerchant.businessName} — Digital Bill & Receipt* 📄\n\n` +
+      const msg = `*${currentMerchant.businessName} — Digital Bill & Receipt*\n\n` +
         `Dear *${custName}*,\n` +
         `Thank you for your business! Here is your bill summary:\n\n` +
         `*Invoice No:* ${invoiceNo}\n` +
         (refNo ? `*Ref / Vehicle:* ${refNo}\n` : '') +
-        `*Status:* ${status === 'PAID' ? '✅ PAID' : '⏳ PENDING PAYMENT'}\n\n` +
+        `*Status:* ${status === 'PAID' ? 'PAID' : 'PENDING PAYMENT'}\n\n` +
         `*Items & Services:*\n${itemsSummary}\n\n` +
         `*Grand Total: ${grandTotal}*\n\n` +
         (notes ? `*Note:* ${notes}\n\n` : '') +
-        `🔗 *View Full Digital Bill & Pay:* ${invoiceLink}\n\n` +
+        `*View Full Digital Bill & Pay:* ${invoiceLink}\n\n` +
         `For questions, call or message us anytime at ${currentMerchant.phone}.`;
 
       const waUrl = `https://wa.me/${custPhone}?text=${encodeURIComponent(msg)}`;

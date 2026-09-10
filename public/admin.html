@@ -127,7 +127,7 @@
           </td>
           <td class="px-6 py-4 text-right space-x-2">
             ${u.status === 'PENDING' ? `
-              <button onclick="updateStatus('${u.id}', 'APPROVED')" class="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg">Approve</button>
+              <button onclick="updateStatus('${u.id}', 'APPROVED')" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg shadow-sm">Approve</button>
               <button onclick="updateStatus('${u.id}', 'REJECTED')" class="px-3 py-1 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 text-xs rounded-lg">Reject</button>
             ` : `
               <button onclick="deleteCustomer('${u.id}', '${u.businessName || u.email}')" class="px-2.5 py-1 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/20 rounded-lg transition" title="Delete customer">

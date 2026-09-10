@@ -167,15 +167,15 @@
       color: #0f172a !important;
     }
 
-    /* Primary Emerald Action Button */
-    html.light button#sendBtn,
-    html.light button.bg-emerald-400 {
-      background-color: #10b981 !important;
+    /* Primary Brand Action Buttons */
+    html.light button.bg-blue-600,
+    html.light a.bg-blue-600 {
+      background-color: #2563eb !important;
       color: #ffffff !important;
     }
-    html.light button#sendBtn:hover,
-    html.light button.bg-emerald-400:hover {
-      background-color: #059669 !important;
+    html.light button.bg-blue-600:hover,
+    html.light a.bg-blue-600:hover {
+      background-color: #1d4ed8 !important;
     }
 
     /* Table Headers & Rows in Light Mode */

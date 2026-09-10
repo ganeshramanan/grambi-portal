@@ -52,7 +52,7 @@
       .map(item => {
         const isActive = currentPath.includes(item.path);
         return `
-          <a href="${item.path}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isActive ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-slate-800'}">
+          <a href="${item.path}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isActive ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:text-white hover:bg-slate-800'}">
             <i class="${item.icon}"></i> <span>${item.name}</span>
           </a>
         `;
@@ -68,8 +68,8 @@
 
       <div class="flex items-center gap-2.5 shrink-0">
         <!-- Quick Send Location & vCard Modal Trigger -->
-        <button type="button" onclick="openLocationDispatchModal()" class="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition cursor-pointer" title="Send Location & Business Card to Unsaved Caller">
-          <i class="ri-map-pin-user-fill text-amber-300"></i> Send Location & Card
+        <button type="button" onclick="openLocationDispatchModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition cursor-pointer" title="Send Location & Business Card to Unsaved Caller">
+          <i class="ri-map-pin-2-fill text-amber-300"></i> Send Location & Card
         </button>
 
         <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
@@ -107,7 +107,7 @@
         </button>
 
         <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl font-bold border border-emerald-500/20">
+          <div class="w-11 h-11 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-2xl font-bold border border-blue-500/20">
             <i class="ri-map-pin-2-fill"></i>
           </div>
           <div>
@@ -120,8 +120,8 @@
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Paste Customer / Caller Phone Number *</label>
             <div class="relative">
-              <input type="tel" id="quickCallerPhone" required placeholder="e.g. 919876543210 or +91 99999 88888" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono" />
-              <button type="button" onclick="pasteClipboardNumber()" class="absolute right-2.5 top-2 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+              <input type="tel" id="quickCallerPhone" required placeholder="e.g. 919876543210 or +91 99999 88888" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono" />
+              <button type="button" onclick="pasteClipboardNumber()" class="absolute right-2.5 top-2 text-[11px] font-bold text-blue-400 hover:text-blue-300 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
                 Paste
               </button>
             </div>
@@ -130,21 +130,21 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Caller / Contact Name (Optional)</label>
-            <input type="text" id="quickCallerName" placeholder="e.g. Sir / Madam / Customer" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+            <input type="text" id="quickCallerName" placeholder="e.g. Sir / Madam / Customer" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-blue-500" />
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp Message Preview (Editable)</label>
-            <textarea id="quickLocationMsg" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-[11px] text-slate-200 focus:outline-none focus:border-emerald-500 leading-relaxed"></textarea>
+            <textarea id="quickLocationMsg" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-[11px] text-slate-200 focus:outline-none focus:border-blue-500 leading-relaxed"></textarea>
           </div>
 
           <div class="flex items-center gap-2 pt-1">
-            <input type="checkbox" id="chkAutoSaveCrm" checked class="rounded bg-slate-950 border-slate-800 text-emerald-500 cursor-pointer" />
+            <input type="checkbox" id="chkAutoSaveCrm" checked class="rounded bg-slate-950 border-slate-800 text-blue-500 cursor-pointer" />
             <label for="chkAutoSaveCrm" class="text-xs text-slate-300 cursor-pointer">Also save this caller as an active lead in Retention CRM</label>
           </div>
 
-          <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/20 cursor-pointer">
-            <i class="ri-whatsapp-fill text-base"></i> Open WhatsApp & Send Location Now
+          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-blue-500/20 cursor-pointer">
+            <i class="ri-whatsapp-fill text-base text-emerald-300"></i> Open WhatsApp & Send Location Now
           </button>
         </form>
       </div>
@@ -177,15 +177,16 @@
       }
     } catch (e) {}
 
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(businessName + ' ' + address)}`;
+    const mapsQuery = `${businessName}, ${address}`.trim();
+    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(mapsQuery)}`;
     const websiteUrl = `https://grambi.in/site/${siteSlug}`;
 
-    const defaultMsg = `*${businessName} — Location & Business Card* 📍\n\n` +
-      `Hello! Thank you for contacting us. Here are our location & contact details:\n\n` +
-      `📌 *Address:*\n${address}\n\n` +
-      `🗺️ *Google Maps Navigation:*\n${mapsUrl}\n\n` +
-      `🌐 *View Services & Book Online:*\n${websiteUrl}\n\n` +
-      `📞 *Call / WhatsApp:* ${phone}\n\n` +
+    const defaultMsg = `*${businessName} — Location & Business Details*\n\n` +
+      `Hello! Thank you for contacting us. Here are our location and contact details:\n\n` +
+      `*Address:*\n${address}\n\n` +
+      `*Google Maps Navigation:*\n${mapsUrl}\n\n` +
+      `*View Services & Book Online:*\n${websiteUrl}\n\n` +
+      `*Call / WhatsApp:* ${phone}\n\n` +
       `Feel free to reply to this message for any assistance or directions!`;
 
     document.getElementById('quickLocationMsg').value = defaultMsg;
