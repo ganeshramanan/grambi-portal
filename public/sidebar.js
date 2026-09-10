@@ -1,4 +1,4 @@
-// Universal Top Navigation Bar for All Grambi Tools
+// Universal Top Navigation Bar & Quick Location/vCard Dispatcher for All Grambi Tools
 (function () {
   const currentPath = window.location.pathname;
 
@@ -35,8 +35,11 @@
     }
   ];
 
+  let currentMerchantData = null;
+
   function renderNavbar(userData) {
     if (document.getElementById('grambiGlobalNavbar')) return;
+    currentMerchantData = userData;
 
     const nav = document.createElement('div');
     nav.id = 'grambiGlobalNavbar';
@@ -57,13 +60,18 @@
 
     nav.innerHTML = `
       <div class="flex items-center gap-2 overflow-x-auto">
-        <a href="/portal.html" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2 hover:bg-slate-800">
+        <a href="/portal.html" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2 hover:bg-slate-800 shrink-0">
           <i class="ri-arrow-left-line"></i> Launchpad
         </a>
         ${linksHtml}
       </div>
 
-      <div class="flex items-center gap-3 shrink-0">
+      <div class="flex items-center gap-2.5 shrink-0">
+        <!-- Quick Send Location & vCard Modal Trigger -->
+        <button type="button" onclick="openLocationDispatchModal()" class="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition cursor-pointer" title="Send Location & Business Card to Unsaved Caller">
+          <i class="ri-map-pin-user-fill text-amber-300"></i> Send Location & Card
+        </button>
+
         <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
           <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
         </button>
@@ -80,7 +88,171 @@
 
     // Insert at very top of body
     document.body.insertBefore(nav, document.body.firstChild);
+
+    // Inject Global Location Dispatch Modal
+    injectLocationModal();
   }
+
+  function injectLocationModal() {
+    if (document.getElementById('quickLocationModal')) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'quickLocationModal';
+    modal.className = 'fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print select-none';
+
+    modal.innerHTML = `
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg p-6 sm:p-7 shadow-2xl relative space-y-5 text-slate-100">
+        <button onclick="closeLocationDispatchModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white">
+          <i class="ri-close-line text-xl"></i>
+        </button>
+
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-2xl font-bold border border-emerald-500/20">
+            <i class="ri-map-pin-2-fill"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Send Location & Business Card</h3>
+            <p class="text-xs text-slate-400">1-click WhatsApp dispatch for new & unsaved callers</p>
+          </div>
+        </div>
+
+        <form onsubmit="handleQuickLocationSend(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Paste Customer / Caller Phone Number *</label>
+            <div class="relative">
+              <input type="tel" id="quickCallerPhone" required placeholder="e.g. 919876543210 or +91 99999 88888" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono" />
+              <button type="button" onclick="pasteClipboardNumber()" class="absolute right-2.5 top-2 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                Paste
+              </button>
+            </div>
+            <span class="text-[10px] text-slate-500 mt-1 block">Works instantly for unsaved numbers without adding to mobile phonebook.</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Caller / Contact Name (Optional)</label>
+            <input type="text" id="quickCallerName" placeholder="e.g. Sir / Madam / Customer" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp Message Preview (Editable)</label>
+            <textarea id="quickLocationMsg" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-[11px] text-slate-200 focus:outline-none focus:border-emerald-500 leading-relaxed"></textarea>
+          </div>
+
+          <div class="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="chkAutoSaveCrm" checked class="rounded bg-slate-950 border-slate-800 text-emerald-500 cursor-pointer" />
+            <label for="chkAutoSaveCrm" class="text-xs text-slate-300 cursor-pointer">Also save this caller as an active lead in Retention CRM</label>
+          </div>
+
+          <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-emerald-500/20 cursor-pointer">
+            <i class="ri-whatsapp-fill text-base"></i> Open WhatsApp & Send Location Now
+          </button>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+  }
+
+  window.openLocationDispatchModal = async function() {
+    const modal = document.getElementById('quickLocationModal');
+    if (!modal) return;
+
+    // Load website address and slug details for accurate Google Map link
+    let businessName = currentMerchantData?.businessName || 'VT Motors';
+    let address = 'Main Highway Road';
+    let phone = currentMerchantData?.phone || '+91 9876543210';
+    let siteSlug = 'vt-motors';
+
+    try {
+      const token = localStorage.getItem('grambi_token');
+      const res = await fetch('/api/website/my-website', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      if (res.ok) {
+        const site = await res.json();
+        businessName = site.businessName || businessName;
+        address = site.address || address;
+        phone = site.phone || phone;
+        siteSlug = site.slug || siteSlug;
+      }
+    } catch (e) {}
+
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(businessName + ' ' + address)}`;
+    const websiteUrl = `https://grambi.in/site/${siteSlug}`;
+
+    const defaultMsg = `*${businessName} — Location & Business Card* 📍\n\n` +
+      `Hello! Thank you for contacting us. Here are our location & contact details:\n\n` +
+      `📌 *Address:*\n${address}\n\n` +
+      `🗺️ *Google Maps Navigation:*\n${mapsUrl}\n\n` +
+      `🌐 *View Services & Book Online:*\n${websiteUrl}\n\n` +
+      `📞 *Call / WhatsApp:* ${phone}\n\n` +
+      `Feel free to reply to this message for any assistance or directions!`;
+
+    document.getElementById('quickLocationMsg').value = defaultMsg;
+    document.getElementById('quickCallerPhone').value = '';
+    document.getElementById('quickCallerName').value = '';
+
+    modal.classList.remove('hidden');
+    document.getElementById('quickCallerPhone').focus();
+  };
+
+  window.closeLocationDispatchModal = function() {
+    const modal = document.getElementById('quickLocationModal');
+    if (modal) modal.classList.add('hidden');
+  };
+
+  window.pasteClipboardNumber = async function() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        document.getElementById('quickCallerPhone').value = text.trim();
+      }
+    } catch (e) {
+      alert('Please paste the phone number manually.');
+    }
+  };
+
+  window.handleQuickLocationSend = async function(e) {
+    e.preventDefault();
+    const rawPhone = document.getElementById('quickCallerPhone').value.trim();
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    const callerName = document.getElementById('quickCallerName').value.trim() || 'Valued Caller';
+    const message = document.getElementById('quickLocationMsg').value;
+    const shouldSaveCrm = document.getElementById('chkAutoSaveCrm').checked;
+
+    if (!cleanPhone) {
+      alert('Please enter a valid phone number.');
+      return;
+    }
+
+    // Optional CRM auto-save
+    if (shouldSaveCrm) {
+      try {
+        const token = localStorage.getItem('grambi_token');
+        await fetch('/api/crm/contacts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            name: callerName,
+            phone: cleanPhone,
+            category: 'AUTOMOTIVE',
+            reminderTitle: 'Inquiry Call Follow-up',
+            repeatCycleDays: 7,
+            notes: 'Shared location and business card via WhatsApp'
+          })
+        });
+      } catch (crmErr) {
+        console.warn('CRM Quick Save:', crmErr);
+      }
+    }
+
+    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+    closeLocationDispatchModal();
+  };
 
   window.logoutSession = function() {
     localStorage.removeItem('grambi_token');

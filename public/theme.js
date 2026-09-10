@@ -178,6 +178,48 @@
       background-color: #059669 !important;
     }
 
+    /* Table Headers & Rows in Light Mode */
+    html.light thead.bg-slate-950,
+    html.light tr.bg-slate-950,
+    html.light thead.bg-slate-900 {
+      background-color: #f1f5f9 !important;
+      color: #334155 !important;
+    }
+    html.light thead th {
+      color: #475569 !important;
+      border-color: #e2e8f0 !important;
+    }
+    html.light tbody.divide-slate-800\\/60,
+    html.light tbody.divide-slate-800 {
+      border-color: #e2e8f0 !important;
+    }
+    html.light tbody tr:hover {
+      background-color: #f8fafc !important;
+    }
+    html.light input.bg-slate-950,
+    html.light select.bg-slate-950,
+    html.light textarea.bg-slate-950,
+    html.light input.bg-slate-900,
+    html.light select.bg-slate-900,
+    html.light textarea.bg-slate-900 {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+
+    /* Universal Navbar in Light Mode */
+    html.light div#grambiGlobalNavbar {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+    html.light div#grambiGlobalNavbar a.text-slate-300 {
+      color: #334155 !important;
+    }
+    html.light div#grambiGlobalNavbar a.text-slate-300:hover {
+      background-color: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+
     /* Typography Overrides */
     html.light .text-white {
       color: #0f172a !important;
