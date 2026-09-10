@@ -262,7 +262,7 @@
   };
 
   document.addEventListener('DOMContentLoaded', async () => {
-    if (!currentPath.includes('/apps/')) return;
+    if (!currentPath.includes('/apps/') && !currentPath.includes('portal.html')) return;
 
     try {
       const token = localStorage.getItem('grambi_token');
