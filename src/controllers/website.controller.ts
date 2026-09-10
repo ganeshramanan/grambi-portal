@@ -325,6 +325,34 @@ export const submitPublicBooking = async (req: Request, res: Response) => {
       }
     });
 
+    // Auto-Sync Web Booking Lead to Customer Retention CRM
+    try {
+      const cleanPhone = phone.trim();
+      const existingCrm = await prisma.crmContact.findFirst({
+        where: { userId: website.userId, phone: cleanPhone }
+      });
+
+      if (!existingCrm) {
+        await prisma.crmContact.create({
+          data: {
+            userId: website.userId,
+            name: name.trim(),
+            phone: cleanPhone,
+            category: 'AUTOMOTIVE',
+            referenceNo: vehicle && vehicle !== 'N/A' ? vehicle.trim() : null,
+            reminderTitle: `Web Booking: ${service || 'General Service'}`,
+            nextDueDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+            repeatCycleDays: 90,
+            totalVisits: 1,
+            status: 'ACTIVE',
+            notes: notes ? `Online lead: ${notes}` : 'Captured from public website booking'
+          }
+        });
+      }
+    } catch (crmLeadErr) {
+      console.warn('CRM Web Lead Auto-Sync notice:', crmLeadErr);
+    }
+
     return res.status(201).json({
       success: true,
       message: 'Service appointment request submitted successfully!',

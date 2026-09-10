@@ -166,6 +166,53 @@ export const createInvoice = async (req: AuthRequest, res: Response) => {
       }
     });
 
+    // Auto-Sync to Customer Retention CRM
+    try {
+      const cleanPhone = customerPhone.trim();
+      const existingCrm = await prisma.crmContact.findFirst({
+        where: { userId: userId!, phone: cleanPhone }
+      });
+
+      const cycleDays = businessCategory === 'AUTOMOTIVE' ? 90 : businessCategory === 'SALON_SPA' ? 30 : businessCategory === 'CLINIC_HEALTH' ? 7 : 90;
+      const computedDueDate = new Date(Date.now() + cycleDays * 24 * 60 * 60 * 1000);
+      const reminderTitle = businessCategory === 'AUTOMOTIVE' ? 'Next Periodic Service Due' : businessCategory === 'SALON_SPA' ? 'Next Grooming / Spa Session Due' : 'Follow-up Service Due';
+
+      if (existingCrm) {
+        await prisma.crmContact.update({
+          where: { id: existingCrm.id },
+          data: {
+            name: customerName.trim(),
+            referenceNo: referenceNo ? referenceNo.trim() : existingCrm.referenceNo,
+            lastInteraction: new Date(),
+            nextDueDate: computedDueDate,
+            totalVisits: existingCrm.totalVisits + 1,
+            totalSpend: existingCrm.totalSpend + totalAmount,
+            status: 'ACTIVE'
+          }
+        });
+      } else {
+        await prisma.crmContact.create({
+          data: {
+            userId: userId!,
+            name: customerName.trim(),
+            phone: cleanPhone,
+            email: customerEmail ? customerEmail.trim() : null,
+            category: businessCategory,
+            referenceNo: referenceNo ? referenceNo.trim() : null,
+            reminderTitle,
+            lastInteraction: new Date(),
+            nextDueDate: computedDueDate,
+            repeatCycleDays: cycleDays,
+            totalVisits: 1,
+            totalSpend: totalAmount,
+            status: 'ACTIVE'
+          }
+        });
+      }
+    } catch (crmSyncErr) {
+      console.warn('CRM Auto-Sync notice:', crmSyncErr);
+    }
+
     return res.status(201).json({
       success: true,
       message: `Invoice #${invoiceNumber} created successfully!`,
