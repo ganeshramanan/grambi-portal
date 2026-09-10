@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grambi — Universal Customer CRM & Recurring Follow-up Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <script src="/theme.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/portal.html" class="text-slate-400 hover:text-white flex items-center gap-1 text-xs border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2">
+          <i class="ri-arrow-left-line"></i> Launchpad
+        </a>
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 text-slate-950 flex items-center justify-center font-black text-lg shadow-md shadow-cyan-500/20">
+          <i class="ri-user-follow-line"></i>
+        </div>
+        <div>
+          <span class="font-bold text-base block leading-none">Customer Retention CRM</span>
+          <span class="text-[10px] text-cyan-400 font-mono">Recurring Follow-ups & WhatsApp Dispatch</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
+          <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
+        </button>
+        <button onclick="openAddContactModal()" class="px-3.5 py-1.5 text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-lg flex items-center gap-1.5 transition shadow-md shadow-cyan-500/20 cursor-pointer">
+          <i class="ri-user-add-line"></i> Add New Customer
+        </button>
+        <span id="userBadge" class="text-xs text-slate-400 px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Loading...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full space-y-6">
+    
+    <!-- Top Retention Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-1">
+        <span class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Total Active Customers</span>
+        <div id="statTotalContacts" class="text-2xl font-black text-white font-mono">0</div>
+        <span class="text-[10px] text-slate-500">Tracked in your CRM book</span>
+      </div>
+
+      <div class="p-5 rounded-2xl border border-rose-500/30 bg-rose-500/5 space-y-1">
+        <span class="text-[11px] font-bold uppercase text-rose-400 tracking-wider flex items-center gap-1">
+          <i class="ri-alarm-warning-line"></i> Overdue Follow-ups
+        </span>
+        <div id="statOverdue" class="text-2xl font-black text-rose-400 font-mono">0</div>
+        <span class="text-[10px] text-rose-300/80">Action required immediately</span>
+      </div>
+
+      <div class="p-5 rounded-2xl border border-amber-500/30 bg-amber-500/5 space-y-1">
+        <span class="text-[11px] font-bold uppercase text-amber-400 tracking-wider flex items-center gap-1">
+          <i class="ri-calendar-event-line"></i> Due This Week
+        </span>
+        <div id="statDueThisWeek" class="text-2xl font-black text-amber-400 font-mono">0</div>
+        <span class="text-[10px] text-amber-300/80">Scheduled next 7 days</span>
+      </div>
+
+      <div class="p-5 rounded-2xl border border-blue-500/30 bg-blue-500/5 space-y-1">
+        <span class="text-[11px] font-bold uppercase text-blue-400 tracking-wider flex items-center gap-1">
+          <i class="ri-calendar-2-line"></i> Due This Month
+        </span>
+        <div id="statDueThisMonth" class="text-2xl font-black text-blue-400 font-mono">0</div>
+        <span class="text-[10px] text-blue-300/80">Total recurring retention pool</span>
+      </div>
+    </div>
+
+    <!-- Main Table Container & Filter Navigation -->
+    <div class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-5">
+      
+      <!-- Filter Tabs & Search Controls -->
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+        
+        <!-- Filter Tabs -->
+        <div class="flex flex-wrap items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+          <button type="button" onclick="setFilter('ALL')" id="tab_ALL" class="px-3 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-bold transition">
+            All Customers
+          </button>
+          <button type="button" onclick="setFilter('OVERDUE')" id="tab_OVERDUE" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">
+            ⚠️ Overdue (<span id="filterCountOverdue">0</span>)
+          </button>
+          <button type="button" onclick="setFilter('DUE_THIS_WEEK')" id="tab_DUE_THIS_WEEK" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">
+            📅 This Week (<span id="filterCountWeek">0</span>)
+          </button>
+          <button type="button" onclick="setFilter('DUE_THIS_MONTH')" id="tab_DUE_THIS_MONTH" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">
+            🗓️ This Month (<span id="filterCountMonth">0</span>)
+          </button>
+        </div>
+
+        <!-- Search & Industry Filter -->
+        <div class="flex items-center gap-2.5">
+          <select id="industryFilterSelect" onchange="loadContacts()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500 cursor-pointer">
+            <option value="ALL">All Industries</option>
+            <option value="AUTOMOTIVE">Auto / 2-Wheelers</option>
+            <option value="SALON_SPA">Salons & Spas</option>
+            <option value="CLINIC_HEALTH">Clinics & Doctors</option>
+            <option value="GYM_FITNESS">Gyms & Fitness</option>
+            <option value="GENERAL_SERVICES">General Services</option>
+          </select>
+
+          <input type="text" id="searchContactsInput" oninput="loadContacts()" placeholder="Search name, phone, vehicle/ref..." class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500 w-48 sm:w-64" />
+          
+          <button id="btnBulkDeleteContacts" onclick="deleteSelectedContacts()" class="hidden px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1">
+            <i class="ri-delete-bin-line"></i> Delete (<span id="selectedContactsCount">0</span>)
+          </button>
+
+          <button onclick="loadContacts()" class="text-xs text-slate-400 hover:text-white border border-slate-800 px-3 py-1.5 rounded-xl hover:bg-slate-900 transition flex items-center gap-1">
+            <i class="ri-refresh-line"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Contacts Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950 text-slate-400 font-bold uppercase tracking-wider text-[10px] border-b border-slate-800">
+            <tr>
+              <th class="p-3.5 w-8">
+                <input type="checkbox" id="selectAllContacts" onchange="toggleSelectAllContacts(this)" class="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-0 cursor-pointer w-3.5 h-3.5" title="Select All" />
+              </th>
+              <th class="p-3.5">Customer Details</th>
+              <th class="p-3.5">Vehicle / Reference</th>
+              <th class="p-3.5">Reminder Reason</th>
+              <th class="p-3.5">Next Due Date</th>
+              <th class="p-3.5 text-center">Cycle & Status</th>
+              <th class="p-3.5 text-right">1-Click Actions</th>
+            </tr>
+          </thead>
+          <tbody id="contactsTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            <tr>
+              <td colspan="7" class="p-8 text-center text-slate-500">Loading CRM customer records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add / Edit Contact Modal -->
+  <div id="contactModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto space-y-5">
+      <button onclick="closeContactModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white">
+        <i class="ri-close-line text-xl"></i>
+      </button>
+
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl font-bold border border-cyan-500/20">
+          <i class="ri-user-add-line"></i>
+        </div>
+        <div>
+          <h3 id="modalTitle" class="text-lg font-bold text-white">Add Customer to Retention CRM</h3>
+          <p class="text-xs text-slate-400">Configure recurring follow-ups and WhatsApp reminders</p>
+        </div>
+      </div>
+
+      <form onsubmit="handleSaveContact(event)" class="space-y-4">
+        <input type="hidden" id="editContactId" value="" />
+
+        <!-- Industry Category Preset -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Industry / Business Type</label>
+          <select id="modalCategory" onchange="handleCategoryChange(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 cursor-pointer">
+            <option value="AUTOMOTIVE">Auto Workshop & Two/Four Wheeler</option>
+            <option value="SALON_SPA">Beauty Salon, Spa & Wellness</option>
+            <option value="CLINIC_HEALTH">Clinic, Dental & Healthcare</option>
+            <option value="GYM_FITNESS">Gym, Fitness & Yoga Center</option>
+            <option value="GENERAL_SERVICES">General Service & Annual Contracts</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Customer Full Name *</label>
+            <input type="text" id="modalName" required placeholder="e.g. Anand Sharma" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">WhatsApp Phone Number *</label>
+            <input type="tel" id="modalPhone" required placeholder="919876543210" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label id="modalRefLabel" class="block text-xs font-semibold text-slate-300 mb-1">Vehicle / Reference No.</label>
+            <input type="text" id="modalRefNo" placeholder="e.g. TN 10 AB 1234" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono uppercase" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Customer Email (Optional)</label>
+            <input type="email" id="modalEmail" placeholder="customer@gmail.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+        </div>
+
+        <!-- Reminder Type & Recurring Cycle -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Reminder Reason</label>
+            <select id="modalReminderType" onchange="handleReminderTypeChange(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 cursor-pointer">
+              <!-- Dynamically populated based on industry -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Recurring Interval Cycle</label>
+            <select id="modalCycle" onchange="recalculateModalDueDate()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 cursor-pointer">
+              <option value="7">Every 7 Days (1 Week)</option>
+              <option value="30">Every 30 Days (1 Month)</option>
+              <option value="45">Every 45 Days (1.5 Months)</option>
+              <option value="60">Every 60 Days (2 Months)</option>
+              <option value="90" selected>Every 90 Days (3 Months)</option>
+              <option value="180">Every 180 Days (6 Months)</option>
+              <option value="365">Every 365 Days (1 Year)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Next Follow-up Due Date</label>
+          <input type="date" id="modalDueDate" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Internal Notes & History</label>
+          <textarea id="modalNotes" rows="2" placeholder="e.g. Replaced front brake pads on last visit. Customer prefers morning slots." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-cyan-500 leading-relaxed"></textarea>
+        </div>
+
+        <div id="modalSaveMsg" class="text-xs hidden"></div>
+
+        <button type="submit" id="btnSaveContact" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-cyan-500/20 cursor-pointer">
+          <i class="ri-check-double-line"></i> Save Customer Record
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let crmPresets = [];
+    let currentFilter = 'ALL';
+    let selectedContactIds = new Set();
+    let currentMerchant = {
+      businessName: 'VT Motors',
+      phone: '+91 9876543210'
+    };
+
+    async function initCrmApp() {
+      const token = localStorage.getItem('grambi_token');
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const user = await res.json();
+          document.getElementById('userBadge').innerText = user.businessName || user.email;
+          currentMerchant.businessName = user.businessName || 'Our Business';
+          currentMerchant.phone = user.phone || '+91 9876543210';
+        }
+      } catch (e) {}
+
+      await loadPresets();
+      loadContacts();
+    }
+
+    async function loadPresets() {
+      try {
+        const res = await fetch('/api/crm/presets');
+        const data = await res.json();
+        crmPresets = data.presets || [];
+        handleCategoryChange('AUTOMOTIVE');
+      } catch (e) {
+        console.warn('Failed to load CRM presets:', e);
+      }
+    }
+
+    function handleCategoryChange(catKey) {
+      const preset = crmPresets.find(p => p.key === catKey) || crmPresets[0];
+      if (!preset) return;
+
+      document.getElementById('modalRefLabel').innerText = preset.referenceLabel;
+
+      const sel = document.getElementById('modalReminderType');
+      sel.innerHTML = preset.reminders.map(r => `
+        <option value="${r.type}" data-days="${r.defaultDays}">${r.title}</option>
+      `).join('');
+
+      handleReminderTypeChange(preset.reminders[0]?.type);
+    }
+
+    function handleReminderTypeChange(typeKey) {
+      const sel = document.getElementById('modalReminderType');
+      const selectedOption = sel.options[sel.selectedIndex];
+      const defaultDays = selectedOption?.getAttribute('data-days') || '90';
+
+      document.getElementById('modalCycle').value = defaultDays;
+      recalculateModalDueDate();
+    }
+
+    function recalculateModalDueDate() {
+      const days = parseInt(document.getElementById('modalCycle').value) || 90;
+      const targetDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+      document.getElementById('modalDueDate').value = targetDate.toISOString().slice(0, 10);
+    }
+
+    function setFilter(filterKey) {
+      currentFilter = filterKey;
+      ['ALL', 'OVERDUE', 'DUE_THIS_WEEK', 'DUE_THIS_MONTH'].forEach(f => {
+        const btn = document.getElementById(`tab_${f}`);
+        if (btn) {
+          if (f === filterKey) {
+            btn.className = 'px-3 py-1.5 rounded-lg bg-cyan-500 text-slate-950 font-bold transition';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+          }
+        }
+      });
+      loadContacts();
+    }
+
+    async function loadContacts() {
+      const category = document.getElementById('industryFilterSelect').value;
+      const search = document.getElementById('searchContactsInput').value.trim();
+      const tbody = document.getElementById('contactsTableBody');
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch(`/api/crm/contacts?filter=${currentFilter}&category=${category}&search=${encodeURIComponent(search)}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        const data = await res.json();
+
+        // Update Retention Metric Cards & Tab Badges
+        if (data.stats) {
+          document.getElementById('statTotalContacts').innerText = data.stats.totalContacts;
+          document.getElementById('statOverdue').innerText = data.stats.overdueCount;
+          document.getElementById('statDueThisWeek').innerText = data.stats.dueThisWeekCount;
+          document.getElementById('statDueThisMonth').innerText = data.stats.dueThisMonthCount;
+
+          document.getElementById('filterCountOverdue').innerText = data.stats.overdueCount;
+          document.getElementById('filterCountWeek').innerText = data.stats.dueThisWeekCount;
+          document.getElementById('filterCountMonth').innerText = data.stats.dueThisMonthCount;
+        }
+
+        if (!data.contacts || data.contacts.length === 0) {
+          selectedContactIds.clear();
+          updateBulkDeleteUI();
+          tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-500">No customer records matching the filter. Click "+ Add New Customer" above!</td></tr>';
+          return;
+        }
+
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        tbody.innerHTML = data.contacts.map(c => {
+          const isChecked = selectedContactIds.has(c.id);
+          const dueDateObj = c.nextDueDate ? new Date(c.nextDueDate) : null;
+          const isOverdue = dueDateObj && dueDateObj < today && c.status !== 'COMPLETED';
+          const isDueThisWeek = dueDateObj && dueDateObj >= today && (dueDateObj - today) <= 7 * 24 * 60 * 60 * 1000;
+
+          const dateFormatted = dueDateObj 
+            ? dueDateObj.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })
+            : 'Not set';
+
+          let statusBadgeClass = 'bg-slate-800 text-slate-300';
+          let statusLabel = 'ACTIVE';
+
+          if (isOverdue) {
+            statusBadgeClass = 'bg-rose-500/10 text-rose-400 border border-rose-500/30 font-bold';
+            statusLabel = 'OVERDUE';
+          } else if (isDueThisWeek) {
+            statusBadgeClass = 'bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold';
+            statusLabel = 'DUE THIS WEEK';
+          }
+
+          return `
+            <tr class="hover:bg-slate-900/60 transition">
+              <td class="p-3.5">
+                <input type="checkbox" value="${c.id}" onchange="toggleSelectContact(this, '${c.id}')" ${isChecked ? 'checked' : ''} class="contact-checkbox rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-0 cursor-pointer w-3.5 h-3.5" />
+              </td>
+              <td class="p-3.5">
+                <div class="font-bold text-white text-xs">${c.name}</div>
+                <div class="text-[11px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
+                  <i class="ri-phone-line text-cyan-400"></i> ${c.phone}
+                </div>
+              </td>
+              <td class="p-3.5 font-mono text-slate-300 uppercase font-bold text-xs">
+                ${c.referenceNo || '—'}
+              </td>
+              <td class="p-3.5">
+                <span class="font-semibold text-slate-200 block text-xs truncate max-w-[220px]">${c.reminderTitle || 'Follow-up Due'}</span>
+                ${c.notes ? `<span class="text-[10px] text-slate-500 block truncate max-w-[220px] mt-0.5">${c.notes}</span>` : ''}
+              </td>
+              <td class="p-3.5 font-mono">
+                <span class="font-bold text-xs ${isOverdue ? 'text-rose-400' : isDueThisWeek ? 'text-amber-400' : 'text-slate-200'}">${dateFormatted}</span>
+                <span class="text-[10px] text-slate-500 block">Cycle: ${c.repeatCycleDays}d</span>
+              </td>
+              <td class="p-3.5 text-center">
+                <span class="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold ${statusBadgeClass}">
+                  ${statusLabel}
+                </span>
+              </td>
+              <td class="p-3.5 text-right space-x-1.5">
+                <button type="button" onclick='dispatchWhatsAppReminder(${JSON.stringify(c).replace(/'/g, "&#39;")})' class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs inline-flex items-center gap-1 shadow transition" title="1-Click WhatsApp Follow-up">
+                  <i class="ri-whatsapp-fill"></i> Remind
+                </button>
+                <button type="button" onclick="logFollowUpAndAdvance('${c.id}', '${c.name}', ${c.repeatCycleDays})" class="px-2 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs font-semibold inline-flex items-center gap-1" title="Log Follow-up & Bump to Next Cycle">
+                  <i class="ri-refresh-line"></i> Done (+${c.repeatCycleDays}d)
+                </button>
+                <button type="button" onclick='openEditContactModal(${JSON.stringify(c).replace(/'/g, "&#39;")})' class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 text-xs" title="Edit Customer">
+                  <i class="ri-edit-line"></i>
+                </button>
+                <button type="button" onclick="deleteSingleContact('${c.id}', '${c.name}')" class="p-1.5 text-rose-400 hover:text-rose-300 rounded-lg hover:bg-rose-500/10 text-xs" title="Delete">
+                  <i class="ri-delete-bin-line"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        updateBulkDeleteUI();
+      } catch (err) {
+        console.warn('Failed to load CRM contacts:', err);
+      }
+    }
+
+    function dispatchWhatsAppReminder(contact) {
+      const cleanPhone = contact.phone.replace(/\D/g, '');
+      const preset = crmPresets.find(p => p.key === contact.category) || crmPresets[0];
+      const template = preset.defaultMessageTemplate || 'Hi {name}, reminder from {business} for your {reminder}.';
+
+      const dueDateStr = contact.nextDueDate ? new Date(contact.nextDueDate).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : 'this week';
+
+      let message = template
+        .replace('{name}', contact.name || 'Valued Customer')
+        .replace('{business}', currentMerchant.businessName || 'our center')
+        .replace('{ref}', contact.referenceNo || 'record')
+        .replace('{reminder}', contact.reminderTitle || 'scheduled service')
+        .replace('{dueDate}', dueDateStr);
+
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, '_blank');
+    }
+
+    async function logFollowUpAndAdvance(id, name, cycleDays) {
+      if (!confirm(`Mark follow-up completed for "${name}" and schedule next cycle (+${cycleDays} days)?`)) return;
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch(`/api/crm/contacts/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ advanceCycle: true })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update follow-up');
+
+        loadContacts();
+      } catch (err) {
+        alert(`❌ ${err.message}`);
+      }
+    }
+
+    function openAddContactModal() {
+      document.getElementById('modalTitle').innerText = 'Add Customer to Retention CRM';
+      document.getElementById('editContactId').value = '';
+      document.getElementById('modalName').value = '';
+      document.getElementById('modalPhone').value = '';
+      document.getElementById('modalRefNo').value = '';
+      document.getElementById('modalEmail').value = '';
+      document.getElementById('modalNotes').value = '';
+      document.getElementById('modalSaveMsg').className = 'hidden';
+
+      handleCategoryChange('AUTOMOTIVE');
+      document.getElementById('contactModal').classList.remove('hidden');
+    }
+
+    function openEditContactModal(contact) {
+      document.getElementById('modalTitle').innerText = `Edit Record — ${contact.name}`;
+      document.getElementById('editContactId').value = contact.id;
+      document.getElementById('modalCategory').value = contact.category || 'AUTOMOTIVE';
+      handleCategoryChange(contact.category || 'AUTOMOTIVE');
+
+      document.getElementById('modalName').value = contact.name || '';
+      document.getElementById('modalPhone').value = contact.phone || '';
+      document.getElementById('modalRefNo').value = contact.referenceNo || '';
+      document.getElementById('modalEmail').value = contact.email || '';
+      document.getElementById('modalReminderType').value = contact.reminderType || 'SERVICE_DUE';
+      document.getElementById('modalCycle').value = contact.repeatCycleDays || 90;
+      
+      if (contact.nextDueDate) {
+        document.getElementById('modalDueDate').value = new Date(contact.nextDueDate).toISOString().slice(0, 10);
+      }
+      document.getElementById('modalNotes').value = contact.notes || '';
+      document.getElementById('modalSaveMsg').className = 'hidden';
+
+      document.getElementById('contactModal').classList.remove('hidden');
+    }
+
+    function closeContactModal() {
+      document.getElementById('contactModal').classList.add('hidden');
+    }
+
+    async function handleSaveContact(e) {
+      e.preventDefault();
+      const editId = document.getElementById('editContactId').value;
+      const btn = document.getElementById('btnSaveContact');
+      const msg = document.getElementById('modalSaveMsg');
+
+      btn.disabled = true;
+      btn.innerText = 'Saving Record...';
+
+      const payload = {
+        name: document.getElementById('modalName').value.trim(),
+        phone: document.getElementById('modalPhone').value.trim(),
+        email: document.getElementById('modalEmail').value.trim(),
+        category: document.getElementById('modalCategory').value,
+        referenceNo: document.getElementById('modalRefNo').value.trim(),
+        reminderType: document.getElementById('modalReminderType').value,
+        reminderTitle: document.getElementById('modalReminderType').options[document.getElementById('modalReminderType').selectedIndex]?.text,
+        repeatCycleDays: parseInt(document.getElementById('modalCycle').value),
+        nextDueDate: document.getElementById('modalDueDate').value,
+        notes: document.getElementById('modalNotes').value.trim()
+      };
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const url = editId ? `/api/crm/contacts/${encodeURIComponent(editId)}` : '/api/crm/contacts';
+        const method = editId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save contact');
+
+        msg.className = 'text-xs text-cyan-400 block p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-xl font-semibold';
+        msg.innerText = `✅ ${data.message}`;
+
+        setTimeout(() => {
+          closeContactModal();
+          loadContacts();
+        }, 800);
+      } catch (err) {
+        msg.className = 'text-xs text-rose-400 block p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl';
+        msg.innerText = `❌ ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-check-double-line"></i> Save Customer Record';
+      }
+    }
+
+    async function deleteSingleContact(id, name) {
+      if (!confirm(`Are you sure you want to delete customer record "${name}"?`)) return;
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch(`/api/crm/contacts/${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error('Failed to delete contact');
+        selectedContactIds.delete(id);
+        loadContacts();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    function toggleSelectContact(cb, id) {
+      if (cb.checked) selectedContactIds.add(id);
+      else selectedContactIds.delete(id);
+      updateBulkDeleteUI();
+    }
+
+    function toggleSelectAllContacts(master) {
+      const boxes = document.querySelectorAll('.contact-checkbox');
+      boxes.forEach(b => {
+        b.checked = master.checked;
+        if (master.checked) selectedContactIds.add(b.value);
+        else selectedContactIds.delete(b.value);
+      });
+      updateBulkDeleteUI();
+    }
+
+    function updateBulkDeleteUI() {
+      const count = selectedContactIds.size;
+      const btn = document.getElementById('btnBulkDeleteContacts');
+      const countEl = document.getElementById('selectedContactsCount');
+      const selectAll = document.getElementById('selectAllContacts');
+
+      if (countEl) countEl.innerText = count;
+      if (btn) {
+        if (count > 0) btn.classList.remove('hidden');
+        else btn.classList.add('hidden');
+      }
+
+      const allBoxes = document.querySelectorAll('.contact-checkbox');
+      if (selectAll && allBoxes.length > 0) {
+        selectAll.checked = allBoxes.length === count;
+        selectAll.indeterminate = count > 0 && count < allBoxes.length;
+      } else if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+      }
+    }
+
+    async function deleteSelectedContacts() {
+      const count = selectedContactIds.size;
+      if (count === 0) return;
+
+      if (!confirm(`Are you sure you want to delete ${count} selected contact(s)? This action cannot be undone.`)) return;
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/crm/contacts/batch-delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ ids: Array.from(selectedContactIds) })
+        });
+        if (!res.ok) throw new Error('Failed to delete selected contacts');
+        selectedContactIds.clear();
+        loadContacts();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    initCrmApp();
+  </script>
+</body>
+</html>

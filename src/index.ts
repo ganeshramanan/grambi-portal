@@ -9,6 +9,7 @@ import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSand
 import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking, updateLeadStatus, deleteLead, clearCompletedLeads, recordAnalyticsEvent, getWebsiteAnalytics, getWebsiteTemplates, createWebsiteTemplate, removeWebsiteTemplate } from './controllers/website.controller';
 import { getOccasions, getPostTemplates } from './controllers/social.controller';
 import { getIndustryPresets, createInvoice, listInvoices, updateInvoiceStatus, deleteInvoice, batchDeleteInvoices, getPublicInvoice } from './controllers/invoice.controller';
+import { getCrmPresets, createCrmContact, listCrmContacts, updateCrmContact, deleteCrmContact, batchDeleteCrmContacts } from './controllers/crm.controller';
 import { verifyWebhook, handleWebhookEvents } from './controllers/webhook.controller';
 import { authMiddleware, requireAdmin } from './middlewares/auth.middleware';
 import './queues/message.worker';
@@ -128,6 +129,14 @@ app.get('/api/invoices/public/:id', getPublicInvoice);
 app.get('/invoice/:id', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/apps/invoice-view.html'));
 });
+
+// --- PRODUCT 5: UNIVERSAL CRM & RECURRING FOLLOW-UP ENGINE ROUTES ---
+app.get('/api/crm/presets', getCrmPresets);
+app.post('/api/crm/contacts', authMiddleware, createCrmContact);
+app.get('/api/crm/contacts', authMiddleware, listCrmContacts);
+app.put('/api/crm/contacts/:id', authMiddleware, updateCrmContact);
+app.delete('/api/crm/contacts/:id', authMiddleware, deleteCrmContact);
+app.post('/api/crm/contacts/batch-delete', authMiddleware, batchDeleteCrmContacts);
 
 // --- META WEBHOOK ROUTES ---
 app.get('/webhook', verifyWebhook);

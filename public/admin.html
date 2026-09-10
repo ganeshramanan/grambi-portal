@@ -118,7 +118,11 @@
             </label>
             <label class="inline-flex items-center gap-1.5 text-xs cursor-pointer">
               <input type="checkbox" ${subs.includes('DIGITAL_INVOICING') ? 'checked' : ''} onchange="toggleAccess('${u.id}', 'DIGITAL_INVOICING', this.checked)" class="rounded bg-slate-950 border-slate-700 text-amber-500">
-              <span class="text-slate-300">Invoicing & UPI</span>
+              <span class="text-slate-300">Invoicing</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 text-xs cursor-pointer">
+              <input type="checkbox" ${subs.includes('CUSTOMER_CRM') ? 'checked' : ''} onchange="toggleAccess('${u.id}', 'CUSTOMER_CRM', this.checked)" class="rounded bg-slate-950 border-slate-700 text-cyan-500">
+              <span class="text-slate-300">Retention CRM</span>
             </label>
           </td>
           <td class="px-6 py-4 text-right space-x-2">

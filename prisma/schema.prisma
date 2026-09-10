@@ -26,6 +26,7 @@ model User {
   subscriptions ProductSubscription[]
   website       Website?
   invoices      Invoice[]
+  crmContacts   CrmContact[]
 }
 
 model Website {
@@ -132,6 +133,28 @@ model Invoice {
   notes            String?
   dueDate          DateTime?
   paidAt           DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model CrmContact {
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  phone            String
+  email            String?
+  category         String    @default("GENERAL") // AUTOMOTIVE, SALON_SPA, CLINIC, GYM_FITNESS, RETAIL, GENERAL
+  referenceNo      String?   // Vehicle No, Patient ID, Member ID
+  reminderType     String    @default("SERVICE_DUE") // SERVICE_DUE, INSURANCE_DUE, APPOINTMENT, MEMBERSHIP_DUE, CHECKUP, CUSTOM
+  reminderTitle    String?
+  lastInteraction  DateTime?
+  nextDueDate      DateTime?
+  repeatCycleDays  Int       @default(90) // 30, 60, 90, 180, 365
+  status           String    @default("ACTIVE") // ACTIVE, OVERDUE, FOLLOWED_UP, COMPLETED
+  notes            String?
+  totalVisits      Int       @default(1)
+  totalSpend       Float     @default(0)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }
