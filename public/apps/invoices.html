@@ -13,26 +13,43 @@
     .font-mono { font-family: 'JetBrains Mono', monospace; }
 
     @media print {
-      body * {
-        visibility: hidden;
+      @page {
+        size: A4 portrait;
+        margin: 12mm;
       }
-      #printableInvoice, #printableInvoice * {
-        visibility: visible;
+      html, body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: auto !important;
+        height: auto !important;
+      }
+      header, footer, nav, .no-print, #presetButtonsContainer, form, #invoicesTableBody, .lg\:col-span-6:first-child {
+        display: none !important;
+      }
+      main {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+      .lg\:col-span-6 {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block !important;
       }
       #printableInvoice {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        margin: 0;
-        padding: 20px;
-        background: white !important;
-        color: black !important;
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
         box-shadow: none !important;
         border: none !important;
-      }
-      .no-print {
-        display: none !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
       }
     }
   </style>
@@ -59,7 +76,7 @@
         <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
           <i id="themeToggleIcon" class="ri-sun-line text-amber-400"></i>
         </button>
-        <button onclick="window.print()" class="px-3.5 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg flex items-center gap-1.5 transition">
+        <button onclick="printInvoicePdf()" class="px-3.5 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg flex items-center gap-1.5 transition cursor-pointer">
           <i class="ri-printer-line"></i> Print Bill
         </button>
         <span id="userBadge" class="text-xs text-slate-400 px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Loading...</span>
@@ -312,7 +329,7 @@
           <button type="button" onclick="sendInvoiceOnWhatsApp()" class="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition cursor-pointer">
             <i class="ri-whatsapp-fill text-base"></i> Send Bill on WhatsApp
           </button>
-          <button type="button" onclick="window.print()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition cursor-pointer">
+          <button type="button" onclick="printInvoicePdf()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition cursor-pointer">
             <i class="ri-printer-fill text-base"></i> Print / Download PDF
           </button>
         </div>
@@ -603,6 +620,79 @@
         btn.disabled = false;
         btn.innerHTML = '<i class="ri-check-double-line"></i> Save & Generate Digital Invoice';
       }
+    }
+
+    function printInvoicePdf() {
+      const invoiceEl = document.getElementById('printableInvoice');
+      if (!invoiceEl) return;
+
+      const invoiceNo = document.getElementById('prevInvoiceNumber')?.innerText || 'Invoice';
+      const businessName = document.getElementById('prevBusinessName')?.innerText || 'Bill';
+
+      const printWindow = window.open('', '_blank', 'width=850,height=950');
+      if (!printWindow) {
+        window.print();
+        return;
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${businessName} - ${invoiceNo}</title>
+          <script src="https://cdn.tailwindcss.com"><\/script>
+          <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+            @page {
+              size: A4 portrait;
+              margin: 10mm 15mm;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            body {
+              font-family: 'Plus Jakarta Sans', sans-serif;
+              background: #ffffff;
+              color: #0f172a;
+              margin: 0;
+              padding: 20px;
+            }
+            .font-mono {
+              font-family: 'JetBrains Mono', monospace;
+            }
+            #printableInvoice {
+              width: 100% !important;
+              max-width: 100% !important;
+              border: 1px solid #e2e8f0 !important;
+              box-shadow: none !important;
+              border-radius: 16px !important;
+              padding: 24px !important;
+              background: #ffffff !important;
+              color: #0f172a !important;
+            }
+          </style>
+        </head>
+        <body class="bg-white">
+          <div class="max-w-2xl mx-auto">
+            ${invoiceEl.outerHTML}
+          </div>
+          <script>
+            window.addEventListener('load', () => {
+              setTimeout(() => {
+                window.focus();
+                window.print();
+                setTimeout(() => window.close(), 1000);
+              }, 350);
+            });
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
     }
 
     function sendInvoiceOnWhatsApp() {
