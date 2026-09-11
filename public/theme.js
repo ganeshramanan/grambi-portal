@@ -220,6 +220,19 @@
       color: #0f172a !important;
     }
 
+    /* Mobile Bottom Navigation in Light Mode */
+    html.light nav#grambiMobileBottomNav {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.05);
+    }
+    html.light nav#grambiMobileBottomNav a.text-slate-400 {
+      color: #64748b !important;
+    }
+    html.light nav#grambiMobileBottomNav a.text-blue-400 {
+      color: #2563eb !important;
+    }
+
     /* Typography Overrides */
     html.light .text-white {
       color: #0f172a !important;

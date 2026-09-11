@@ -43,31 +43,53 @@
 
     const nav = document.createElement('div');
     nav.id = 'grambiGlobalNavbar';
-    nav.className = 'w-full bg-slate-900 border-b border-slate-800 px-6 py-2.5 flex items-center justify-between no-print sticky top-0 z-50 backdrop-blur-md';
+    nav.className = 'w-full bg-slate-900 border-b border-slate-800 px-4 sm:px-6 py-2.5 flex items-center justify-between no-print sticky top-0 z-50 backdrop-blur-md';
 
     const isSuperAdmin = userData?.role === 'ADMIN';
 
+    // Desktop Navbar Links
     const linksHtml = NAV_ITEMS
       .filter(item => isSuperAdmin || (userData?.subscriptions && userData.subscriptions.includes(item.key)))
       .map(item => {
         const isActive = currentPath.includes(item.path);
         return `
-          <a href="${item.path}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${isActive ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:text-white hover:bg-slate-800'}">
+          <a href="${item.path}" class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${isActive ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-300 hover:text-white hover:bg-slate-800'}">
             <i class="${item.icon}"></i> <span>${item.name}</span>
           </a>
         `;
       }).join('');
 
     nav.innerHTML = `
-      <div class="flex items-center gap-2 overflow-x-auto">
+      <!-- Desktop & Tablet Navigation Row -->
+      <div class="hidden md:flex items-center gap-2 overflow-x-auto">
         <a href="/portal.html" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 border border-slate-800 px-2.5 py-1.5 rounded-lg mr-2 hover:bg-slate-800 shrink-0">
           <i class="ri-arrow-left-line"></i> Launchpad
         </a>
         ${linksHtml}
       </div>
 
-      <div class="flex items-center gap-2.5 shrink-0">
-        <!-- Quick Send Location & vCard Modal Trigger -->
+      <!-- Mobile Top Brand & Quick Actions -->
+      <div class="flex md:hidden items-center justify-between w-full">
+        <a href="/portal.html" class="flex items-center gap-2 font-bold text-sm text-white">
+          <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black text-xs">G</div>
+          <span class="truncate max-w-[140px]">${userData?.businessName || 'Grambi'}</span>
+        </a>
+
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="openLocationDispatchModal()" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold rounded-lg shadow-sm flex items-center gap-1 transition" title="Send Location">
+            <i class="ri-map-pin-2-fill text-amber-300"></i> Location
+          </button>
+          <button onclick="toggleTheme()" class="p-1.5 text-slate-400 hover:text-white border border-slate-800 rounded-lg hover:bg-slate-800 transition" title="Toggle Theme">
+            <i id="themeToggleIconMobile" class="ri-sun-line text-amber-400 text-sm"></i>
+          </button>
+          <button onclick="logoutSession()" class="text-[11px] text-rose-400 hover:text-rose-300 px-2 py-1 rounded-lg border border-rose-500/20 hover:bg-rose-500/10 font-semibold">
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+      <!-- Desktop Right Controls -->
+      <div class="hidden md:flex items-center gap-2.5 shrink-0">
         <button type="button" onclick="openLocationDispatchModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition cursor-pointer" title="Send Location & Business Card to Unsaved Caller">
           <i class="ri-map-pin-2-fill text-amber-300"></i> Send Location & Card
         </button>
@@ -86,11 +108,51 @@
       </div>
     `;
 
-    // Insert at very top of body
+    // Insert at top of body
     document.body.insertBefore(nav, document.body.firstChild);
+
+    // Mobile App Bottom Navigation Bar
+    renderMobileBottomNav(userData);
 
     // Inject Global Location Dispatch Modal
     injectLocationModal();
+  }
+
+  function renderMobileBottomNav(userData) {
+    if (document.getElementById('grambiMobileBottomNav')) return;
+
+    const isSuperAdmin = userData?.role === 'ADMIN';
+    const allowed = NAV_ITEMS.filter(item => isSuperAdmin || (userData?.subscriptions && userData.subscriptions.includes(item.key)));
+
+    const bottomNav = document.createElement('nav');
+    bottomNav.id = 'grambiMobileBottomNav';
+    bottomNav.className = 'md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/95 border-t border-slate-800 backdrop-blur-lg px-2 py-1.5 flex items-center justify-around z-50 no-print select-none';
+
+    // Map mobile tabs
+    const tabsHtml = allowed.map(item => {
+      const isActive = currentPath.includes(item.path);
+      const shortName = item.name.split(' ')[0]; // e.g. Billing, Retention, Website, Social, WhatsApp
+
+      return `
+        <a href="${item.path}" class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition ${isActive ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white'}">
+          <i class="${item.icon} text-lg mb-0.5 ${isActive ? 'text-blue-400' : 'text-slate-400'}"></i>
+          <span class="text-[10px] leading-none">${shortName}</span>
+        </a>
+      `;
+    }).join('');
+
+    bottomNav.innerHTML = `
+      <a href="/portal.html" class="flex flex-col items-center justify-center py-1 px-2 rounded-xl transition ${currentPath.includes('portal.html') ? 'text-blue-400 font-bold' : 'text-slate-400 hover:text-white'}">
+        <i class="ri-grid-fill text-lg mb-0.5"></i>
+        <span class="text-[10px] leading-none">Apps</span>
+      </a>
+      ${tabsHtml}
+    `;
+
+    document.body.appendChild(bottomNav);
+
+    // Add padding bottom to body so bottom bar never overlaps page content on phones
+    document.body.classList.add('pb-16', 'md:pb-0');
   }
 
   function injectLocationModal() {
