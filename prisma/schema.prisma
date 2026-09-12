@@ -44,6 +44,10 @@ model Website {
   hours           String?
   theme           String            @default("blue")
   logo            String?
+  instagram       String?
+  facebook        String?
+  twitter         String?
+  youtube         String?
   servicesJson    String            @default("[]")
   galleryJson     String            @default("[]")
   createdAt       DateTime          @default(now())

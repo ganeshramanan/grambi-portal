@@ -35,6 +35,19 @@
 
       <!-- Quick Header Actions -->
       <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Social Follow Badges -->
+        <div id="headerSocialLinks" class="hidden md:flex items-center gap-2 mr-1">
+          <a id="headerInstaLink" href="#" target="_blank" class="hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-pink-600 text-sm transition" title="Follow on Instagram">
+            <i class="ri-instagram-line"></i>
+          </a>
+          <a id="headerFbLink" href="#" target="_blank" class="hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-blue-600 text-sm transition" title="Follow on Facebook">
+            <i class="ri-facebook-circle-fill"></i>
+          </a>
+          <a id="headerTwitterLink" href="#" target="_blank" class="hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm transition" title="Follow on X / Twitter">
+            <i class="ri-twitter-x-line"></i>
+          </a>
+        </div>
+
         <a id="saveContactVCard" href="#" onclick="downloadVCard(event)" class="hidden sm:flex px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition items-center gap-1.5" title="Save vCard to Contacts">
           <i class="ri-contacts-book-2-line text-amber-500"></i> Save Contact
         </a>
@@ -344,6 +357,35 @@
           if (bookSubmitBtn) {
             bookSubmitBtn.className = `w-full py-3.5 ${tCfg.heroBtn} rounded-xl text-sm transition shadow-lg cursor-pointer`;
           }
+        }
+
+        // Social Media Link Bindings
+        const normalizeSocialUrl = (handleOrUrl, platform) => {
+          if (!handleOrUrl) return null;
+          const trimmed = handleOrUrl.trim();
+          if (trimmed.startsWith('http')) return trimmed;
+          const clean = trimmed.replace(/^[@/]+/, '');
+          if (platform === 'insta') return `https://instagram.com/${clean}`;
+          if (platform === 'fb') return `https://facebook.com/${clean}`;
+          if (platform === 'twitter') return `https://x.com/${clean}`;
+          return trimmed;
+        };
+
+        const instaUrl = normalizeSocialUrl(data.instagram, 'insta');
+        const fbUrl = normalizeSocialUrl(data.facebook, 'fb');
+        const twitterUrl = normalizeSocialUrl(data.twitter, 'twitter');
+
+        if (instaUrl) {
+          const el = document.getElementById('headerInstaLink');
+          if (el) { el.href = instaUrl; el.classList.remove('hidden'); }
+        }
+        if (fbUrl) {
+          const el = document.getElementById('headerFbLink');
+          if (el) { el.href = fbUrl; el.classList.remove('hidden'); }
+        }
+        if (twitterUrl) {
+          const el = document.getElementById('headerTwitterLink');
+          if (el) { el.href = twitterUrl; el.classList.remove('hidden'); }
         }
 
         // Action URLs (Safe lookup to prevent crashing on missing elements)

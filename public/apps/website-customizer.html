@@ -183,6 +183,35 @@
             </div>
           </div>
 
+          <!-- Social Media Channels (Instagram, Facebook, X / Twitter) -->
+          <div class="pt-3 border-t border-slate-800/80 space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-200">Social Media Handles & Links</label>
+              <p class="text-[11px] text-slate-500">Displayed on your website and auto-synced to Social Media Studio.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                  <i class="ri-instagram-line text-pink-400"></i> Instagram
+                </label>
+                <input type="text" id="siteInstagram" oninput="updateLivePreview()" placeholder="@vtmotors or URL" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                  <i class="ri-facebook-circle-fill text-blue-400"></i> Facebook
+                </label>
+                <input type="text" id="siteFacebook" oninput="updateLivePreview()" placeholder="fb.com/vtmotors" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                  <i class="ri-twitter-x-line text-slate-300"></i> X (Twitter)
+                </label>
+                <input type="text" id="siteTwitter" oninput="updateLivePreview()" placeholder="@vtmotors" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono" />
+              </div>
+            </div>
+          </div>
+
           <div>
             <label class="block text-xs font-semibold text-slate-300 mb-1">Your Website Link</label>
             <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs">
@@ -799,6 +828,9 @@
         document.getElementById('siteAddress').value = currentWebsite.address || '';
         document.getElementById('siteHours').value = currentWebsite.hours || '';
         document.getElementById('siteSlug').value = currentWebsite.slug || '';
+        if (currentWebsite.instagram) document.getElementById('siteInstagram').value = currentWebsite.instagram;
+        if (currentWebsite.facebook) document.getElementById('siteFacebook').value = currentWebsite.facebook;
+        if (currentWebsite.twitter) document.getElementById('siteTwitter').value = currentWebsite.twitter;
         if (currentWebsite.theme) document.getElementById('siteTheme').value = currentWebsite.theme;
         if (currentWebsite.logo) {
           currentLogoUrl = currentWebsite.logo;
@@ -973,6 +1005,9 @@
         hours: document.getElementById('siteHours').value.trim(),
         theme: document.getElementById('siteTheme').value,
         logo: currentLogoUrl || null,
+        instagram: document.getElementById('siteInstagram')?.value.trim() || null,
+        facebook: document.getElementById('siteFacebook')?.value.trim() || null,
+        twitter: document.getElementById('siteTwitter')?.value.trim() || null,
         slug: document.getElementById('siteSlug').value.trim(),
         services: dynamicServices,
         gallery: (dynamicGallery && dynamicGallery.length > 0) ? dynamicGallery : (selectedTemplateId && availableTemplates.find(t => t.id === selectedTemplateId)?.defaultGallery) || []

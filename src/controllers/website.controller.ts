@@ -141,7 +141,7 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
 // Update Website Customizer Configuration
 export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
-  const { businessName, tagline, headline, about, phone, whatsapp, address, hours, theme, logo, services, gallery, slug } = req.body;
+  const { businessName, tagline, headline, about, phone, whatsapp, address, hours, theme, logo, instagram, facebook, twitter, youtube, services, gallery, slug } = req.body;
 
   try {
     let finalSlug: string | undefined = undefined;
@@ -169,6 +169,10 @@ export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
         hours: hours || undefined,
         theme: theme || undefined,
         logo: logo !== undefined ? logo : undefined,
+        instagram: instagram !== undefined ? instagram : undefined,
+        facebook: facebook !== undefined ? facebook : undefined,
+        twitter: twitter !== undefined ? twitter : undefined,
+        youtube: youtube !== undefined ? youtube : undefined,
         slug: finalSlug || undefined,
         servicesJson: services ? JSON.stringify(services) : undefined,
         galleryJson: gallery ? JSON.stringify(gallery) : undefined
@@ -229,6 +233,10 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
       hours: website.hours,
       theme: website.theme,
       logo: website.logo,
+      instagram: website.instagram,
+      facebook: website.facebook,
+      twitter: website.twitter,
+      youtube: website.youtube,
       services: JSON.parse(website.servicesJson || '[]'),
       gallery: JSON.parse(website.galleryJson || '[]')
     });
