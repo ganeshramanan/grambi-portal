@@ -174,6 +174,22 @@
             </div>
           </div>
 
+          <!-- Social Media Handles (Instagram & Facebook) -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
+                <i class="ri-instagram-line text-pink-400"></i> Instagram Handle
+              </label>
+              <input type="text" id="ctrlInsta" oninput="updateLivePost()" placeholder="@vtmotors" value="@vtmotors" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500 font-mono" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
+                <i class="ri-facebook-circle-fill text-blue-400"></i> Facebook Page / ID
+              </label>
+              <input type="text" id="ctrlFb" oninput="updateLivePost()" placeholder="fb.com/vtmotors" value="fb.com/vtmotors" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500 font-mono" />
+            </div>
+          </div>
+
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Font Style</label>
@@ -199,13 +215,14 @@
 
         <div class="space-y-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Upload Photo (Vehicle, Workshop, Facility)</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Upload Photo or Video (Local Storage)</label>
             <div class="flex items-center gap-2">
-              <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-500 cursor-pointer" />
-              <button type="button" id="btnRemovePhoto" onclick="removePhoto()" class="hidden px-2.5 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg border border-rose-500/20" title="Remove Photo">
+              <input type="file" id="imageFileInput" accept="image/*,video/mp4,video/webm" onchange="handleMediaUpload(event)" class="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer" />
+              <button type="button" id="btnRemovePhoto" onclick="removePhoto()" class="hidden px-2.5 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg border border-rose-500/20" title="Remove Media">
                 <i class="ri-delete-bin-line"></i>
               </button>
             </div>
+            <span class="text-[10px] text-slate-500 mt-0.5 block">Supports JPEG, PNG photos and MP4/WebM short video reels.</span>
           </div>
 
           <!-- Zoom / Scale Slider -->
@@ -319,8 +336,9 @@
           class="w-full max-w-[500px] aspect-square p-7 flex flex-col justify-between relative overflow-hidden shadow-2xl transition-all duration-300 select-none bg-gradient-to-br from-purple-950 via-indigo-950 to-slate-950 text-white"
           style="border: 8px solid #f59e0b; border-radius: 28px; box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);"
         >
-          <!-- Background Image Container with Dynamic Crop & Scale -->
+          <!-- Background Media Container (Image or Video) with Dynamic Crop & Scale -->
           <div id="bgImageOverlay" class="absolute inset-0 bg-cover bg-center opacity-55 pointer-events-none transition-all duration-300"></div>
+          <video id="bgVideoOverlay" autoplay loop muted playsinline class="hidden absolute inset-0 w-full h-full object-cover opacity-55 pointer-events-none transition-all duration-300"></video>
           
           <!-- Subtle Luxury Ambient Glow Overlay -->
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/50 pointer-events-none"></div>
@@ -359,22 +377,61 @@
             </p>
           </div>
 
-          <!-- Bottom Footer: Call to Action, Phone & Location -->
-          <div class="relative z-10 pt-3.5 border-t border-white/20 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-2 text-white">
-              <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm border border-emerald-500/30">
-                <i class="ri-phone-fill"></i>
-              </div>
-              <div>
-                <span class="text-[9px] text-slate-300 uppercase tracking-wider block font-bold">Call / WhatsApp</span>
-                <span id="canvasContact" class="font-bold font-mono text-xs sm:text-sm">+91 9876543210</span>
-              </div>
+          <!-- Bottom Footer: Call to Action, Phone & Social ID Badges -->
+          <div class="relative z-10 pt-3.5 border-t border-white/20 space-y-2">
+            <!-- Social Handles Strip -->
+            <div id="canvasSocialStrip" class="flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-200">
+              <span id="canvasInstaBadge" class="flex items-center gap-1">
+                <i class="ri-instagram-line text-pink-400 text-xs"></i> <span id="canvasInstaText">@vtmotors</span>
+              </span>
+              <span id="canvasFbBadge" class="flex items-center gap-1">
+                <i class="ri-facebook-circle-fill text-blue-400 text-xs"></i> <span id="canvasFbText">fb.com/vtmotors</span>
+              </span>
             </div>
 
-            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition">
-              <span>Book Service</span> <i class="ri-arrow-right-line"></i>
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2 text-white">
+                <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm border border-emerald-500/30">
+                  <i class="ri-phone-fill"></i>
+                </div>
+                <div>
+                  <span class="text-[9px] text-slate-300 uppercase tracking-wider block font-bold">Call / WhatsApp</span>
+                  <span id="canvasContact" class="font-bold font-mono text-xs sm:text-sm">+91 9876543210</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition">
+                <span>Book Service</span> <i class="ri-arrow-right-line"></i>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Multi-Platform 1-Click Sharing Bar -->
+      <div class="w-full max-w-[500px] mt-4 p-4 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+            <i class="ri-share-forward-line text-blue-400"></i> 1-Click Post to Social Media
+          </span>
+          <span class="text-[10px] text-blue-400 font-mono">Multi-App Ready</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <!-- Native Multi-Share (Instagram, FB, WhatsApp in 1 Go) -->
+          <button type="button" onclick="shareToAllSocialMedia()" class="col-span-2 py-2.5 px-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-1.5 transition">
+            <i class="ri-share-line text-sm"></i> Share to All Apps (1 Go)
+          </button>
+
+          <!-- WhatsApp Status -->
+          <button type="button" onclick="shareToWhatsAppStatus()" class="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1 transition">
+            <i class="ri-whatsapp-fill text-sm"></i> WA Status
+          </button>
+
+          <!-- Copy Caption & Export -->
+          <button type="button" onclick="copyCaptionAndExport()" class="py-2.5 px-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl flex items-center justify-center gap-1 transition">
+            <i class="ri-file-copy-line text-sm"></i> Caption + PNG
+          </button>
         </div>
       </div>
 
@@ -461,6 +518,13 @@
           if (user.phone) {
             document.getElementById('ctrlContact').value = user.phone;
             document.getElementById('canvasContact').innerText = user.phone;
+          }
+
+          // Pre-fill social handles if available
+          const cleanName = (user.businessName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (cleanName) {
+            document.getElementById('ctrlInsta').value = `@${cleanName}`;
+            document.getElementById('ctrlFb').value = `fb.com/${cleanName}`;
           }
         }
       } catch (e) {}
@@ -604,6 +668,8 @@
       const subtitle = document.getElementById('ctrlSubtitle').value || '';
       const brand = document.getElementById('ctrlBrand').value || 'VT Motors';
       const contact = document.getElementById('ctrlContact').value || '+91 9876543210';
+      const insta = document.getElementById('ctrlInsta')?.value || '';
+      const fb = document.getElementById('ctrlFb')?.value || '';
       const fontClass = document.getElementById('ctrlFont').value || 'font-serif-luxury';
       const badgeText = document.getElementById('ctrlBadge').value || 'Special Event';
       const borderWidth = document.getElementById('ctrlBorderWidth').value || '8px';
@@ -619,6 +685,30 @@
       document.getElementById('canvasBrand').innerText = brand;
       document.getElementById('canvasContact').innerText = contact;
       document.getElementById('canvasBadge').innerText = badgeText;
+
+      // Update Social Badges
+      const instaEl = document.getElementById('canvasInstaText');
+      const fbEl = document.getElementById('canvasFbText');
+      const instaBadge = document.getElementById('canvasInstaBadge');
+      const fbBadge = document.getElementById('canvasFbBadge');
+
+      if (instaEl && instaBadge) {
+        if (insta.trim()) {
+          instaEl.innerText = insta.trim();
+          instaBadge.classList.remove('hidden');
+        } else {
+          instaBadge.classList.add('hidden');
+        }
+      }
+
+      if (fbEl && fbBadge) {
+        if (fb.trim()) {
+          fbEl.innerText = fb.trim();
+          fbBadge.classList.remove('hidden');
+        } else {
+          fbBadge.classList.add('hidden');
+        }
+      }
 
       const initial = (brand || 'V').trim().charAt(0).toUpperCase();
       document.getElementById('canvasLogoBox').innerText = initial;
@@ -679,26 +769,64 @@
       updateLivePost();
     }
 
-    function handleImageUpload(e) {
+    let uploadedVideoUrl = null;
+
+    function handleMediaUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        uploadedImageUrl = event.target.result;
-        const overlay = document.getElementById('bgImageOverlay');
-        overlay.style.backgroundImage = `url('${uploadedImageUrl}')`;
+      const imgOverlay = document.getElementById('bgImageOverlay');
+      const vidOverlay = document.getElementById('bgVideoOverlay');
+
+      if (file.type.startsWith('video/')) {
+        uploadedImageUrl = null;
+        uploadedVideoUrl = URL.createObjectURL(file);
+        
+        imgOverlay.style.backgroundImage = 'none';
+        imgOverlay.classList.add('hidden');
+
+        vidOverlay.src = uploadedVideoUrl;
+        vidOverlay.classList.remove('hidden');
+        vidOverlay.play();
+
         document.getElementById('btnRemovePhoto').classList.remove('hidden');
         updatePhotoTransform();
-      };
-      reader.readAsDataURL(file);
+      } else {
+        uploadedVideoUrl = null;
+        vidOverlay.pause();
+        vidOverlay.src = '';
+        vidOverlay.classList.add('hidden');
+        imgOverlay.classList.remove('hidden');
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          uploadedImageUrl = event.target.result;
+          imgOverlay.style.backgroundImage = `url('${uploadedImageUrl}')`;
+          document.getElementById('btnRemovePhoto').classList.remove('hidden');
+          updatePhotoTransform();
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
     function removePhoto() {
       uploadedImageUrl = null;
+      if (uploadedVideoUrl) {
+        URL.revokeObjectURL(uploadedVideoUrl);
+        uploadedVideoUrl = null;
+      }
       document.getElementById('imageFileInput').value = '';
-      const overlay = document.getElementById('bgImageOverlay');
-      overlay.style.backgroundImage = 'none';
+
+      const imgOverlay = document.getElementById('bgImageOverlay');
+      const vidOverlay = document.getElementById('bgVideoOverlay');
+
+      imgOverlay.style.backgroundImage = 'none';
+      imgOverlay.classList.remove('hidden');
+
+      vidOverlay.pause();
+      vidOverlay.src = '';
+      vidOverlay.classList.add('hidden');
+
       document.getElementById('btnRemovePhoto').classList.add('hidden');
     }
 
@@ -709,10 +837,77 @@
 
       document.getElementById('zoomVal').innerText = `${zoom}%`;
 
-      const overlay = document.getElementById('bgImageOverlay');
-      overlay.style.opacity = opacity;
-      overlay.style.backgroundSize = `${zoom}%`;
-      overlay.style.backgroundPosition = `center ${posY}`;
+      const imgOverlay = document.getElementById('bgImageOverlay');
+      const vidOverlay = document.getElementById('bgVideoOverlay');
+
+      imgOverlay.style.opacity = opacity;
+      imgOverlay.style.backgroundSize = `${zoom}%`;
+      imgOverlay.style.backgroundPosition = `center ${posY}`;
+
+      vidOverlay.style.opacity = opacity;
+      vidOverlay.style.transform = `scale(${zoom / 100})`;
+      vidOverlay.style.objectPosition = `center ${posY}`;
+    }
+
+    function generatePostCaption() {
+      const heading = document.getElementById('ctrlHeading').value || 'Special Offer';
+      const subtitle = document.getElementById('ctrlSubtitle').value || '';
+      const brand = document.getElementById('ctrlBrand').value || 'VT Motors';
+      const contact = document.getElementById('ctrlContact').value || '';
+      const insta = document.getElementById('ctrlInsta')?.value || '';
+      const fb = document.getElementById('ctrlFb')?.value || '';
+
+      return `${heading} ✨\n\n${subtitle}\n\n📍 ${brand}\n📞 Call / WhatsApp: ${contact}\n${insta ? `📸 Instagram: ${insta}\n` : ''}${fb ? `🌐 Facebook: ${fb}\n` : ''}\n#offer #trending #sale #festival #service`;
+    }
+
+    async function shareToAllSocialMedia() {
+      const caption = generatePostCaption();
+      const canvasEl = document.getElementById('postCanvas');
+
+      try {
+        if (navigator.share) {
+          const canvas = await html2canvas(canvasEl, { scale: 2, useCORS: true, backgroundColor: null });
+          canvas.toBlob(async (blob) => {
+            const file = new File([blob], 'social_post.png', { type: 'image/png' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: document.getElementById('ctrlHeading').value,
+                text: caption,
+                files: [file]
+              });
+            } else {
+              await navigator.share({
+                title: document.getElementById('ctrlHeading').value,
+                text: caption
+              });
+            }
+          });
+        } else {
+          // Fallback on desktop: copy caption to clipboard & download image
+          await navigator.clipboard.writeText(caption);
+          alert('✅ Caption copied to clipboard! Now downloading high-res image for Instagram & Facebook...');
+          downloadGeneratedImage();
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          downloadGeneratedImage();
+        }
+      }
+    }
+
+    function shareToWhatsAppStatus() {
+      const caption = generatePostCaption();
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(caption)}`;
+      window.open(waUrl, '_blank');
+    }
+
+    async function copyCaptionAndExport() {
+      const caption = generatePostCaption();
+      try {
+        await navigator.clipboard.writeText(caption);
+        alert('📋 Marketing caption + hashtags copied to clipboard! Exporting PNG image...');
+      } catch (e) {}
+      downloadGeneratedImage();
     }
 
     async function downloadGeneratedImage() {
