@@ -863,34 +863,58 @@
     async function shareToAllSocialMedia() {
       const caption = generatePostCaption();
       const canvasEl = document.getElementById('postCanvas');
+      const btn = document.querySelector('button[onclick="shareToAllSocialMedia()"]');
+      const originalBtnHtml = btn ? btn.innerHTML : '';
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ri-loader-4-line animate-spin text-sm"></i> Generating Post...';
+      }
 
       try {
-        if (navigator.share) {
-          const canvas = await html2canvas(canvasEl, { scale: 2, useCORS: true, backgroundColor: null });
-          canvas.toBlob(async (blob) => {
-            const file = new File([blob], 'social_post.png', { type: 'image/png' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                title: document.getElementById('ctrlHeading').value,
-                text: caption,
-                files: [file]
-              });
-            } else {
-              await navigator.share({
-                title: document.getElementById('ctrlHeading').value,
-                text: caption
-              });
-            }
+        const canvas = await html2canvas(canvasEl, { scale: 2, useCORS: true, backgroundColor: null, logging: false });
+        
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+        const file = new File([blob], 'social_post.png', { type: 'image/png' });
+
+        // Check if Web Share API is supported with files (Mobile browsers)
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: document.getElementById('ctrlHeading').value || 'Special Offer',
+            text: caption,
+            files: [file]
           });
+        } else if (navigator.share) {
+          // Mobile fallback without files
+          await navigator.share({
+            title: document.getElementById('ctrlHeading').value || 'Special Offer',
+            text: caption
+          });
+          downloadGeneratedImage();
         } else {
-          // Fallback on desktop: copy caption to clipboard & download image
-          await navigator.clipboard.writeText(caption);
-          alert('✅ Caption copied to clipboard! Now downloading high-res image for Instagram & Facebook...');
+          // Desktop Chrome / Mac fallback: Copy caption and trigger high-res download
+          try {
+            await navigator.clipboard.writeText(caption);
+          } catch (clipErr) {}
+
+          // Download image directly
+          const link = document.createElement('a');
+          const filenameHeading = (document.getElementById('ctrlHeading').value || 'Social_Post').replace(/[^a-z0-9]/gi, '_');
+          link.download = `${filenameHeading}_${Date.now()}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+
+          alert('✅ High-res image downloaded & marketing caption copied to your clipboard!\n\nYou can now upload to Instagram, Facebook, or WhatsApp directly.');
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.warn('Share notice:', err);
           downloadGeneratedImage();
         }
-      } catch (e) {
-        if (e.name !== 'AbortError') {
-          downloadGeneratedImage();
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalBtnHtml;
         }
       }
     }
