@@ -7,7 +7,7 @@ import { register, login, getProfile, updateCredentials, logout } from './contro
 import { listAllUsers, updateUserAccess, deleteUser } from './controllers/admin.controller';
 import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSandboxTestMessage, exportCampaignCSV, deleteCampaign, batchDeleteCampaigns } from './controllers/whatsapp.controller';
 import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking, updateLeadStatus, deleteLead, clearCompletedLeads, recordAnalyticsEvent, getWebsiteAnalytics, getWebsiteTemplates, createWebsiteTemplate, removeWebsiteTemplate } from './controllers/website.controller';
-import { getOccasions, getPostTemplates } from './controllers/social.controller';
+import { getOccasions, getPostTemplates, publishToSocialChannels } from './controllers/social.controller';
 import { getIndustryPresets, createInvoice, listInvoices, updateInvoiceStatus, deleteInvoice, batchDeleteInvoices, getPublicInvoice } from './controllers/invoice.controller';
 import { getCrmPresets, createCrmContact, listCrmContacts, updateCrmContact, deleteCrmContact, batchDeleteCrmContacts } from './controllers/crm.controller';
 import { verifyWebhook, handleWebhookEvents } from './controllers/webhook.controller';
@@ -115,6 +115,7 @@ app.get(['/site/:slug', '/site'], (req, res) => {
 // --- PRODUCT 3: SOCIAL MEDIA POST GENERATOR & CALENDAR ROUTES ---
 app.get('/api/social/occasions', authMiddleware, getOccasions);
 app.get('/api/social/templates', authMiddleware, getPostTemplates);
+app.post('/api/social/publish', authMiddleware, publishToSocialChannels);
 
 // --- PRODUCT 4: UNIVERSAL DIGITAL INVOICING & BILLING ROUTES ---
 app.get('/api/invoices/presets', getIndustryPresets);

@@ -920,51 +920,67 @@
       const btn = document.querySelector('button[onclick="shareToAllSocialMedia()"]');
       const originalBtnHtml = btn ? btn.innerHTML : '';
 
+      const isFbChecked = document.getElementById('chkShareFb')?.checked;
+      const isTwitterChecked = document.getElementById('chkShareTwitter')?.checked;
+      const isInstaChecked = document.getElementById('chkShareInsta')?.checked;
+
+      const platformsToPublish = [];
+      if (isFbChecked) platformsToPublish.push('facebook');
+      if (isTwitterChecked) platformsToPublish.push('twitter');
+      if (isInstaChecked) platformsToPublish.push('instagram');
+
+      if (platformsToPublish.length === 0) {
+        alert('⚠️ Please select at least one platform (Facebook, X, or Instagram).');
+        return;
+      }
+
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="ri-loader-4-line animate-spin text-sm"></i> Generating Post...';
+        btn.innerHTML = '<i class="ri-loader-4-line animate-spin text-sm"></i> Publishing...';
       }
 
       try {
         const canvas = await html2canvas(canvasEl, { scale: 2, useCORS: true, backgroundColor: null, logging: false });
-        
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-        const file = new File([blob], 'social_post.png', { type: 'image/png' });
+        const imageBase64 = canvas.toDataURL('image/png');
+        const token = localStorage.getItem('grambi_token');
 
-        // Check if Web Share API is supported with files (Mobile browsers)
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: document.getElementById('ctrlHeading').value || 'Special Offer',
-            text: caption,
-            files: [file]
-          });
-        } else if (navigator.share) {
-          // Mobile fallback without files
-          await navigator.share({
-            title: document.getElementById('ctrlHeading').value || 'Special Offer',
-            text: caption
-          });
-          downloadGeneratedImage();
+        const res = await fetch('/api/social/publish', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            platforms: platformsToPublish,
+            caption,
+            imageBase64
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          let summaryMsg = '📢 Dispatch Status:\n\n';
+          for (const [platform, result] of Object.entries(data.results || {})) {
+            const icon = result.success ? '✅' : '⚠️';
+            summaryMsg += `${icon} ${platform.toUpperCase()}: ${result.message}\n`;
+          }
+          alert(summaryMsg);
         } else {
-          // Desktop Chrome / Mac fallback: Copy caption and trigger high-res download
+          // If server reports credentials missing or other issue, fallback to download & clipboard
+          alert(`Notice: ${data.error || 'Channels not fully linked yet.'}\n\nDownloading the high-res image and copying caption to clipboard for you now!`);
           try {
             await navigator.clipboard.writeText(caption);
-          } catch (clipErr) {}
-
-          // Download image directly
-          const link = document.createElement('a');
-          const filenameHeading = (document.getElementById('ctrlHeading').value || 'Social_Post').replace(/[^a-z0-9]/gi, '_');
-          link.download = `${filenameHeading}_${Date.now()}.png`;
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-
-          alert('✅ High-res image downloaded & marketing caption copied to your clipboard!\n\nYou can now upload to Instagram, Facebook, or WhatsApp directly.');
-        }
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.warn('Share notice:', err);
+          } catch (e) {}
           downloadGeneratedImage();
         }
+      } catch (err) {
+        console.warn('Publish notice:', err);
+        alert('Could not complete API dispatch. Downloading image & copying caption to your clipboard.');
+        try {
+          await navigator.clipboard.writeText(caption);
+        } catch (e) {}
+        downloadGeneratedImage();
       } finally {
         if (btn) {
           btn.disabled = false;
