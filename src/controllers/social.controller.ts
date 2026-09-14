@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -470,12 +472,113 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
     }
   }
 
-  // 3. Instagram status
+  // 3. Instagram Publishing
   if (platforms.includes('instagram')) {
-    results.instagram = {
-      success: false,
-      message: 'Instagram Graph API requires a public image URL and linked Instagram Creator/Business account.'
-    };
+    const fbPageId = user?.fbPageId || process.env.FB_PAGE_ID;
+    const fbAccessToken = user?.fbPageAccessToken || process.env.FB_PAGE_ACCESS_TOKEN;
+
+    if (!fbAccessToken) {
+      results.instagram = {
+        success: false,
+        message: 'Page Access Token not configured. Please add your credentials in Settings.'
+      };
+    } else if (!imageBase64) {
+      results.instagram = {
+        success: false,
+        message: 'Instagram requires an image to create a post.'
+      };
+    } else {
+      let tempFilePath = '';
+      try {
+        const axios = require('axios');
+
+        // Step 1: Look up the linked Instagram Business Account ID
+        let igUserId = process.env.INSTAGRAM_ACCOUNT_ID;
+        if (!igUserId && fbPageId) {
+          try {
+            const pageRes = await axios.get(
+              `https://graph.facebook.com/v21.0/${fbPageId}?fields=instagram_business_account&access_token=${fbAccessToken}`
+            );
+            igUserId = pageRes.data?.instagram_business_account?.id;
+          } catch (lookupErr: any) {
+            console.warn('IG business account lookup failed:', lookupErr?.response?.data || lookupErr.message);
+          }
+        }
+
+        if (!igUserId) {
+          results.instagram = {
+            success: false,
+            message: 'No linked Instagram Business Account found for this Facebook Page. Please ensure your Instagram is a Professional/Business account connected to your Page.'
+          };
+        } else {
+          // Step 2: Save the image temporarily to the public folder so Meta can fetch it via HTTP
+          const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+          const imageBuffer = Buffer.from(cleanBase64, 'base64');
+
+          const uploadsDir = path.join(__dirname, '../../public/uploads');
+          if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+          }
+
+          const filename = `ig_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.png`;
+          tempFilePath = path.join(uploadsDir, filename);
+          fs.writeFileSync(tempFilePath, imageBuffer);
+
+          const host = req.get('host') || 'www.grambi.in';
+          const protocol = req.protocol === 'http' && !host.includes('localhost') ? 'https' : req.protocol;
+          const publicImageUrl = `${protocol}://${host}/uploads/${filename}`;
+
+          // Step 3: Create Media Container
+          const containerRes = await axios.post(
+            `https://graph.facebook.com/v21.0/${igUserId}/media`,
+            null,
+            {
+              params: {
+                image_url: publicImageUrl,
+                caption: caption || '',
+                access_token: fbAccessToken
+              }
+            }
+          );
+
+          const creationId = containerRes.data?.id;
+          if (!creationId) {
+            throw new Error('Failed to create Instagram media container.');
+          }
+
+          // Step 4: Publish the Container
+          const publishRes = await axios.post(
+            `https://graph.facebook.com/v21.0/${igUserId}/media_publish`,
+            null,
+            {
+              params: {
+                creation_id: creationId,
+                access_token: fbAccessToken
+              }
+            }
+          );
+
+          results.instagram = {
+            success: true,
+            message: 'Successfully published to your Instagram profile!',
+            url: `https://instagram.com/p/${publishRes.data?.id || ''}`
+          };
+        }
+      } catch (igErr: any) {
+        console.error('Instagram publish error:', igErr?.response?.data || igErr?.message);
+        results.instagram = {
+          success: false,
+          message: igErr?.response?.data?.error?.message || igErr.message || 'Failed to post to Instagram'
+        };
+      } finally {
+        // Step 5: Clean up temporary file
+        if (tempFilePath && fs.existsSync(tempFilePath)) {
+          try {
+            fs.unlinkSync(tempFilePath);
+          } catch (e) {}
+        }
+      }
+    }
   }
 
   const allSuccess = Object.values(results).every(r => r.success);
