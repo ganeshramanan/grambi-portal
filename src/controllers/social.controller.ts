@@ -515,7 +515,7 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
           const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
           const imageBuffer = Buffer.from(cleanBase64, 'base64');
 
-          const uploadsDir = path.join(__dirname, '../../public/uploads');
+          const uploadsDir = path.join(__dirname, '../public/uploads');
           if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
           }
@@ -524,9 +524,8 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
           tempFilePath = path.join(uploadsDir, filename);
           fs.writeFileSync(tempFilePath, imageBuffer);
 
-          const host = req.get('host') || 'www.grambi.in';
-          const protocol = req.protocol === 'http' && !host.includes('localhost') ? 'https' : req.protocol;
-          const publicImageUrl = `${protocol}://${host}/uploads/${filename}`;
+          const host = 'www.grambi.in';
+          const publicImageUrl = `https://${host}/uploads/${filename}`;
 
           // Step 3: Create Media Container
           const containerRes = await axios.post(
@@ -545,6 +544,9 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
           if (!creationId) {
             throw new Error('Failed to create Instagram media container.');
           }
+
+          // Wait 3 seconds for Meta's servers to fetch and process the image container
+          await new Promise(resolve => setTimeout(resolve, 3000));
 
           // Step 4: Publish the Container
           const publishRes = await axios.post(
