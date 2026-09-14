@@ -1103,17 +1103,23 @@
     }
 
     // Modal & Social API Credentials management
-    function openSocialConfigModal() {
-      document.getElementById('socialConfigModal').classList.remove('hidden');
-    }
+    window.openSocialConfigModal = function() {
+      const modal = document.getElementById('socialConfigModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+      }
+    };
 
-    function closeSocialConfigModal() {
-      document.getElementById('socialConfigModal').classList.add('hidden');
+    window.closeSocialConfigModal = function() {
+      const modal = document.getElementById('socialConfigModal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
       const notice = document.getElementById('socialConfigNotice');
       if (notice) notice.classList.add('hidden');
-    }
+    };
 
-    async function saveSocialCredentials(e) {
+    window.saveSocialCredentials = async function(e) {
       e.preventDefault();
       const fbPageId = document.getElementById('cfgFbPageId').value.trim();
       const fbPageAccessToken = document.getElementById('cfgFbToken').value.trim();
