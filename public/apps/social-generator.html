@@ -473,17 +473,18 @@
 
             <div class="flex items-center justify-between text-xs">
               <div class="flex items-center gap-2 text-white">
-                <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm border border-emerald-500/30">
+                <div class="w-8 h-8 rounded-xl bg-emerald-500/25 text-emerald-300 flex items-center justify-center text-base border border-emerald-400/40 shadow-sm">
                   <i class="ri-phone-fill"></i>
                 </div>
                 <div>
-                  <span class="text-[9px] text-slate-300 uppercase tracking-wider block font-bold">Call / WhatsApp</span>
-                  <span id="canvasContact" class="font-bold font-mono text-xs sm:text-sm">+91 9876543210</span>
+                  <span class="text-[9px] text-emerald-300 uppercase tracking-wider block font-extrabold drop-shadow">Call / WhatsApp</span>
+                  <span id="canvasContact" class="font-extrabold font-mono text-xs sm:text-sm text-white drop-shadow-md">+91 9876543210</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg transition">
-                <span>Book Service</span> <i class="ri-arrow-right-line"></i>
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-lg border border-amber-300">
+                <i class="ri-links-line text-sm"></i>
+                <span id="canvasCtaText">Link in Caption</span>
               </div>
             </div>
           </div>
@@ -1215,7 +1216,11 @@
       if (isFbChecked && fb) socialHandlesPart += `🌐 Facebook: ${fb}\n`;
       if (isTwitterChecked && twitter) socialHandlesPart += `🐦 X (Twitter): ${twitter}\n`;
 
-      return `${heading} ✨\n\n${subtitle}\n\n📍 ${brand}\n📞 Call / WhatsApp: ${contact}\n${socialHandlesPart}\n#offer #trending #sale #festival #service`;
+      const siteSlug = (brand || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const bookingUrl = siteSlug ? `https://www.grambi.in/site/${siteSlug}` : 'https://www.grambi.in';
+      const bookingPart = `👉 Book / Explore Online: ${bookingUrl}\n`;
+
+      return `${heading} ✨\n\n${subtitle}\n\n📍 ${brand}\n📞 Call / WhatsApp: ${contact}\n${bookingPart}${socialHandlesPart}\n#offer #trending #sale #festival #service`;
     }
 
     async function shareToAllSocialMedia() {
