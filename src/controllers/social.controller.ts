@@ -546,10 +546,28 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
             throw new Error('Failed to create Instagram media container.');
           }
 
-          // Wait 3 seconds for Meta's servers to fetch and process the image container
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          // Step 4: Poll Container Status until READY (up to 15 seconds)
+          let isReady = false;
+          let attempts = 0;
+          while (!isReady && attempts < 8) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            attempts++;
+            try {
+              const statusCheck = await axios.get(
+                `https://graph.facebook.com/v21.0/${creationId}?fields=status_code&access_token=${fbAccessToken}`
+              );
+              const statusCode = statusCheck.data?.status_code;
+              if (statusCode === 'FINISHED') {
+                isReady = true;
+              } else if (statusCode === 'ERROR') {
+                throw new Error('Meta failed to process the image container.');
+              }
+            } catch (pollErr: any) {
+              if (pollErr.message.includes('Meta failed')) throw pollErr;
+            }
+          }
 
-          // Step 4: Publish the Container
+          // Step 5: Publish the Container
           const publishRes = await axios.post(
             `https://graph.facebook.com/v21.0/${igUserId}/media_publish`,
             null,
