@@ -477,7 +477,7 @@
             <p class="text-[11px] text-slate-400">Configure your business Facebook Page & X (Twitter) tokens</p>
           </div>
         </div>
-        <button onclick="closeSocialConfigModal()" class="text-slate-400 hover:text-white text-lg">
+        <button type="button" onclick="document.getElementById('socialConfigModal').style.display='none'" class="text-slate-400 hover:text-white text-lg cursor-pointer">
           <i class="ri-close-line"></i>
         </button>
       </div>
@@ -491,11 +491,11 @@
           </div>
           <div class="space-y-1">
             <label class="text-[11px] font-semibold text-slate-300">Facebook Page ID</label>
-            <input type="text" id="cfgFbPageId" placeholder="e.g. 109827364528192" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-xs focus:border-blue-500 outline-none" />
+            <input type="text" id="cfgFbPageId" autocomplete="off" name="facebookPageIdManual" placeholder="e.g. 1350196458175507" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-xs focus:border-blue-500 outline-none" />
           </div>
           <div class="space-y-1">
             <label class="text-[11px] font-semibold text-slate-300">Page Access Token</label>
-            <input type="password" id="cfgFbToken" placeholder="EAABw..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-xs focus:border-blue-500 outline-none" />
+            <input type="password" id="cfgFbToken" autocomplete="new-password" name="facebookPageTokenManual" placeholder="EAABw..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-xs focus:border-blue-500 outline-none" />
             <p class="text-[10px] text-slate-500">Generate from Meta Graph API Explorer with <code>pages_manage_posts</code> permission.</p>
           </div>
         </div>
@@ -529,10 +529,10 @@
         <div id="socialConfigNotice" class="hidden text-xs p-2.5 rounded-lg"></div>
 
         <div class="flex items-center justify-end gap-2 pt-2">
-          <button type="button" onclick="closeSocialConfigModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-bold">
+          <button type="button" onclick="document.getElementById('socialConfigModal').style.display='none'" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-bold cursor-pointer">
             Cancel
           </button>
-          <button type="submit" id="btnSaveSocialConfig" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold shadow-md shadow-blue-500/20">
+          <button type="submit" id="btnSaveSocialConfig" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold shadow-md shadow-blue-500/20 cursor-pointer">
             Save Credentials
           </button>
         </div>
@@ -622,6 +622,8 @@
           // Prepopulate social config modal fields if user has them
           if (user.fbPageId && document.getElementById('cfgFbPageId')) {
             document.getElementById('cfgFbPageId').value = user.fbPageId;
+          } else if (document.getElementById('cfgFbPageId') && !document.getElementById('cfgFbPageId').value) {
+            document.getElementById('cfgFbPageId').value = '';
           }
 
           // Fetch saved handles from website customizer
