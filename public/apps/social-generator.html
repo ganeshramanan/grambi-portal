@@ -427,7 +427,7 @@
         </div>
 
         <!-- Social Destination Channels Checkboxes -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
+        <div class="grid grid-cols-3 gap-2 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
           <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-200">
             <input type="checkbox" id="chkShareInsta" checked class="rounded bg-slate-900 border-slate-700 text-pink-500 focus:ring-0 cursor-pointer" />
             <i class="ri-instagram-line text-pink-400"></i> Insta
@@ -440,21 +440,12 @@
             <input type="checkbox" id="chkShareTwitter" checked class="rounded bg-slate-900 border-slate-700 text-slate-300 focus:ring-0 cursor-pointer" />
             <i class="ri-twitter-x-line text-slate-300"></i> X Post
           </label>
-          <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-200">
-            <input type="checkbox" id="chkShareWa" checked class="rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer" />
-            <i class="ri-whatsapp-fill text-emerald-400"></i> Status
-          </label>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <!-- Native Multi-Share (Instagram, FB, WhatsApp in 1 Go) -->
-          <button type="button" onclick="shareToAllSocialMedia()" class="col-span-2 py-2.5 px-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-1.5 transition">
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Native Multi-Share (Instagram, FB, X in 1 Go) -->
+          <button type="button" onclick="shareToAllSocialMedia()" class="py-2.5 px-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-1.5 transition">
             <i class="ri-share-line text-sm"></i> Publish Selected (1 Go)
-          </button>
-
-          <!-- WhatsApp Status -->
-          <button type="button" onclick="shareToWhatsAppStatus()" class="py-2.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1 transition">
-            <i class="ri-whatsapp-fill text-sm"></i> WA Status
           </button>
 
           <!-- Copy Caption & Export -->
@@ -982,13 +973,7 @@
       }
     }
 
-    function shareToWhatsAppStatus() {
-      const caption = generatePostCaption();
-      const waUrl = `https://wa.me/?text=${encodeURIComponent(caption)}`;
-      window.open(waUrl, '_blank');
-    }
-
-    async function copyCaptionAndExport() {
+    function copyCaptionAndExport() {
       const caption = generatePostCaption();
       try {
         await navigator.clipboard.writeText(caption);
