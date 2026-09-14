@@ -512,11 +512,11 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
           };
         } else {
           // Step 2: Save the image temporarily to the public folder so Meta can fetch it via HTTP
-          // Note: Instagram requires JPEG (.jpg) format for feed image publishing
+          // Note: Instagram requires genuine JPEG (.jpg) format for feed image publishing
           const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
           const imageBuffer = Buffer.from(cleanBase64, 'base64');
 
-          const uploadsDir = path.join(__dirname, '../public/uploads');
+          const uploadsDir = path.join(__dirname, '../../public/uploads');
           if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
           }
@@ -525,8 +525,9 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
           tempFilePath = path.join(uploadsDir, filename);
           fs.writeFileSync(tempFilePath, imageBuffer);
 
-          const host = 'www.grambi.in';
-          const publicImageUrl = `https://${host}/uploads/${filename}`;
+          const host = req.get('host') || 'www.grambi.in';
+          const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'https';
+          const publicImageUrl = `${protocol}://${host}/uploads/${filename}`;
 
           // Step 3: Create Media Container
           const containerRes = await axios.post(
@@ -560,7 +561,8 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
               if (statusCode === 'FINISHED') {
                 isReady = true;
               } else if (statusCode === 'ERROR') {
-                throw new Error('Meta failed to process the image container.');
+                const errorMsg = statusCheck.data?.error_message || 'Meta failed to process the image container.';
+                throw new Error(errorMsg);
               }
             } catch (pollErr: any) {
               if (pollErr.message.includes('Meta failed')) throw pollErr;

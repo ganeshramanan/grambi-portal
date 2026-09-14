@@ -1324,12 +1324,25 @@
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        directImageBase64 = event.target.result;
-        const preview = document.getElementById('directImagePreview');
-        const prompt = document.getElementById('directDropPrompt');
-        preview.src = directImageBase64;
-        preview.classList.remove('hidden');
-        prompt.classList.add('hidden');
+        const img = new Image();
+        img.onload = () => {
+          // Normalize directly uploaded photo to JPEG format
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          directImageBase64 = canvas.toDataURL('image/jpeg', 0.95);
+
+          const preview = document.getElementById('directImagePreview');
+          const prompt = document.getElementById('directDropPrompt');
+          preview.src = directImageBase64;
+          preview.classList.remove('hidden');
+          prompt.classList.add('hidden');
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     };
