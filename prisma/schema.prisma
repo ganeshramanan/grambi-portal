@@ -20,6 +20,14 @@ model User {
   wabaId        String?
   phoneNumberId String?
   accessToken   String?
+
+  // Social Publishing Credentials (Per Customer)
+  fbPageId            String?
+  fbPageAccessToken   String?
+  twitterApiKey       String?
+  twitterApiSecret    String?
+  twitterAccessToken  String?
+  twitterAccessSecret String?
   
   createdAt     DateTime              @default(now())
   campaigns     Campaign[]

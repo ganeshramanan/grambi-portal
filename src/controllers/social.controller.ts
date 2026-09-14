@@ -382,22 +382,24 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
     return res.status(400).json({ error: 'Please select at least one channel to publish.' });
   }
 
+  // Fetch logged in user to check their individual credentials
+  const user = req.userId ? await prisma.user.findUnique({ where: { id: req.userId } }) : null;
+
   const results: Record<string, { success: boolean; message: string; url?: string }> = {};
 
-  // 1. Facebook Page Publishing
+  // 1. Facebook Page Publishing (User specific first, then env fallback)
   if (platforms.includes('facebook')) {
-    const fbPageId = process.env.FB_PAGE_ID;
-    const fbAccessToken = process.env.FB_PAGE_ACCESS_TOKEN;
+    const fbPageId = user?.fbPageId || process.env.FB_PAGE_ID;
+    const fbAccessToken = user?.fbPageAccessToken || process.env.FB_PAGE_ACCESS_TOKEN;
 
     if (!fbPageId || !fbAccessToken) {
       results.facebook = {
         success: false,
-        message: 'Facebook Page credentials not configured in environment (FB_PAGE_ID / FB_PAGE_ACCESS_TOKEN).'
+        message: 'Facebook Page credentials not configured. Please add your Facebook Page ID and Page Access Token in Settings.'
       };
     } else {
       try {
         const axios = require('axios');
-        let postData: any = {};
         
         if (imageBase64) {
           const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
@@ -415,7 +417,7 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
 
           results.facebook = {
             success: true,
-            message: 'Successfully published to Facebook Page!',
+            message: 'Successfully published to your Facebook Page!',
             url: `https://facebook.com/${fbRes.data?.post_id || fbRes.data?.id || fbPageId}`
           };
         } else {
@@ -426,7 +428,7 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
 
           results.facebook = {
             success: true,
-            message: 'Successfully published text to Facebook Page!',
+            message: 'Successfully published text to your Facebook Page!',
             url: `https://facebook.com/${fbRes.data?.id || fbPageId}`
           };
         }
@@ -440,21 +442,21 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
     }
   }
 
-  // 2. Twitter / X Publishing
+  // 2. Twitter / X Publishing (User specific first, then env fallback)
   if (platforms.includes('twitter')) {
-    const xApiKey = process.env.TWITTER_API_KEY;
-    const xApiSecret = process.env.TWITTER_API_SECRET;
-    const xAccessToken = process.env.TWITTER_ACCESS_TOKEN;
-    const xAccessSecret = process.env.TWITTER_ACCESS_SECRET;
+    const xApiKey = user?.twitterApiKey || process.env.TWITTER_API_KEY;
+    const xApiSecret = user?.twitterApiSecret || process.env.TWITTER_API_SECRET;
+    const xAccessToken = user?.twitterAccessToken || process.env.TWITTER_ACCESS_TOKEN;
+    const xAccessSecret = user?.twitterAccessSecret || process.env.TWITTER_ACCESS_SECRET;
 
     if (!xApiKey || !xAccessToken) {
       results.twitter = {
         success: false,
-        message: 'X (Twitter) credentials not configured in environment (TWITTER_API_KEY / TWITTER_ACCESS_TOKEN).'
+        message: 'X (Twitter) credentials not configured. Please add your X API credentials in Settings.'
       };
     } else {
       try {
-        // Mock / placeholder until OAuth keys are supplied
+        // Mock / placeholder until Twitter client is executed with credentials
         results.twitter = {
           success: true,
           message: 'Post queued for X (Twitter) broadcast.'

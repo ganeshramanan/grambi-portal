@@ -150,21 +150,41 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
     phoneNumberId: user.phoneNumberId,
     wabaId: user.wabaId,
     hasMetaCredentials: Boolean(user.phoneNumberId && user.accessToken),
+    fbPageId: user.fbPageId,
+    hasFbCredentials: Boolean(user.fbPageId && user.fbPageAccessToken),
+    hasTwitterCredentials: Boolean(user.twitterAccessToken && user.twitterAccessSecret),
     subscriptions: user.subscriptions.map(s => s.productKey)
   });
 };
 
 export const updateCredentials = async (req: AuthRequest, res: Response) => {
-  const { phoneNumberId, accessToken, wabaId, businessName } = req.body;
+  const { 
+    phoneNumberId, 
+    accessToken, 
+    wabaId, 
+    businessName,
+    fbPageId,
+    fbPageAccessToken,
+    twitterApiKey,
+    twitterApiSecret,
+    twitterAccessToken,
+    twitterAccessSecret
+  } = req.body;
 
   try {
     const user = await prisma.user.update({
       where: { id: req.userId },
       data: {
-        phoneNumberId: phoneNumberId ? String(phoneNumberId).trim() : undefined,
-        accessToken: accessToken ? String(accessToken).trim() : undefined,
-        wabaId: wabaId ? String(wabaId).trim() : undefined,
-        businessName: businessName ? String(businessName).trim() : undefined
+        phoneNumberId: phoneNumberId !== undefined ? String(phoneNumberId).trim() : undefined,
+        accessToken: accessToken !== undefined ? String(accessToken).trim() : undefined,
+        wabaId: wabaId !== undefined ? String(wabaId).trim() : undefined,
+        businessName: businessName !== undefined ? String(businessName).trim() : undefined,
+        fbPageId: fbPageId !== undefined ? String(fbPageId).trim() : undefined,
+        fbPageAccessToken: fbPageAccessToken !== undefined ? String(fbPageAccessToken).trim() : undefined,
+        twitterApiKey: twitterApiKey !== undefined ? String(twitterApiKey).trim() : undefined,
+        twitterApiSecret: twitterApiSecret !== undefined ? String(twitterApiSecret).trim() : undefined,
+        twitterAccessToken: twitterAccessToken !== undefined ? String(twitterAccessToken).trim() : undefined,
+        twitterAccessSecret: twitterAccessSecret !== undefined ? String(twitterAccessSecret).trim() : undefined,
       }
     });
 
@@ -174,7 +194,10 @@ export const updateCredentials = async (req: AuthRequest, res: Response) => {
       user: {
         phoneNumberId: user.phoneNumberId,
         wabaId: user.wabaId,
-        businessName: user.businessName
+        businessName: user.businessName,
+        fbPageId: user.fbPageId,
+        hasFbCredentials: Boolean(user.fbPageId && user.fbPageAccessToken),
+        hasTwitterCredentials: Boolean(user.twitterAccessToken && user.twitterAccessSecret)
       }
     });
   } catch (err: any) {
