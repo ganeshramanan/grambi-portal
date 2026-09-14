@@ -91,7 +91,20 @@
   </header>
 
   <!-- Main Workspace -->
-  <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+  <div class="max-w-7xl mx-auto px-6 pt-6 pb-2 w-full flex items-center justify-between">
+    <!-- Mode Switcher -->
+    <div class="flex items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800 text-xs">
+      <button type="button" id="tabStudioMode" onclick="switchPublishMode('studio')" class="px-4 py-2 bg-pink-600 text-white font-bold rounded-xl transition flex items-center gap-2">
+        <i class="ri-magic-line text-sm"></i> 🎨 Studio Designer
+      </button>
+      <button type="button" id="tabDirectMode" onclick="switchPublishMode('direct')" class="px-4 py-2 text-slate-400 hover:text-white font-semibold rounded-xl transition flex items-center gap-2">
+        <i class="ri-upload-cloud-2-line text-sm"></i> 📤 Direct Photo Upload
+      </button>
+    </div>
+  </div>
+
+  <!-- Workspace 1: Studio Designer -->
+  <main id="workspaceStudio" class="max-w-7xl mx-auto px-6 py-4 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
     
     <!-- Left: Calendar & Design Controls (5 Cols) -->
     <div class="lg:col-span-5 space-y-6">
@@ -518,6 +531,65 @@
       <p class="text-xs text-slate-500 mt-4 text-center max-w-md">
         💡 Click <strong class="text-pink-400">"Export High-Res Image"</strong> to download this graphic ready for Instagram, WhatsApp status, and Facebook posts.
       </p>
+    </div>
+  </main>
+
+  <!-- Workspace 2: Quick Direct Photo Upload Mode -->
+  <main id="workspaceDirect" class="max-w-4xl mx-auto px-6 py-6 flex-grow w-full hidden">
+    <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="ri-upload-cloud-2-line text-blue-400"></i> Direct Photo & Flyer Upload
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Upload a real store photo, finished graphic, or flyer and publish straight to Facebook and Instagram in 1 click.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Photo Picker & Preview -->
+        <div class="space-y-3">
+          <label class="block text-xs font-semibold text-slate-300">Select Image (JPEG or PNG)</label>
+          <div class="border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-2xl p-6 text-center bg-slate-950/60 cursor-pointer transition flex flex-col items-center justify-center min-h-[260px] relative overflow-hidden" onclick="document.getElementById('directImageFileInput').click()">
+            <input type="file" id="directImageFileInput" accept="image/*" onchange="handleDirectFileSelect(event)" class="hidden" />
+            <img id="directImagePreview" class="hidden absolute inset-0 w-full h-full object-contain bg-slate-950 p-2" />
+            <div id="directDropPrompt" class="space-y-2">
+              <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-2xl mx-auto">
+                <i class="ri-image-add-line"></i>
+              </div>
+              <p class="text-xs font-bold text-slate-200">Click to choose image</p>
+              <p class="text-[10px] text-slate-500">Supports JPG, PNG up to 15MB</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Caption & Channels -->
+        <div class="space-y-4 flex flex-col justify-between">
+          <div class="space-y-3">
+            <label class="block text-xs font-semibold text-slate-300">Post Caption & Hashtags</label>
+            <textarea id="directCaption" rows="6" placeholder="Write your post announcement, offer, or update here... #offers #sale #trending" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500 leading-relaxed"></textarea>
+          </div>
+
+          <!-- Destination Channels -->
+          <div class="space-y-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i class="ri-share-forward-line text-blue-400"></i> Destination Channels
+            </span>
+            <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-200">
+                <input type="checkbox" id="chkDirectInsta" checked class="rounded bg-slate-900 border-slate-700 text-pink-500 focus:ring-0 cursor-pointer" />
+                <i class="ri-instagram-line text-pink-400"></i> Instagram
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer font-medium text-slate-200">
+                <input type="checkbox" id="chkDirectFb" checked class="rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-0 cursor-pointer" />
+                <i class="ri-facebook-circle-fill text-blue-400"></i> Facebook
+              </label>
+            </div>
+          </div>
+
+          <button type="button" id="btnPublishDirect" onclick="publishDirectImage()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition cursor-pointer">
+            <i class="ri-send-plane-fill text-sm"></i> Publish Directly (1 Go)
+          </button>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -1172,8 +1244,9 @@
       }
 
       try {
-        const canvas = await html2canvas(canvasEl, { scale: 2, useCORS: true, backgroundColor: null, logging: false });
-        const imageBase64 = canvas.toDataURL('image/png');
+        const mimeType = 'image/jpeg';
+        const canvas = await html2canvas(canvasEl, { scale: 2, useCORS: true, backgroundColor: '#020617', logging: false });
+        const imageBase64 = canvas.toDataURL(mimeType, 0.95);
         const token = localStorage.getItem('grambi_token');
 
         const res = await fetch('/api/social/publish', {
@@ -1220,6 +1293,104 @@
         }
       }
     }
+
+    // Mode Switcher Logic
+    let currentPublishMode = 'studio';
+    let directImageBase64 = null;
+
+    window.switchPublishMode = function(mode) {
+      currentPublishMode = mode;
+      const tabStudio = document.getElementById('tabStudioMode');
+      const tabDirect = document.getElementById('tabDirectMode');
+      const wsStudio = document.getElementById('workspaceStudio');
+      const wsDirect = document.getElementById('workspaceDirect');
+
+      if (mode === 'studio') {
+        tabStudio.className = 'px-4 py-2 bg-pink-600 text-white font-bold rounded-xl transition flex items-center gap-2';
+        tabDirect.className = 'px-4 py-2 text-slate-400 hover:text-white font-semibold rounded-xl transition flex items-center gap-2';
+        wsStudio.classList.remove('hidden');
+        wsDirect.classList.add('hidden');
+      } else {
+        tabDirect.className = 'px-4 py-2 bg-blue-600 text-white font-bold rounded-xl transition flex items-center gap-2';
+        tabStudio.className = 'px-4 py-2 text-slate-400 hover:text-white font-semibold rounded-xl transition flex items-center gap-2';
+        wsDirect.classList.remove('hidden');
+        wsStudio.classList.add('hidden');
+      }
+    };
+
+    window.handleDirectFileSelect = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        directImageBase64 = event.target.result;
+        const preview = document.getElementById('directImagePreview');
+        const prompt = document.getElementById('directDropPrompt');
+        preview.src = directImageBase64;
+        preview.classList.remove('hidden');
+        prompt.classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.publishDirectImage = async function() {
+      if (!directImageBase64) {
+        alert('⚠️ Please select an image first.');
+        return;
+      }
+
+      const caption = document.getElementById('directCaption').value || '';
+      const isFbChecked = document.getElementById('chkDirectFb')?.checked;
+      const isInstaChecked = document.getElementById('chkDirectInsta')?.checked;
+
+      const platformsToPublish = [];
+      if (isFbChecked) platformsToPublish.push('facebook');
+      if (isInstaChecked) platformsToPublish.push('instagram');
+
+      if (platformsToPublish.length === 0) {
+        alert('⚠️ Please select at least one channel (Instagram or Facebook).');
+        return;
+      }
+
+      const btn = document.getElementById('btnPublishDirect');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ri-loader-4-line animate-spin text-sm"></i> Publishing Directly...';
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/social/publish', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({
+            platforms: platformsToPublish,
+            caption,
+            imageBase64: directImageBase64
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          let summaryMsg = '📢 Dispatch Status:\n\n';
+          for (const [platform, result] of Object.entries(data.results || {})) {
+            const icon = result.success ? '✅' : '⚠️';
+            summaryMsg += `${icon} ${platform.toUpperCase()}: ${result.message}\n`;
+          }
+          alert(summaryMsg);
+        } else {
+          alert('⚠️ Error: ' + (data.error || 'Failed to publish direct photo.'));
+        }
+      } catch (err) {
+        alert('⚠️ Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    };
 
     async function copyCaptionAndExport() {
       const caption = generatePostCaption();

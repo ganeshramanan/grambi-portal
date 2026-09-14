@@ -512,6 +512,7 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
           };
         } else {
           // Step 2: Save the image temporarily to the public folder so Meta can fetch it via HTTP
+          // Note: Instagram requires JPEG (.jpg) format for feed image publishing
           const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
           const imageBuffer = Buffer.from(cleanBase64, 'base64');
 
@@ -520,7 +521,7 @@ export const publishToSocialChannels = async (req: AuthRequest, res: Response) =
             fs.mkdirSync(uploadsDir, { recursive: true });
           }
 
-          const filename = `ig_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.png`;
+          const filename = `ig_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
           tempFilePath = path.join(uploadsDir, filename);
           fs.writeFileSync(tempFilePath, imageBuffer);
 
