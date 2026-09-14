@@ -1221,7 +1221,7 @@
       }
     }
 
-    function copyCaptionAndExport() {
+    async function copyCaptionAndExport() {
       const caption = generatePostCaption();
       try {
         await navigator.clipboard.writeText(caption);
