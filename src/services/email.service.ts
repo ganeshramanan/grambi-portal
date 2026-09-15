@@ -6,7 +6,8 @@ const getAdminEmail = () => (process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL).tri
 
 function getTransporter() {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT || '465', 10);
+  // Standard submission port 587 with STARTTLS (works on Render free tier where 465 is blocked)
+  const port = parseInt(process.env.SMTP_PORT || '587', 10);
   const secure = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : port === 465;
   const user = (process.env.SMTP_USER || '').trim();
   // Remove any accidental spaces often pasted from Google's 4-char grouped display
@@ -16,16 +17,18 @@ function getTransporter() {
     return null;
   }
 
-  // Use direct TLS transport on port 465 with explicit socket timeouts
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
+    host,
+    port,
+    secure, // false for 587 (uses STARTTLS)
     auth: {
       user,
       pass,
     },
-    connectionTimeout: 10000, // 10 seconds max connection wait
+    tls: {
+      rejectUnauthorized: false, // Prevents cloud proxy TLS certificate mismatch
+    },
+    connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 15000,
   });
