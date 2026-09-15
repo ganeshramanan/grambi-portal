@@ -96,15 +96,18 @@
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         const data = await res.json();
-        if (data.smtpConfigured) {
+        if (data.resendConfigured) {
           badge.className = 'px-3 py-1.5 text-xs rounded-lg border bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-medium';
-          badge.innerHTML = `<i class="ri-checkbox-circle-line"></i> SMTP Active (${data.smtpUser})`;
+          badge.innerHTML = `<i class="ri-checkbox-circle-line"></i> Resend Active (HTTPS 443)`;
+        } else if (data.smtpConfigured) {
+          badge.className = 'px-3 py-1.5 text-xs rounded-lg border bg-blue-500/10 border-blue-500/30 text-blue-400 font-medium';
+          badge.innerHTML = `<i class="ri-mail-line"></i> Gmail SMTP (${data.smtpUser})`;
         } else {
           badge.className = 'px-3 py-1.5 text-xs rounded-lg border bg-amber-500/10 border-amber-500/30 text-amber-400 font-medium';
-          badge.innerHTML = `<i class="ri-alert-line"></i> SMTP Missing in Render (${data.smtpPassSet ? 'No User' : 'No Pass'})`;
+          badge.innerHTML = `<i class="ri-alert-line"></i> Email Not Configured`;
         }
       } catch (err) {
-        badge.innerText = 'SMTP Status Unknown';
+        badge.innerText = 'Email Status Unknown';
       }
     }
 

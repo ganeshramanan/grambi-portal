@@ -85,12 +85,15 @@ app.post('/api/admin/reset-password', async (req, res) => {
 app.get('/api/admin/email-status', authMiddleware, requireAdmin, async (req, res) => {
   const user = (process.env.SMTP_USER || '').trim();
   const pass = (process.env.SMTP_PASS || '').trim();
+  const resendApiKey = (process.env.RESEND_API_KEY || '').trim();
   const adminEmail = process.env.ADMIN_EMAIL || 'tganeshramanan85@gmail.com';
 
   res.json({
+    configured: Boolean(resendApiKey || (user && pass)),
+    provider: resendApiKey ? 'Resend (HTTPS Port 443 — Optimal)' : (user && pass ? 'Gmail SMTP' : 'None'),
+    resendConfigured: Boolean(resendApiKey),
     smtpConfigured: Boolean(user && pass),
     smtpUser: user ? user.replace(/(.{3})(.*)(@.*)/, '$1***$3') : 'NOT_SET',
-    smtpPassSet: Boolean(pass),
     adminEmail,
     appUrl: process.env.APP_URL || 'https://grambi.in'
   });
@@ -98,17 +101,15 @@ app.get('/api/admin/email-status', authMiddleware, requireAdmin, async (req, res
 
 // Diagnostic live email test endpoint (Send test email directly to admin)
 app.post('/api/admin/send-test-email', authMiddleware, requireAdmin, async (req, res) => {
-  const { sendEmail } = require('./services/email.service');
   const adminEmail = process.env.ADMIN_EMAIL || 'tganeshramanan85@gmail.com';
   const user = (process.env.SMTP_USER || '').trim();
   const pass = (process.env.SMTP_PASS || '').trim();
+  const resendApiKey = (process.env.RESEND_API_KEY || '').trim();
 
-  if (!user || !pass) {
+  if (!resendApiKey && (!user || !pass)) {
     return res.status(400).json({
       success: false,
-      error: 'SMTP_USER or SMTP_PASS environment variables are missing in Render dashboard.',
-      smtpUser: user || 'MISSING',
-      smtpPass: pass ? 'SET' : 'MISSING'
+      error: 'No email credentials found. Add RESEND_API_KEY in your Render environment variables.',
     });
   }
 
@@ -116,9 +117,9 @@ app.post('/api/admin/send-test-email', authMiddleware, requireAdmin, async (req,
     const { sendEmailDetailed } = require('./services/email.service');
     const result = await sendEmailDetailed({
       to: adminEmail,
-      subject: 'Grambi SMTP Test Email',
-      html: '<p>If you see this, Gmail SMTP notifications are 100% active and configured correctly!</p>',
-      text: 'If you see this, Gmail SMTP notifications are 100% active and configured correctly!'
+      subject: 'Grambi Test Email',
+      html: '<p>🎉 Congratulations! Email delivery is now 100% active and working on your Grambi platform.</p>',
+      text: 'Congratulations! Email delivery is now 100% active and working on your Grambi platform.'
     });
 
     if (result.success) {

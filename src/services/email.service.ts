@@ -1,38 +1,9 @@
 import nodemailer from 'nodemailer';
+import axios from 'axios';
 
 const DEFAULT_ADMIN_EMAIL = 'tganeshramanan85@gmail.com';
 const getAppUrl = () => (process.env.APP_URL || 'https://grambi.in').replace(/\/+$/, '');
 const getAdminEmail = () => (process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL).trim();
-
-function getTransporter() {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  // Standard submission port 587 with STARTTLS (works on Render free tier where 465 is blocked)
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const secure = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : port === 465;
-  const user = (process.env.SMTP_USER || '').trim();
-  // Remove any accidental spaces often pasted from Google's 4-char grouped display
-  const pass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
-
-  if (!user || !pass) {
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure, // false for 587 (uses STARTTLS)
-    auth: {
-      user,
-      pass,
-    },
-    tls: {
-      rejectUnauthorized: false, // Prevents cloud proxy TLS certificate mismatch
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-  });
-}
 
 interface EmailPayload {
   to: string;
@@ -52,30 +23,81 @@ export async function sendEmail({ to, subject, html, text }: EmailPayload): Prom
   return res.success;
 }
 
+/**
+ * Universal Email Sender:
+ * 1. Checks for RESEND_API_KEY (HTTP Port 443 — 100% immune to Render port blocking)
+ * 2. Falls back to Nodemailer SMTP (for local dev or SMTP providers)
+ */
 export async function sendEmailDetailed({ to, subject, html, text }: EmailPayload): Promise<SendEmailResult> {
-  const user = (process.env.SMTP_USER || '').trim();
-  const fromAddress = user ? `"Grambi Platform" <${user}>` : '"Grambi Platform" <no-reply@grambi.in>';
-  const transporter = getTransporter();
+  const resendApiKey = (process.env.RESEND_API_KEY || '').trim();
 
-  if (!transporter) {
-    const errMsg = 'SMTP credentials not configured (SMTP_USER or SMTP_PASS missing)';
+  // --- METHOD 1: Resend HTTP REST API (Best for Render cloud) ---
+  if (resendApiKey) {
+    try {
+      const response = await axios.post(
+        'https://api.resend.com/emails',
+        {
+          from: 'Grambi <onboarding@resend.dev>',
+          to: [to],
+          subject,
+          html,
+          text: text || subject,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000,
+        }
+      );
+
+      console.log(`[RESEND HTTP SUCCESS] ID: ${response.data.id} | Sent to ${to}`);
+      return { success: true, messageId: response.data.id };
+    } catch (err: any) {
+      const errMsg = err.response?.data?.message || err.message;
+      console.error(`[RESEND HTTP FAILED] To: ${to}:`, errMsg);
+      return { success: false, error: `Resend API Error: ${errMsg}` };
+    }
+  }
+
+  // --- METHOD 2: Direct SMTP (Gmail) ---
+  const user = (process.env.SMTP_USER || '').trim();
+  const pass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
+
+  if (!user || !pass) {
+    const errMsg = 'Neither RESEND_API_KEY nor SMTP credentials configured.';
     console.warn(`[EMAIL SKIPPED] ${errMsg}`);
     return { success: false, error: errMsg };
   }
 
   try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587', 10),
+      secure: false,
+      auth: { user, pass },
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 10000,
+      socketTimeout: 15000,
+    });
+
     const info = await transporter.sendMail({
-      from: fromAddress,
+      from: `"Grambi Platform" <${user}>`,
       to,
       subject,
       html,
       text: text || subject,
     });
-    console.log(`[EMAIL SUCCESS] Message ID: ${info.messageId} | Sent "${subject}" to ${to}`);
+
+    console.log(`[SMTP SUCCESS] ID: ${info.messageId} | Sent to ${to}`);
     return { success: true, messageId: info.messageId };
   } catch (error: any) {
-    console.error(`[EMAIL FAILED] Error sending "${subject}" to ${to}:`, error.message);
-    return { success: false, error: error.message };
+    console.error(`[SMTP FAILED] Error sending to ${to}:`, error.message);
+    return { 
+      success: false, 
+      error: `${error.message}. (Note: Render blocks raw SMTP ports 465/587. Add RESEND_API_KEY in Render to send via HTTPS)` 
+    };
   }
 }
 
