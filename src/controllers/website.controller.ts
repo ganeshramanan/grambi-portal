@@ -86,7 +86,7 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
 
   try {
-    let website = await prisma.website.findUnique({
+    let website: any = await prisma.website.findUnique({
       where: { userId },
       include: {
         serviceRequests: {
@@ -104,7 +104,7 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
       const initialName = user?.businessName || 'My Business';
       const baseSlug = createSlug(initialName) || `site-${Date.now()}`;
 
-      website = await prisma.website.create({
+      website = await (prisma.website.create as any)({
         data: {
           userId: userId!,
           slug: baseSlug,
@@ -131,13 +131,17 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    if (!website) {
+      return res.status(404).json({ error: 'Website not found' });
+    }
+
     return res.json({
       ...website,
       services: JSON.parse(website.servicesJson || '[]'),
       gallery: JSON.parse(website.galleryJson || '[]'),
-      customLinks: JSON.parse((website as any).customLinksJson || '[]'),
-      googleReviewUrl: (website as any).googleReviewUrl || null,
-      feedbacks: (website as any).feedbacks || []
+      customLinks: JSON.parse(website.customLinksJson || '[]'),
+      googleReviewUrl: website.googleReviewUrl || null,
+      feedbacks: website.feedbacks || []
     });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to load website details: ' + err.message });
@@ -162,7 +166,7 @@ export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    const updated = await prisma.website.update({
+    const updated: any = await (prisma.website.update as any)({
       where: { userId },
       data: {
         businessName: businessName || undefined,
@@ -184,7 +188,7 @@ export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
         servicesJson: services ? JSON.stringify(services) : undefined,
         galleryJson: gallery ? JSON.stringify(gallery) : undefined,
         customLinksJson: customLinks !== undefined ? JSON.stringify(customLinks) : undefined
-      } as any
+      }
     });
 
     return res.json({
@@ -194,7 +198,8 @@ export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
         ...updated,
         services: JSON.parse(updated.servicesJson || '[]'),
         gallery: JSON.parse(updated.galleryJson || '[]'),
-        customLinks: JSON.parse((updated as any).customLinksJson || '[]')
+        customLinks: JSON.parse(updated.customLinksJson || '[]'),
+        googleReviewUrl: updated.googleReviewUrl || null
       }
     });
   } catch (err: any) {
