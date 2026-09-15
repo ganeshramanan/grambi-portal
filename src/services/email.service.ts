@@ -16,25 +16,18 @@ function getTransporter() {
     return null;
   }
 
-  // Use Gmail service preset if using Gmail (handles ports and TLS automatically)
-  if (host.includes('gmail.com')) {
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user,
-        pass,
-      },
-    });
-  }
-
+  // Use direct TLS transport on port 465 with explicit socket timeouts
   return nodemailer.createTransport({
-    host,
-    port,
-    secure,
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
       user,
       pass,
     },
+    connectionTimeout: 10000, // 10 seconds max connection wait
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   });
 }
 
@@ -45,14 +38,26 @@ interface EmailPayload {
   text?: string;
 }
 
+interface SendEmailResult {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
 export async function sendEmail({ to, subject, html, text }: EmailPayload): Promise<boolean> {
+  const res = await sendEmailDetailed({ to, subject, html, text });
+  return res.success;
+}
+
+export async function sendEmailDetailed({ to, subject, html, text }: EmailPayload): Promise<SendEmailResult> {
   const user = (process.env.SMTP_USER || '').trim();
   const fromAddress = user ? `"Grambi Platform" <${user}>` : '"Grambi Platform" <no-reply@grambi.in>';
   const transporter = getTransporter();
 
   if (!transporter) {
-    console.warn(`[EMAIL SKIPPED - SMTP_USER OR SMTP_PASS NOT SET] To: ${to} | Subject: ${subject}`);
-    return false;
+    const errMsg = 'SMTP credentials not configured (SMTP_USER or SMTP_PASS missing)';
+    console.warn(`[EMAIL SKIPPED] ${errMsg}`);
+    return { success: false, error: errMsg };
   }
 
   try {
@@ -64,10 +69,10 @@ export async function sendEmail({ to, subject, html, text }: EmailPayload): Prom
       text: text || subject,
     });
     console.log(`[EMAIL SUCCESS] Message ID: ${info.messageId} | Sent "${subject}" to ${to}`);
-    return true;
+    return { success: true, messageId: info.messageId };
   } catch (error: any) {
     console.error(`[EMAIL FAILED] Error sending "${subject}" to ${to}:`, error.message);
-    return false;
+    return { success: false, error: error.message };
   }
 }
 

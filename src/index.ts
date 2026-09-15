@@ -113,17 +113,18 @@ app.post('/api/admin/send-test-email', authMiddleware, requireAdmin, async (req,
   }
 
   try {
-    const success = await sendEmail({
+    const { sendEmailDetailed } = require('./services/email.service');
+    const result = await sendEmailDetailed({
       to: adminEmail,
       subject: 'Grambi SMTP Test Email',
       html: '<p>If you see this, Gmail SMTP notifications are 100% active and configured correctly!</p>',
       text: 'If you see this, Gmail SMTP notifications are 100% active and configured correctly!'
     });
 
-    if (success) {
+    if (result.success) {
       return res.json({ success: true, message: `Test email sent successfully to ${adminEmail}` });
     } else {
-      return res.status(500).json({ success: false, error: 'sendMail returned false. Check Render logs for error details.' });
+      return res.status(500).json({ success: false, error: result.error || 'Failed to send email' });
     }
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
