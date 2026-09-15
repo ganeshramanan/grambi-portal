@@ -1,5 +1,9 @@
 import nodemailer from 'nodemailer';
 
+const DEFAULT_ADMIN_EMAIL = 'tganeshramanan85@gmail.com';
+const getAppUrl = () => (process.env.APP_URL || 'https://grambi.in').replace(/\/+$/, '');
+const getAdminEmail = () => (process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL).trim();
+
 function getTransporter() {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT || '465', 10);
@@ -366,7 +370,7 @@ export async function notifyCustomerModulesUpdated(customer: {
       </div>
 
       <div style="margin: 28px 0; text-align: center;">
-        <a href="${APP_URL}/portal.html" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+        <a href="${appUrl}/portal.html" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
           Open Grambi Launchpad →
         </a>
       </div>
