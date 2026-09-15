@@ -35,6 +35,17 @@
 
       <!-- Quick Header Actions -->
       <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Desktop Section Navigation Tabs -->
+        <nav class="hidden lg:flex items-center gap-1 mr-2 text-xs font-bold text-slate-600">
+          <a href="#heroSection" class="px-3 py-1.5 rounded-xl hover:text-slate-900 hover:bg-slate-100 transition">Home</a>
+          <a href="#linksSection" class="px-3 py-1.5 rounded-xl hover:text-pink-600 hover:bg-pink-50 transition">Links</a>
+          <a href="#aboutSection" class="px-3 py-1.5 rounded-xl hover:text-slate-900 hover:bg-slate-100 transition">About</a>
+          <a href="#servicesSection" class="px-3 py-1.5 rounded-xl hover:text-slate-900 hover:bg-slate-100 transition">Services</a>
+          <a href="#gallerySection" class="px-3 py-1.5 rounded-xl hover:text-slate-900 hover:bg-slate-100 transition">Gallery</a>
+          <a href="#feedbackSection" class="px-3 py-1.5 rounded-xl hover:text-pink-600 hover:bg-pink-50 transition">Feedbacks</a>
+          <a href="#bookSection" class="px-3 py-1.5 rounded-xl hover:text-blue-600 hover:bg-blue-50 transition">Enquiry</a>
+        </nav>
+
         <!-- Social Follow Badges -->
         <div id="headerSocialLinks" class="hidden md:flex items-center gap-2 mr-1">
           <a id="headerInstaLink" href="#" target="_blank" class="hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-pink-600 text-sm transition" title="Follow on Instagram">
@@ -94,6 +105,30 @@
         </div>
       </div>
     </section>
+
+    <!-- Interactive Jump Tabs Bar (Quick Sticky Jump Strip for Desktop & Mobile) -->
+    <div class="sticky top-16 sm:top-20 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+      <div class="max-w-6xl mx-auto px-4 flex items-center justify-start sm:justify-center gap-2 sm:gap-3 overflow-x-auto py-2.5 text-xs font-bold no-scrollbar">
+        <a href="#linksSection" class="px-3.5 py-1.5 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-600 transition flex items-center gap-1 shrink-0 border border-pink-200/60">
+          <i class="ri-links-line"></i> Links
+        </a>
+        <a href="#aboutSection" class="px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1 shrink-0">
+          <i class="ri-information-line"></i> About
+        </a>
+        <a href="#servicesSection" class="px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1 shrink-0">
+          <i class="ri-service-line"></i> Services
+        </a>
+        <a href="#gallerySection" class="px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1 shrink-0">
+          <i class="ri-image-line"></i> Gallery
+        </a>
+        <a href="#feedbackSection" class="px-3.5 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-600 transition flex items-center gap-1 shrink-0 border border-amber-200/60">
+          <i class="ri-star-smile-line"></i> Feedbacks
+        </a>
+        <a href="#bookSection" class="px-3.5 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 transition flex items-center gap-1 shrink-0 border border-blue-200/60">
+          <i class="ri-mail-send-line"></i> Enquiry Form
+        </a>
+      </div>
+    </div>
 
     <!-- LINKS SECTION (Bio / Social Cards - Miki vCard Style) -->
     <section id="linksSection" class="py-10 max-w-2xl mx-auto px-6 scroll-mt-20">
