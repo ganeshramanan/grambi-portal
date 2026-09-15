@@ -34,10 +34,12 @@ export async function sendEmailDetailed({ to, subject, html, text }: EmailPayloa
   // --- METHOD 1: Resend HTTP REST API (Best for Render cloud) ---
   if (resendApiKey) {
     try {
+      // Use custom domain notifications@grambi.in once verified, fallback to onboarding@resend.dev
+      const fromEmail = process.env.RESEND_FROM || 'Grambi <notifications@grambi.in>';
       const response = await axios.post(
         'https://api.resend.com/emails',
         {
-          from: 'Grambi <onboarding@resend.dev>',
+          from: fromEmail,
           to: [to],
           subject,
           html,
@@ -55,6 +57,32 @@ export async function sendEmailDetailed({ to, subject, html, text }: EmailPayloa
       console.log(`[RESEND HTTP SUCCESS] ID: ${response.data.id} | Sent to ${to}`);
       return { success: true, messageId: response.data.id };
     } catch (err: any) {
+      // If custom domain is still propagating in DNS, fallback gracefully to sandbox sender
+      if (err.response?.data?.message && err.response.data.message.includes('domain')) {
+        try {
+          const fallback = await axios.post(
+            'https://api.resend.com/emails',
+            {
+              from: 'Grambi <onboarding@resend.dev>',
+              to: [to],
+              subject,
+              html,
+              text: text || subject,
+            },
+            {
+              headers: {
+                'Authorization': `Bearer ${resendApiKey}`,
+                'Content-Type': 'application/json',
+              },
+              timeout: 10000,
+            }
+          );
+          console.log(`[RESEND FALLBACK SUCCESS] ID: ${fallback.data.id} | Sent to ${to}`);
+          return { success: true, messageId: fallback.data.id };
+        } catch (fallbackErr: any) {
+          // continue to reporting
+        }
+      }
       const errMsg = err.response?.data?.message || err.message;
       console.error(`[RESEND HTTP FAILED] To: ${to}:`, errMsg);
       return { success: false, error: `Resend API Error: ${errMsg}` };
