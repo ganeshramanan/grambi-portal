@@ -1,25 +1,38 @@
 import nodemailer from 'nodemailer';
 
-const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
-const SMTP_SECURE = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : SMTP_PORT === 465;
-const SMTP_USER = process.env.SMTP_USER || '';
-const SMTP_PASS = process.env.SMTP_PASS || '';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'tganeshramanan85@gmail.com';
-const APP_URL = (process.env.APP_URL || 'https://grambi.in').replace(/\/+$/, '');
+function getTransporter() {
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.SMTP_PORT || '465', 10);
+  const secure = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : port === 465;
+  const user = (process.env.SMTP_USER || '').trim();
+  // Remove any accidental spaces often pasted from Google's 4-char grouped display
+  const pass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
 
-// Create transporter if SMTP credentials are provided
-const transporter = (SMTP_USER && SMTP_PASS)
-  ? nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_SECURE,
+  if (!user || !pass) {
+    return null;
+  }
+
+  // Use Gmail service preset if using Gmail (handles ports and TLS automatically)
+  if (host.includes('gmail.com')) {
+    return nodemailer.createTransport({
+      service: 'gmail',
       auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASS,
+        user,
+        pass,
       },
-    })
-  : null;
+    });
+  }
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user,
+      pass,
+    },
+  });
+}
 
 interface EmailPayload {
   to: string;
@@ -29,30 +42,27 @@ interface EmailPayload {
 }
 
 export async function sendEmail({ to, subject, html, text }: EmailPayload): Promise<boolean> {
-  const fromAddress = SMTP_USER ? `"Grambi Platform" <${SMTP_USER}>` : '"Grambi Platform" <no-reply@grambi.in>';
+  const user = (process.env.SMTP_USER || '').trim();
+  const fromAddress = user ? `"Grambi Platform" <${user}>` : '"Grambi Platform" <no-reply@grambi.in>';
+  const transporter = getTransporter();
 
   if (!transporter) {
-    console.log(`\n======================================================`);
-    console.log(`[EMAIL NOTICE - SMTP NOT CONFIGURED]`);
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`(Configure SMTP_USER and SMTP_PASS in environment variables to send live emails via Gmail)`);
-    console.log(`======================================================\n`);
+    console.warn(`[EMAIL SKIPPED - SMTP_USER OR SMTP_PASS NOT SET] To: ${to} | Subject: ${subject}`);
     return false;
   }
 
   try {
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: fromAddress,
       to,
       subject,
       html,
       text: text || subject,
     });
-    console.log(`[EMAIL SUCCESS] Sent "${subject}" to ${to}`);
+    console.log(`[EMAIL SUCCESS] Message ID: ${info.messageId} | Sent "${subject}" to ${to}`);
     return true;
   } catch (error: any) {
-    console.error(`[EMAIL ERROR] Failed to send to ${to}:`, error.message);
+    console.error(`[EMAIL FAILED] Error sending "${subject}" to ${to}:`, error.message);
     return false;
   }
 }
@@ -66,6 +76,8 @@ export async function notifyAdminNewSignup(customer: {
   phone?: string | null;
   requestedProducts?: string[];
 }) {
+  const adminEmail = process.env.ADMIN_EMAIL || 'tganeshramanan85@gmail.com';
+  const appUrl = (process.env.APP_URL || 'https://grambi.in').replace(/\/+$/, '');
   const subject = `[Grambi Action Required] New Customer Signup: ${customer.businessName}`;
   const productsList = customer.requestedProducts && customer.requestedProducts.length > 0
     ? customer.requestedProducts.join(', ')
@@ -102,7 +114,7 @@ export async function notifyAdminNewSignup(customer: {
       </div>
 
       <div style="margin: 28px 0; text-align: center;">
-        <a href="${APP_URL}/admin.html" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+        <a href="${appUrl}/admin.html" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
           Review & Approve in Admin Hub →
         </a>
       </div>
@@ -113,7 +125,7 @@ export async function notifyAdminNewSignup(customer: {
   `;
 
   return sendEmail({
-    to: ADMIN_EMAIL,
+    to: adminEmail,
     subject,
     html,
   });
@@ -126,6 +138,7 @@ export async function notifyCustomerPendingSignup(customer: {
   businessName: string;
   email: string;
 }) {
+  const adminEmail = process.env.ADMIN_EMAIL || 'tganeshramanan85@gmail.com';
   const subject = `Welcome to Grambi — Your Access Request is Being Reviewed`;
 
   const html = `
@@ -147,7 +160,7 @@ export async function notifyCustomerPendingSignup(customer: {
       </div>
 
       <p style="color: #94a3b8; font-size: 13px; line-height: 1.5;">
-        If you have any questions or require urgent activation, feel free to reach out directly to support at <a href="mailto:${ADMIN_EMAIL}" style="color: #60a5fa;">${ADMIN_EMAIL}</a>.
+        If you have any questions or require urgent activation, feel free to reach out directly to support at <a href="mailto:${adminEmail}" style="color: #60a5fa;">${adminEmail}</a>.
       </p>
 
       <hr style="border: none; border-top: 1px solid #1e293b; margin: 24px 0;" />
@@ -169,6 +182,7 @@ export async function notifyCustomerApproved(customer: {
   businessName: string;
   email: string;
 }) {
+  const appUrl = (process.env.APP_URL || 'https://grambi.in').replace(/\/+$/, '');
   const subject = `🎉 Your Grambi Account Has Been Approved!`;
 
   const html = `
@@ -190,7 +204,7 @@ export async function notifyCustomerApproved(customer: {
       </div>
 
       <div style="margin: 28px 0; text-align: center;">
-        <a href="${APP_URL}" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+        <a href="${appUrl}" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
           Sign In to Your Launchpad →
         </a>
       </div>
@@ -215,8 +229,9 @@ export async function sendPasswordResetEmail(customer: {
   email: string;
   resetToken: string;
 }) {
+  const appUrl = (process.env.APP_URL || 'https://grambi.in').replace(/\/+$/, '');
   const subject = `Reset Your Grambi Account Password`;
-  const resetLink = `${APP_URL}/reset-password.html?token=${encodeURIComponent(customer.resetToken)}&email=${encodeURIComponent(customer.email)}`;
+  const resetLink = `${appUrl}/reset-password.html?token=${encodeURIComponent(customer.resetToken)}&email=${encodeURIComponent(customer.email)}`;
 
   const html = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #0f172a; color: #f8fafc; border-radius: 12px; border: 1px solid #1e293b;">
@@ -265,6 +280,8 @@ export async function notifyAdminModuleRequest(customer: {
   productKey: string;
   productName: string;
 }) {
+  const adminEmail = process.env.ADMIN_EMAIL || 'tganeshramanan85@gmail.com';
+  const appUrl = (process.env.APP_URL || 'https://grambi.in').replace(/\/+$/, '');
   const subject = `[Grambi Action Required] Module Access Request: ${customer.productName} by ${customer.businessName}`;
 
   const html = `
@@ -294,7 +311,7 @@ export async function notifyAdminModuleRequest(customer: {
       </div>
 
       <div style="margin: 28px 0; text-align: center;">
-        <a href="${APP_URL}/admin.html" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+        <a href="${appUrl}/admin.html" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; font-weight: 600; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
           Grant Access in Admin Hub →
         </a>
       </div>
@@ -305,7 +322,7 @@ export async function notifyAdminModuleRequest(customer: {
   `;
 
   return sendEmail({
-    to: ADMIN_EMAIL,
+    to: adminEmail,
     subject,
     html,
   });
@@ -320,6 +337,7 @@ export async function notifyCustomerModulesUpdated(customer: {
   activeProducts: string[];
   newlyAdded?: string[];
 }) {
+  const appUrl = (process.env.APP_URL || 'https://grambi.in').replace(/\/+$/, '');
   const subject = `✨ Your Grambi Product Access Has Been Updated!`;
   const addedText = customer.newlyAdded && customer.newlyAdded.length > 0
     ? `<div style="background-color: #064e3b; padding: 14px; border-radius: 8px; margin: 16px 0; border: 1px solid #059669; color: #a7f3d0; font-size: 14px; margin-bottom: 20px;">

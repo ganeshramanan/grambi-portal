@@ -81,6 +81,21 @@ app.post('/api/admin/reset-password', async (req, res) => {
   }
 });
 
+// Diagnostic health check for email configuration
+app.get('/api/admin/email-status', authMiddleware, requireAdmin, async (req, res) => {
+  const user = (process.env.SMTP_USER || '').trim();
+  const pass = (process.env.SMTP_PASS || '').trim();
+  const adminEmail = process.env.ADMIN_EMAIL || 'tganeshramanan85@gmail.com';
+
+  res.json({
+    smtpConfigured: Boolean(user && pass),
+    smtpUser: user ? user.replace(/(.{3})(.*)(@.*)/, '$1***$3') : 'NOT_SET',
+    smtpPassSet: Boolean(pass),
+    adminEmail,
+    appUrl: process.env.APP_URL || 'https://grambi.in'
+  });
+});
+
 // --- SUPER ADMIN MANAGEMENT ROUTES ---
 app.get('/api/admin/users', authMiddleware, requireAdmin, listAllUsers);
 app.put('/api/admin/users/:id/access', authMiddleware, requireAdmin, updateUserAccess);

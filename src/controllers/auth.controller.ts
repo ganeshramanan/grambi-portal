@@ -73,15 +73,15 @@ export const register = async (req: Request, res: Response) => {
   const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
   res.cookie('grambi_token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
 
-  // Asynchronously dispatch notifications (do not block client response)
-  if (role === 'CUSTOMER') {
-    notifyAdminNewSignup({
-      businessName: user.businessName,
-      email: user.email,
-      phone: user.phone,
-      requestedProducts: requestedProducts || ['WHATSAPP_BROADCAST'],
-    }).catch(err => console.error('Admin signup notify error:', err));
+  // Always notify on customer registration, even if first user was admin
+  notifyAdminNewSignup({
+    businessName: user.businessName,
+    email: user.email,
+    phone: user.phone,
+    requestedProducts: requestedProducts || ['WHATSAPP_BROADCAST'],
+  }).catch(err => console.error('Admin signup notify error:', err));
 
+  if (role === 'CUSTOMER') {
     notifyCustomerPendingSignup({
       businessName: user.businessName,
       email: user.email,
