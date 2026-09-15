@@ -32,9 +32,19 @@
   <main class="max-w-7xl mx-auto px-6 py-10">
     <!-- USERS PERMISSIONS -->
     <div class="space-y-6">
-      <div class="mb-4">
-        <h1 class="text-2xl font-bold text-white">Customer Product Permissions</h1>
-        <p class="text-sm text-slate-400">Approve new signups and toggle which products each customer can access.</p>
+      <div class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-white">Customer Product Permissions</h1>
+          <p class="text-sm text-slate-400">Approve new signups and toggle which products each customer can access.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div id="smtpStatusBadge" class="px-3 py-1.5 text-xs rounded-lg border bg-slate-900 border-slate-800 text-slate-400">
+            Checking SMTP...
+          </div>
+          <button onclick="testSmtp()" id="testEmailBtn" class="px-3 py-1.5 text-xs bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30 rounded-lg transition">
+            Test Email
+          </button>
+        </div>
       </div>
 
       <!-- Users Table -->
@@ -72,8 +82,54 @@
 
         const data = await res.json();
         renderUsers(data.users || []);
+        checkSmtpStatus();
       } catch (err) {
         alert('Failed to load admin panel');
+      }
+    }
+
+    async function checkSmtpStatus() {
+      const badge = document.getElementById('smtpStatusBadge');
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/admin/email-status', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        const data = await res.json();
+        if (data.smtpConfigured) {
+          badge.className = 'px-3 py-1.5 text-xs rounded-lg border bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-medium';
+          badge.innerHTML = `<i class="ri-checkbox-circle-line"></i> SMTP Active (${data.smtpUser})`;
+        } else {
+          badge.className = 'px-3 py-1.5 text-xs rounded-lg border bg-amber-500/10 border-amber-500/30 text-amber-400 font-medium';
+          badge.innerHTML = `<i class="ri-alert-line"></i> SMTP Missing in Render (${data.smtpPassSet ? 'No User' : 'No Pass'})`;
+        }
+      } catch (err) {
+        badge.innerText = 'SMTP Status Unknown';
+      }
+    }
+
+    async function testSmtp() {
+      const btn = document.getElementById('testEmailBtn');
+      btn.disabled = true;
+      btn.innerText = 'Sending...';
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/admin/send-test-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to send test email');
+        alert(data.message || 'Test email dispatched! Check your inbox/spam folder.');
+      } catch (err) {
+        alert('Email Test Failed: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Test Email';
       }
     }
 

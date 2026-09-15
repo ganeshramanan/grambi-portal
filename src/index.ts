@@ -96,6 +96,40 @@ app.get('/api/admin/email-status', authMiddleware, requireAdmin, async (req, res
   });
 });
 
+// Diagnostic live email test endpoint (Send test email directly to admin)
+app.post('/api/admin/send-test-email', authMiddleware, requireAdmin, async (req, res) => {
+  const { sendEmail } = require('./services/email.service');
+  const adminEmail = process.env.ADMIN_EMAIL || 'tganeshramanan85@gmail.com';
+  const user = (process.env.SMTP_USER || '').trim();
+  const pass = (process.env.SMTP_PASS || '').trim();
+
+  if (!user || !pass) {
+    return res.status(400).json({
+      success: false,
+      error: 'SMTP_USER or SMTP_PASS environment variables are missing in Render dashboard.',
+      smtpUser: user || 'MISSING',
+      smtpPass: pass ? 'SET' : 'MISSING'
+    });
+  }
+
+  try {
+    const success = await sendEmail({
+      to: adminEmail,
+      subject: 'Grambi SMTP Test Email',
+      html: '<p>If you see this, Gmail SMTP notifications are 100% active and configured correctly!</p>',
+      text: 'If you see this, Gmail SMTP notifications are 100% active and configured correctly!'
+    });
+
+    if (success) {
+      return res.json({ success: true, message: `Test email sent successfully to ${adminEmail}` });
+    } else {
+      return res.status(500).json({ success: false, error: 'sendMail returned false. Check Render logs for error details.' });
+    }
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // --- SUPER ADMIN MANAGEMENT ROUTES ---
 app.get('/api/admin/users', authMiddleware, requireAdmin, listAllUsers);
 app.put('/api/admin/users/:id/access', authMiddleware, requireAdmin, updateUserAccess);
