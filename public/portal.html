@@ -130,24 +130,16 @@
       const container = document.getElementById('productGrid');
       container.innerHTML = '';
 
-      const authorizedProducts = PRODUCTS.filter(p => user.role === 'ADMIN' || (user.subscriptions && user.subscriptions.includes(p.key)));
+      const userSubs = user.subscriptions || [];
 
-      if (authorizedProducts.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full py-16 text-center border border-dashed border-slate-800 rounded-3xl p-8 bg-slate-900/30">
-            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-2xl mx-auto mb-3">
-              <i class="ri-lock-2-line"></i>
-            </div>
-            <h3 class="text-base font-bold text-white mb-1">No Active Modules Yet</h3>
-            <p class="text-xs text-slate-400 max-w-sm mx-auto">Your account is active. Please wait for the admin to enable your requested modules or reach out to support.</p>
-          </div>
-        `;
-        return;
-      }
-
-      authorizedProducts.forEach(p => {
+      PRODUCTS.forEach(p => {
+        const isAuthorized = user.role === 'ADMIN' || userSubs.includes(p.key);
         const card = document.createElement('div');
-        card.className = 'p-6 rounded-2xl border border-slate-800 bg-slate-900/60 hover:border-slate-700 transition flex flex-col justify-between';
+        card.className = `p-6 rounded-2xl border transition flex flex-col justify-between ${
+          isAuthorized 
+            ? 'border-slate-800 bg-slate-900/60 hover:border-slate-700' 
+            : 'border-slate-800/40 bg-slate-900/20 opacity-80 hover:border-slate-800'
+        }`;
 
         card.innerHTML = `
           <div>
@@ -155,22 +147,63 @@
               <div class="w-12 h-12 rounded-xl bg-${p.color}-500/10 text-${p.color}-400 flex items-center justify-center text-2xl border border-${p.color}-500/20">
                 <i class="${p.icon}"></i>
               </div>
-              <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
-                Active
-              </span>
+              ${isAuthorized 
+                ? '<span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">Active</span>'
+                : '<span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-medium">Locked</span>'
+              }
             </div>
             <h3 class="text-xl font-bold text-white mb-2">${p.name}</h3>
             <p class="text-xs text-slate-400 leading-relaxed mb-6">${p.description}</p>
           </div>
 
           <div>
-            <a href="${p.url}" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-500/10">
-              Open Application <i class="ri-arrow-right-line"></i>
-            </a>
+            ${isAuthorized ? `
+              <a href="${p.url}" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-md shadow-blue-500/10">
+                Open Application <i class="ri-arrow-right-line"></i>
+              </a>
+            ` : `
+              <button id="reqBtn-${p.key}" onclick="requestModule('${p.key}', '${p.name.replace(/'/g, "\\'")}')" class="w-full py-2.5 px-4 bg-slate-800 hover:bg-blue-600 hover:text-white text-slate-300 font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition border border-slate-700">
+                <i class="ri-lock-unlock-line"></i> Request Access
+              </button>
+            `}
           </div>
         `;
         container.appendChild(card);
       });
+    }
+
+    async function requestModule(productKey, productName) {
+      const btn = document.getElementById(`reqBtn-${productKey}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Requesting...';
+      }
+
+      try {
+        const token = localStorage.getItem('grambi_token');
+        const res = await fetch('/api/customer/request-module', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ productKey, productName })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to request module');
+
+        alert(data.message || 'Access requested! Admin has been notified via email.');
+        if (btn) {
+          btn.className = 'w-full py-2.5 px-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold rounded-xl text-sm flex items-center justify-center gap-2';
+          btn.innerText = 'Request Sent (Pending)';
+        }
+      } catch (err) {
+        alert(err.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="ri-lock-unlock-line"></i> Request Access';
+        }
+      }
     }
 
     async function handleLogout() {

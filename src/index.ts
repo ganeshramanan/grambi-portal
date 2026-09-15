@@ -3,8 +3,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import dotenv from 'dotenv';
-import { register, login, getProfile, updateCredentials, logout } from './controllers/auth.controller';
-import { listAllUsers, updateUserAccess, deleteUser } from './controllers/admin.controller';
+import { register, login, getProfile, updateCredentials, logout, forgotPassword, resetPassword } from './controllers/auth.controller';
+import { listAllUsers, updateUserAccess, deleteUser, requestModuleAccess } from './controllers/admin.controller';
 import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSandboxTestMessage, exportCampaignCSV, deleteCampaign, batchDeleteCampaigns } from './controllers/whatsapp.controller';
 import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking, updateLeadStatus, deleteLead, clearCompletedLeads, recordAnalyticsEvent, getWebsiteAnalytics, getWebsiteTemplates, createWebsiteTemplate, removeWebsiteTemplate } from './controllers/website.controller';
 import { getOccasions, getPostTemplates, publishToSocialChannels } from './controllers/social.controller';
@@ -31,6 +31,8 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.post('/api/auth/register', register);
 app.post('/api/auth/login', login);
 app.post('/api/auth/logout', logout);
+app.post('/api/auth/forgot-password', forgotPassword);
+app.post('/api/auth/reset-password', resetPassword);
 app.get('/api/auth/me', authMiddleware, getProfile);
 app.put('/api/auth/credentials', authMiddleware, updateCredentials);
 
@@ -83,6 +85,7 @@ app.post('/api/admin/reset-password', async (req, res) => {
 app.get('/api/admin/users', authMiddleware, requireAdmin, listAllUsers);
 app.put('/api/admin/users/:id/access', authMiddleware, requireAdmin, updateUserAccess);
 app.delete('/api/admin/users/:id', authMiddleware, requireAdmin, deleteUser);
+app.post('/api/customer/request-module', authMiddleware, requestModuleAccess);
 
 // --- PRODUCT 1: WHATSAPP BROADCAST ROUTES ---
 app.get('/api/whatsapp/templates', authMiddleware, getCustomerTemplates);

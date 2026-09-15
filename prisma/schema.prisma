@@ -29,6 +29,10 @@ model User {
   twitterAccessToken  String?
   twitterAccessSecret String?
   
+  // Password Reset Support
+  resetToken          String?
+  resetTokenExpiry    DateTime?
+
   createdAt     DateTime              @default(now())
   campaigns     Campaign[]
   subscriptions ProductSubscription[]

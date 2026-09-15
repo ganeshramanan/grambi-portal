@@ -2,8 +2,10 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { z } from 'zod';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import { notifyAdminNewSignup, notifyCustomerPendingSignup, sendPasswordResetEmail } from '../services/email.service';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'grambi_unified_secret_key_2026';
@@ -70,6 +72,21 @@ export const register = async (req: Request, res: Response) => {
 
   const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
   res.cookie('grambi_token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+
+  // Asynchronously dispatch notifications (do not block client response)
+  if (role === 'CUSTOMER') {
+    notifyAdminNewSignup({
+      businessName: user.businessName,
+      email: user.email,
+      phone: user.phone,
+      requestedProducts: requestedProducts || ['WHATSAPP_BROADCAST'],
+    }).catch(err => console.error('Admin signup notify error:', err));
+
+    notifyCustomerPendingSignup({
+      businessName: user.businessName,
+      email: user.email,
+    }).catch(err => console.error('Customer pending notify error:', err));
+  }
 
   return res.status(201).json({
     message: role === 'ADMIN' ? 'Admin account created!' : 'Registration submitted! Please wait for admin approval.',
@@ -209,3 +226,108 @@ export const logout = (req: Request, res: Response) => {
   res.clearCookie('grambi_token');
   res.json({ success: true, message: 'Logged out successfully.' });
 };
+
+const ForgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+const ResetPasswordSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+  email: z.string().email('Invalid email address'),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+// Request Password Reset Link
+export const forgotPassword = async (req: Request, res: Response) => {
+  const result = ForgotPasswordSchema.safeParse(req.body);
+  if (!result.success) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+
+  const { email } = result.data;
+  const normalizedEmail = email.toLowerCase().trim();
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+
+    // Always respond with success message to protect against email enumeration
+    const genericSuccess = 'If an account exists for this email, a password reset link has been dispatched.';
+
+    if (!user) {
+      return res.json({ success: true, message: genericSuccess });
+    }
+
+    if (user.status === 'REJECTED') {
+      return res.status(403).json({ error: 'This account access was rejected. Please contact support.' });
+    }
+
+    // Generate random single-use token and 30-minute expiry
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiry = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken: token,
+        resetTokenExpiry: expiry,
+      },
+    });
+
+    sendPasswordResetEmail({
+      businessName: user.businessName,
+      email: user.email,
+      resetToken: token,
+    }).catch(err => console.error('Forgot password send email error:', err));
+
+    return res.json({ success: true, message: genericSuccess });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to process password reset request.' });
+  }
+};
+
+// Complete Password Reset
+export const resetPassword = async (req: Request, res: Response) => {
+  const result = ResetPasswordSchema.safeParse(req.body);
+  if (!result.success) {
+    const issue = result.error.issues[0]?.message || 'Invalid input data.';
+    return res.status(400).json({ error: issue });
+  }
+
+  const { token, email, newPassword } = result.data;
+  const normalizedEmail = email.toLowerCase().trim();
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (!user || !user.resetToken || !user.resetTokenExpiry) {
+      return res.status(400).json({ error: 'Invalid or expired password reset link.' });
+    }
+
+    if (user.resetToken !== token) {
+      return res.status(400).json({ error: 'Invalid password reset link.' });
+    }
+
+    if (new Date() > new Date(user.resetTokenExpiry)) {
+      return res.status(400).json({ error: 'This reset link has expired. Please request a new one.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password and invalidate reset token
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    return res.json({
+      success: true,
+      message: 'Your password has been reset successfully! You can now sign in with your new password.',
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to reset password: ' + err.message });
+  }
+};
+
