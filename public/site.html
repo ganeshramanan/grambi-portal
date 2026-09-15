@@ -95,6 +95,20 @@
       </div>
     </section>
 
+    <!-- LINKS SECTION (Bio / Social Cards - Miki vCard Style) -->
+    <section id="linksSection" class="py-10 max-w-2xl mx-auto px-6 scroll-mt-20">
+      <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+        <div class="text-center">
+          <h3 class="text-xs font-black uppercase tracking-widest text-pink-600">LINKS</h3>
+          <div class="w-10 h-0.5 bg-pink-500 mx-auto mt-1 rounded-full"></div>
+        </div>
+
+        <div id="linksCardsContainer" class="space-y-3">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </section>
+
     <!-- About Us Section -->
     <section id="aboutSection" class="py-12 max-w-6xl mx-auto px-6 scroll-mt-20">
       <div class="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
@@ -221,30 +235,34 @@
 
   <!-- Sticky Bottom Mobile Navigation Bar (Miki vCard Style) -->
   <nav id="mobileBottomNav" class="sticky bottom-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-2 sm:hidden shadow-2xl">
-    <div class="grid grid-cols-6 gap-1 text-center">
+    <div class="grid grid-cols-7 gap-0.5 text-center">
       <a href="#heroSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
         <i class="ri-home-4-fill text-lg"></i>
-        <span class="text-[9px] font-bold tracking-tight mt-0.5">Home</span>
+        <span class="text-[8px] font-bold tracking-tight mt-0.5">Home</span>
+      </a>
+      <a href="#linksSection" id="mobileNavLinksTab" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-pink-600 transition active:scale-95">
+        <i class="ri-links-line text-lg text-pink-600"></i>
+        <span class="text-[8px] font-bold tracking-tight mt-0.5">Links</span>
       </a>
       <a href="#aboutSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
         <i class="ri-user-3-fill text-lg"></i>
-        <span class="text-[9px] font-bold tracking-tight mt-0.5">About</span>
+        <span class="text-[8px] font-bold tracking-tight mt-0.5">About</span>
       </a>
       <a href="#servicesSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
         <i class="ri-service-fill text-lg"></i>
-        <span class="text-[9px] font-bold tracking-tight mt-0.5">Services</span>
+        <span class="text-[8px] font-bold tracking-tight mt-0.5">Services</span>
       </a>
       <a href="#gallerySection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
         <i class="ri-image-2-fill text-lg"></i>
-        <span class="text-[9px] font-bold tracking-tight mt-0.5">Gallery</span>
+        <span class="text-[8px] font-bold tracking-tight mt-0.5">Gallery</span>
       </a>
       <a href="#bookSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
         <i class="ri-mail-send-fill text-lg"></i>
-        <span class="text-[9px] font-bold tracking-tight mt-0.5">Enquiry</span>
+        <span class="text-[8px] font-bold tracking-tight mt-0.5">Enquiry</span>
       </a>
       <button type="button" onclick="handleMobileShare()" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95 cursor-pointer">
         <i class="ri-share-forward-fill text-lg"></i>
-        <span class="text-[9px] font-bold tracking-tight mt-0.5">Share</span>
+        <span class="text-[8px] font-bold tracking-tight mt-0.5">Share</span>
       </button>
     </div>
   </nav>
@@ -464,6 +482,80 @@
           document.getElementById('gallerySection').classList.remove('hidden');
         } else if (document.getElementById('gallerySection')) {
           document.getElementById('gallerySection').classList.add('hidden');
+        }
+
+        // Render Links Section (Miki vCard Style)
+        const linksSection = document.getElementById('linksSection');
+        const linksContainer = document.getElementById('linksCardsContainer');
+        const navLinksTab = document.getElementById('mobileNavLinksTab');
+
+        const linkCards = [];
+
+        if (fbUrl) {
+          linkCards.push({
+            title: 'Facebook',
+            subtitle: 'Follow us for updates',
+            icon: 'ri-facebook-fill',
+            bg: 'bg-[#1877f2]',
+            url: fbUrl
+          });
+        }
+
+        if (instaUrl) {
+          linkCards.push({
+            title: 'Instagram',
+            subtitle: 'Follow our journey',
+            icon: 'ri-instagram-line',
+            bg: 'bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]',
+            url: instaUrl
+          });
+        }
+
+        const ytUrl = normalizeSocialUrl(data.youtube, 'youtube');
+        if (ytUrl) {
+          linkCards.push({
+            title: 'Youtube',
+            subtitle: 'Watch our latest videos',
+            icon: 'ri-youtube-fill',
+            bg: 'bg-[#ff0000]',
+            url: ytUrl
+          });
+        }
+
+        (data.customLinks || []).forEach(l => {
+          if (l && (l.title || l.url)) {
+            linkCards.push({
+              title: l.title || 'Other Link',
+              subtitle: l.subtitle || '',
+              icon: l.icon || 'ri-links-line',
+              bg: 'bg-slate-800',
+              url: l.url || '#'
+            });
+          }
+        });
+
+        if (linkCards.length > 0 && linksContainer) {
+          linksContainer.innerHTML = linkCards.map(c => `
+            <a href="${c.url}" target="_blank" rel="noopener noreferrer" class="group flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-rose-50/70 hover:bg-rose-100/70 border border-rose-100 hover:border-rose-200 transition-all duration-200 shadow-xs hover:shadow-sm">
+              <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-2xl ${c.bg} text-white flex items-center justify-center text-xl shadow-sm shrink-0 group-hover:scale-105 transition-transform">
+                  <i class="${c.icon}"></i>
+                </div>
+                <div class="text-left">
+                  <div class="font-extrabold text-slate-900 text-sm leading-tight">${c.title}</div>
+                  ${c.subtitle ? `<div class="text-xs text-slate-500 font-medium mt-0.5">${c.subtitle}</div>` : ''}
+                </div>
+              </div>
+              <div class="w-8 h-8 rounded-xl bg-white/80 group-hover:bg-white flex items-center justify-center text-slate-400 group-hover:text-slate-700 transition shrink-0 border border-rose-200/50">
+                <i class="ri-arrow-right-up-line text-sm"></i>
+              </div>
+            </a>
+          `).join('');
+          if (linksSection) linksSection.classList.remove('hidden');
+          if (navLinksTab) navLinksTab.classList.remove('hidden');
+        } else {
+          if (linksSection) linksSection.classList.add('hidden');
+          if (navLinksTab) navLinksTab.classList.add('hidden');
         }
 
       } catch (err) {

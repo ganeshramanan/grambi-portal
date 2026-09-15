@@ -223,6 +223,32 @@
             </p>
           </div>
 
+          <!-- LINKS SECTION (Bio / Social Cards Manager) -->
+          <div class="pt-3 border-t border-slate-800/80 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-xs font-bold text-slate-200">Links Section (Digital Bio Cards)</label>
+                <p class="text-[11px] text-slate-500">Facebook, Instagram, YouTube, and custom web links with icons.</p>
+              </div>
+              <button type="button" onclick="addNewCustomLinkRow()" class="px-2.5 py-1 bg-pink-500/10 hover:bg-pink-500/20 text-pink-400 border border-pink-500/30 rounded-lg text-xs font-bold flex items-center gap-1 transition">
+                <i class="ri-add-line"></i> Add Link Card
+              </button>
+            </div>
+
+            <!-- YouTube Channel input -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                <i class="ri-youtube-fill text-red-500"></i> YouTube Channel / Video Link
+              </label>
+              <input type="text" id="siteYoutube" oninput="updateLivePreview()" placeholder="https://youtube.com/@channel or username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-red-500 font-mono" />
+            </div>
+
+            <!-- Dynamic Custom Links List -->
+            <div id="customLinksEditorContainer" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
           <!-- Dynamic Core Services Manager -->
           <div class="pt-3 border-t border-slate-800/80 space-y-3">
             <div class="flex items-center justify-between">
@@ -361,6 +387,17 @@
 
         <!-- Preview Body Content -->
         <div class="p-5 bg-white space-y-4 flex-grow text-slate-800 text-xs overflow-y-auto max-h-[420px]">
+          <!-- Links Section Preview (Matching Miki vCard Style) -->
+          <div id="prevLinksSection" class="space-y-2">
+            <div class="text-center">
+              <span class="text-[10px] font-black uppercase text-pink-600 tracking-wider">LINKS</span>
+              <div class="w-8 h-0.5 bg-pink-500 mx-auto mt-0.5 rounded-full"></div>
+            </div>
+            <div id="prevLinksList" class="space-y-1.5 mt-2">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
           <div>
             <span class="text-[10px] font-bold uppercase text-blue-600 tracking-wider">About Us</span>
             <p id="prevAbout" class="text-xs text-slate-600 leading-relaxed mt-1">
@@ -756,6 +793,74 @@
       updateLivePreview();
     }
 
+    // Dynamic Custom Links State
+    let dynamicCustomLinks = [];
+
+    function addNewCustomLinkRow(linkObj = null) {
+      const l = linkObj || {
+        id: 'link_' + Date.now() + Math.random().toString(36).substr(2, 4),
+        title: '',
+        subtitle: '',
+        url: '',
+        icon: 'ri-links-line'
+      };
+
+      if (!linkObj) {
+        dynamicCustomLinks.push(l);
+      }
+
+      renderCustomLinksEditor();
+      updateLivePreview();
+    }
+
+    function removeCustomLinkRow(linkId) {
+      dynamicCustomLinks = dynamicCustomLinks.filter(l => l.id !== linkId);
+      renderCustomLinksEditor();
+      updateLivePreview();
+    }
+
+    function updateCustomLinkField(linkId, field, val) {
+      const target = dynamicCustomLinks.find(l => l.id === linkId);
+      if (target) {
+        target[field] = val;
+        updateLivePreview();
+      }
+    }
+
+    function renderCustomLinksEditor() {
+      const container = document.getElementById('customLinksEditorContainer');
+      if (!container) return;
+
+      if (dynamicCustomLinks.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-500 py-3 text-center border border-dashed border-slate-800 rounded-xl">No custom links added yet. Click "+ Add Link Card" above.</div>';
+        return;
+      }
+
+      container.innerHTML = dynamicCustomLinks.map((l, idx) => `
+        <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-slate-900 text-slate-400 font-bold flex items-center justify-center text-[10px]">${idx + 1}</span>
+            <input type="text" value="${l.title || ''}" oninput="updateCustomLinkField('${l.id}', 'title', this.value)" placeholder="Link Title (e.g. Google Reviews / Brochure / Website)" class="flex-grow bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500 font-semibold" />
+            <select onchange="updateCustomLinkField('${l.id}', 'icon', this.value)" class="bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-pink-500 cursor-pointer">
+              <option value="ri-links-line" ${l.icon === 'ri-links-line' ? 'selected' : ''}>🔗 Link</option>
+              <option value="ri-star-fill" ${l.icon === 'ri-star-fill' ? 'selected' : ''}>⭐ Reviews</option>
+              <option value="ri-global-line" ${l.icon === 'ri-global-line' ? 'selected' : ''}>🌐 Website</option>
+              <option value="ri-file-list-3-line" ${l.icon === 'ri-file-list-3-line' ? 'selected' : ''}>📋 Catalogue</option>
+              <option value="ri-calendar-line" ${l.icon === 'ri-calendar-line' ? 'selected' : ''}>📅 Booking</option>
+              <option value="ri-map-pin-line" ${l.icon === 'ri-map-pin-line' ? 'selected' : ''}>📍 Location</option>
+            </select>
+            <button type="button" onclick="removeCustomLinkRow('${l.id}')" class="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition" title="Delete Link">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input type="text" value="${l.subtitle || ''}" oninput="updateCustomLinkField('${l.id}', 'subtitle', this.value)" placeholder="Subtitle (e.g. Check our 5-star customer reviews)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-[11px] text-slate-300 focus:outline-none focus:border-pink-500" />
+            <input type="url" value="${l.url || ''}" oninput="updateCustomLinkField('${l.id}', 'url', this.value)" placeholder="Destination URL (https://...)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-[11px] text-slate-300 focus:outline-none focus:border-pink-500 font-mono" />
+          </div>
+        </div>
+      `).join('');
+    }
+
     function addNewServiceRow(serviceObj = null) {
       const s = serviceObj || {
         id: 'serv_' + Date.now() + Math.random().toString(36).substr(2, 4),
@@ -831,11 +936,16 @@
         if (currentWebsite.instagram) document.getElementById('siteInstagram').value = currentWebsite.instagram;
         if (currentWebsite.facebook) document.getElementById('siteFacebook').value = currentWebsite.facebook;
         if (currentWebsite.twitter) document.getElementById('siteTwitter').value = currentWebsite.twitter;
+        if (currentWebsite.youtube) document.getElementById('siteYoutube').value = currentWebsite.youtube;
         if (currentWebsite.theme) document.getElementById('siteTheme').value = currentWebsite.theme;
         if (currentWebsite.logo) {
           currentLogoUrl = currentWebsite.logo;
           document.getElementById('removeLogoBtn').classList.remove('hidden');
         }
+
+        // Populate Custom Links State & Editor
+        dynamicCustomLinks = Array.isArray(currentWebsite.customLinks) ? currentWebsite.customLinks : [];
+        renderCustomLinksEditor();
 
         // Populate Photo Gallery URLs & Visual Thumbnails
         dynamicGallery = Array.isArray(currentWebsite.gallery) ? currentWebsite.gallery : [];
@@ -975,6 +1085,77 @@
         }
       }
 
+      // Render Dynamic Links Section in Live Mobile Preview
+      const prevLinksBox = document.getElementById('prevLinksSection');
+      const prevLinksList = document.getElementById('prevLinksList');
+      if (prevLinksBox && prevLinksList) {
+        const instaVal = document.getElementById('siteInstagram')?.value.trim();
+        const fbVal = document.getElementById('siteFacebook')?.value.trim();
+        const ytVal = document.getElementById('siteYoutube')?.value.trim();
+
+        const previewCards = [];
+
+        if (fbVal) {
+          previewCards.push({
+            title: 'Facebook',
+            subtitle: 'Follow us for updates',
+            icon: 'ri-facebook-fill',
+            bg: 'bg-blue-600',
+            textColor: 'text-white'
+          });
+        }
+        if (instaVal) {
+          previewCards.push({
+            title: 'Instagram',
+            subtitle: 'Follow our journey',
+            icon: 'ri-instagram-line',
+            bg: 'bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600',
+            textColor: 'text-white'
+          });
+        }
+        if (ytVal) {
+          previewCards.push({
+            title: 'Youtube',
+            subtitle: 'Watch our latest videos',
+            icon: 'ri-youtube-fill',
+            bg: 'bg-red-600',
+            textColor: 'text-white'
+          });
+        }
+
+        (dynamicCustomLinks || []).forEach(l => {
+          if (l.title || l.url) {
+            previewCards.push({
+              title: l.title || 'Other Link',
+              subtitle: l.subtitle || '',
+              icon: l.icon || 'ri-links-line',
+              bg: 'bg-slate-800',
+              textColor: 'text-white'
+            });
+          }
+        });
+
+        if (previewCards.length > 0) {
+          prevLinksBox.classList.remove('hidden');
+          prevLinksList.innerHTML = previewCards.map(c => `
+            <div class="p-2.5 bg-rose-50/70 border border-rose-100 rounded-2xl flex items-center justify-between shadow-xs">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl ${c.bg} ${c.textColor} flex items-center justify-center text-base shadow-xs shrink-0">
+                  <i class="${c.icon}"></i>
+                </div>
+                <div>
+                  <div class="font-bold text-slate-900 text-xs">${c.title}</div>
+                  ${c.subtitle ? `<div class="text-[10px] text-slate-500">${c.subtitle}</div>` : ''}
+                </div>
+              </div>
+              <i class="ri-external-link-line text-slate-400 text-xs"></i>
+            </div>
+          `).join('');
+        } else {
+          prevLinksBox.classList.add('hidden');
+        }
+      }
+
       const cleanPhone = phone.replace(/\D/g, '');
       const cleanWa = whatsapp.replace(/\D/g, '');
       document.getElementById('prevCallBtn').href = `tel:${cleanPhone}`;
@@ -1008,8 +1189,10 @@
         instagram: document.getElementById('siteInstagram')?.value.trim() || null,
         facebook: document.getElementById('siteFacebook')?.value.trim() || null,
         twitter: document.getElementById('siteTwitter')?.value.trim() || null,
+        youtube: document.getElementById('siteYoutube')?.value.trim() || null,
         slug: document.getElementById('siteSlug').value.trim(),
         services: dynamicServices,
+        customLinks: dynamicCustomLinks,
         gallery: (dynamicGallery && dynamicGallery.length > 0) ? dynamicGallery : (selectedTemplateId && availableTemplates.find(t => t.id === selectedTemplateId)?.defaultGallery) || []
       };
 

@@ -131,7 +131,8 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
     return res.json({
       ...website,
       services: JSON.parse(website.servicesJson || '[]'),
-      gallery: JSON.parse(website.galleryJson || '[]')
+      gallery: JSON.parse(website.galleryJson || '[]'),
+      customLinks: JSON.parse((website as any).customLinksJson || '[]')
     });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to load website details: ' + err.message });
@@ -141,7 +142,7 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
 // Update Website Customizer Configuration
 export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
-  const { businessName, tagline, headline, about, phone, whatsapp, address, hours, theme, logo, instagram, facebook, twitter, youtube, services, gallery, slug } = req.body;
+  const { businessName, tagline, headline, about, phone, whatsapp, address, hours, theme, logo, instagram, facebook, twitter, youtube, services, gallery, customLinks, slug } = req.body;
 
   try {
     let finalSlug: string | undefined = undefined;
@@ -175,8 +176,9 @@ export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
         youtube: youtube !== undefined ? youtube : undefined,
         slug: finalSlug || undefined,
         servicesJson: services ? JSON.stringify(services) : undefined,
-        galleryJson: gallery ? JSON.stringify(gallery) : undefined
-      }
+        galleryJson: gallery ? JSON.stringify(gallery) : undefined,
+        customLinksJson: customLinks !== undefined ? JSON.stringify(customLinks) : undefined
+      } as any
     });
 
     return res.json({
@@ -185,7 +187,8 @@ export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
       website: {
         ...updated,
         services: JSON.parse(updated.servicesJson || '[]'),
-        gallery: JSON.parse(updated.galleryJson || '[]')
+        gallery: JSON.parse(updated.galleryJson || '[]'),
+        customLinks: JSON.parse((updated as any).customLinksJson || '[]')
       }
     });
   } catch (err: any) {
@@ -238,7 +241,8 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
       twitter: website.twitter,
       youtube: website.youtube,
       services: JSON.parse(website.servicesJson || '[]'),
-      gallery: JSON.parse(website.galleryJson || '[]')
+      gallery: JSON.parse(website.galleryJson || '[]'),
+      customLinks: JSON.parse((website as any).customLinksJson || '[]')
     });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to load website details: ' + err.message });
