@@ -208,7 +208,9 @@
 
     async function handleLogout() {
       localStorage.removeItem('grambi_token');
-      await fetch('/api/auth/logout', { method: 'POST' });
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch (e) {}
       window.location.href = '/index.html';
     }
 

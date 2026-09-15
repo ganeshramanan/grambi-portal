@@ -339,10 +339,15 @@
       }
     }
 
-    // Auto redirect to launchpad if session exists
-    fetch('/api/auth/me').then(res => {
-      if (res.ok) window.location.href = '/portal.html';
-    }).catch(() => {});
+    // Auto redirect to launchpad ONLY if a valid client token exists and session is active
+    const savedToken = localStorage.getItem('grambi_token');
+    if (savedToken) {
+      fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${savedToken}` }
+      }).then(res => {
+        if (res.ok) window.location.href = '/portal.html';
+      }).catch(() => {});
+    }
 
     async function handleLogin(e) {
       e.preventDefault();

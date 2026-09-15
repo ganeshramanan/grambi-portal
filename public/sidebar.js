@@ -317,9 +317,12 @@
     closeLocationDispatchModal();
   };
 
-  window.logoutSession = function() {
+  window.logoutSession = async function() {
     localStorage.removeItem('grambi_token');
     document.cookie = 'grambi_token=; Max-Age=0; path=/;';
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
     window.location.href = '/index.html';
   };
 
