@@ -91,8 +91,11 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
       include: {
         serviceRequests: {
           orderBy: { createdAt: 'desc' }
+        },
+        feedbacks: {
+          orderBy: { createdAt: 'desc' }
         }
-      }
+      } as any
     });
 
     // Auto-create initial website record if first visit
@@ -132,7 +135,9 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
       ...website,
       services: JSON.parse(website.servicesJson || '[]'),
       gallery: JSON.parse(website.galleryJson || '[]'),
-      customLinks: JSON.parse((website as any).customLinksJson || '[]')
+      customLinks: JSON.parse((website as any).customLinksJson || '[]'),
+      googleReviewUrl: (website as any).googleReviewUrl || null,
+      feedbacks: (website as any).feedbacks || []
     });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to load website details: ' + err.message });
@@ -142,7 +147,7 @@ export const getMyWebsite = async (req: AuthRequest, res: Response) => {
 // Update Website Customizer Configuration
 export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
-  const { businessName, tagline, headline, about, phone, whatsapp, address, hours, theme, logo, instagram, facebook, twitter, youtube, services, gallery, customLinks, slug } = req.body;
+  const { businessName, tagline, headline, about, phone, whatsapp, address, hours, theme, logo, instagram, facebook, twitter, youtube, googleReviewUrl, services, gallery, customLinks, slug } = req.body;
 
   try {
     let finalSlug: string | undefined = undefined;
@@ -174,6 +179,7 @@ export const updateMyWebsite = async (req: AuthRequest, res: Response) => {
         facebook: facebook !== undefined ? facebook : undefined,
         twitter: twitter !== undefined ? twitter : undefined,
         youtube: youtube !== undefined ? youtube : undefined,
+        googleReviewUrl: googleReviewUrl !== undefined ? googleReviewUrl : undefined,
         slug: finalSlug || undefined,
         servicesJson: services ? JSON.stringify(services) : undefined,
         galleryJson: gallery ? JSON.stringify(gallery) : undefined,
@@ -240,6 +246,7 @@ export const getPublicWebsite = async (req: Request, res: Response) => {
       facebook: website.facebook,
       twitter: website.twitter,
       youtube: website.youtube,
+      googleReviewUrl: (website as any).googleReviewUrl || null,
       services: JSON.parse(website.servicesJson || '[]'),
       gallery: JSON.parse(website.galleryJson || '[]'),
       customLinks: JSON.parse((website as any).customLinksJson || '[]')
@@ -467,5 +474,98 @@ export const getWebsiteAnalytics = async (req: AuthRequest, res: Response) => {
     });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to fetch analytics: ' + err.message });
+  }
+};
+
+// Public Feedback Submission
+export const submitPublicFeedback = async (req: Request, res: Response) => {
+  const { slug } = req.params;
+  const { name, rating, comment } = req.body;
+
+  if (!name || !comment) {
+    return res.status(400).json({ error: 'Name and feedback comment are required.' });
+  }
+
+  try {
+    const rawSlug = String(slug || '').trim();
+    const cleanSlug = rawSlug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+    const website = await prisma.website.findFirst({
+      where: {
+        OR: [{ slug: rawSlug }, { slug: cleanSlug }]
+      }
+    });
+
+    if (!website) return res.status(404).json({ error: 'Website not found' });
+
+    const newFeedback = await (prisma as any).feedback.create({
+      data: {
+        websiteId: website.id,
+        name: String(name).trim(),
+        rating: Math.min(5, Math.max(1, parseInt(rating) || 5)),
+        comment: String(comment).trim(),
+        status: 'APPROVED'
+      }
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Thank you! Your feedback has been received.',
+      feedback: newFeedback,
+      googleReviewUrl: (website as any).googleReviewUrl || null
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to submit feedback: ' + err.message });
+  }
+};
+
+// Get Public Feedbacks
+export const getPublicFeedbacks = async (req: Request, res: Response) => {
+  const { slug } = req.params;
+
+  try {
+    const rawSlug = String(slug || '').trim();
+    const cleanSlug = rawSlug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+    const website = await prisma.website.findFirst({
+      where: {
+        OR: [{ slug: rawSlug }, { slug: cleanSlug }]
+      }
+    });
+
+    if (!website) return res.status(404).json({ error: 'Website not found' });
+
+    const feedbacks = await (prisma as any).feedback.findMany({
+      where: { websiteId: website.id, status: 'APPROVED' },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+
+    return res.json({
+      success: true,
+      feedbacks,
+      googleReviewUrl: (website as any).googleReviewUrl || null
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to load feedbacks: ' + err.message });
+  }
+};
+
+// Delete or toggle feedback status (Authenticated)
+export const deleteFeedback = async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { feedbackId } = req.params;
+
+  try {
+    const website = await prisma.website.findUnique({ where: { userId } });
+    if (!website) return res.status(404).json({ error: 'Website not found' });
+
+    await (prisma as any).feedback.deleteMany({
+      where: { id: feedbackId, websiteId: website.id }
+    });
+
+    return res.json({ success: true, message: 'Feedback removed.' });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Failed to delete feedback: ' + err.message });
   }
 };

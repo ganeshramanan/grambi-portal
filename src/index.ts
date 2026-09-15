@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import { register, login, getProfile, updateCredentials, logout, forgotPassword, resetPassword } from './controllers/auth.controller';
 import { listAllUsers, updateUserAccess, deleteUser, requestModuleAccess } from './controllers/admin.controller';
 import { sendBulkMessages, listCustomerCampaigns, getCustomerTemplates, sendSandboxTestMessage, exportCampaignCSV, deleteCampaign, batchDeleteCampaigns } from './controllers/whatsapp.controller';
-import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking, updateLeadStatus, deleteLead, clearCompletedLeads, recordAnalyticsEvent, getWebsiteAnalytics, getWebsiteTemplates, createWebsiteTemplate, removeWebsiteTemplate } from './controllers/website.controller';
+import { getMyWebsite, updateMyWebsite, getPublicWebsite, submitPublicBooking, updateLeadStatus, deleteLead, clearCompletedLeads, recordAnalyticsEvent, getWebsiteAnalytics, getWebsiteTemplates, createWebsiteTemplate, removeWebsiteTemplate, submitPublicFeedback, getPublicFeedbacks, deleteFeedback } from './controllers/website.controller';
 import { getOccasions, getPostTemplates, publishToSocialChannels } from './controllers/social.controller';
 import { getIndustryPresets, createInvoice, listInvoices, updateInvoiceStatus, deleteInvoice, batchDeleteInvoices, getPublicInvoice } from './controllers/invoice.controller';
 import { getCrmPresets, createCrmContact, listCrmContacts, updateCrmContact, deleteCrmContact, batchDeleteCrmContacts } from './controllers/crm.controller';
@@ -160,6 +160,9 @@ app.delete('/api/website/leads/:leadId', authMiddleware, deleteLead);
 app.get('/api/website/public/:slug', getPublicWebsite);
 app.post('/api/website/public/:slug/book', submitPublicBooking);
 app.post('/api/website/public/:slug/event', recordAnalyticsEvent);
+app.get('/api/website/public/:slug/feedbacks', getPublicFeedbacks);
+app.post('/api/website/public/:slug/feedback', submitPublicFeedback);
+app.delete('/api/website/feedbacks/:feedbackId', authMiddleware, deleteFeedback);
 
 // Direct Public Website View: /site/:slug or /site
 app.get(['/site/:slug', '/site'], (req, res) => {

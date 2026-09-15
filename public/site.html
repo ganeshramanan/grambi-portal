@@ -153,6 +153,72 @@
       </div>
     </section>
 
+    <!-- FEEDBACKS SECTION (Interactive 5-Star Rating + Customer Reviews Showcase) -->
+    <section id="feedbackSection" class="py-12 bg-white border-b border-slate-200 scroll-mt-20">
+      <div class="max-w-xl mx-auto px-6">
+        <div class="p-6 sm:p-8 rounded-3xl border border-pink-100 bg-pink-50/40 shadow-sm space-y-5">
+          <div class="text-center">
+            <h3 class="text-xs font-black uppercase tracking-widest text-pink-600">FEEDBACKS</h3>
+            <div class="w-10 h-0.5 bg-pink-500 mx-auto mt-1 rounded-full"></div>
+          </div>
+
+          <!-- Feedback Submission Form -->
+          <form onsubmit="handleFeedbackSubmit(event)" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3.5">
+            <span class="block text-xs font-bold text-slate-800">Give Feedback</span>
+
+            <!-- Star Rating Selector -->
+            <div class="flex items-center gap-2">
+              <div id="starRatingGroup" class="flex items-center gap-1 text-2xl text-amber-400 cursor-pointer select-none">
+                <i class="ri-star-fill star-item hover:scale-110 transition-transform" onclick="selectStarRating(1)"></i>
+                <i class="ri-star-fill star-item hover:scale-110 transition-transform" onclick="selectStarRating(2)"></i>
+                <i class="ri-star-fill star-item hover:scale-110 transition-transform" onclick="selectStarRating(3)"></i>
+                <i class="ri-star-fill star-item hover:scale-110 transition-transform" onclick="selectStarRating(4)"></i>
+                <i class="ri-star-fill star-item hover:scale-110 transition-transform" onclick="selectStarRating(5)"></i>
+              </div>
+              <span id="starRatingLabel" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-900 text-white">5 / 5 - Excellent</span>
+            </div>
+
+            <div>
+              <label for="fbCustName" class="sr-only">Full Name</label>
+              <input 
+                type="text" 
+                id="fbCustName" 
+                required 
+                placeholder="Enter Full Name" 
+                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:border-pink-500 transition" 
+              />
+            </div>
+
+            <div>
+              <label for="fbCustComment" class="sr-only">Your Feedback</label>
+              <textarea 
+                id="fbCustComment" 
+                rows="3" 
+                required 
+                placeholder="Enter your feedback..." 
+                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white focus:outline-none focus:border-pink-500 transition leading-relaxed"
+              ></textarea>
+            </div>
+
+            <div id="fbMsgBox" class="text-xs hidden p-2.5 rounded-xl"></div>
+
+            <button 
+              type="submit" 
+              id="fbSubmitBtn" 
+              class="w-full py-2.5 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl text-xs transition shadow-md shadow-pink-500/20 cursor-pointer"
+            >
+              Give Feedback
+            </button>
+          </form>
+
+          <!-- Verified Feedbacks List Showcase -->
+          <div id="publicFeedbacksList" class="space-y-2.5 pt-2">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Enquiry Form Section -->
     <section id="bookSection" class="py-16 bg-slate-100 border-b border-slate-200">
       <div class="max-w-xl mx-auto px-6">
@@ -252,9 +318,9 @@
         <i class="ri-service-fill text-lg"></i>
         <span class="text-[8px] font-bold tracking-tight mt-0.5">Services</span>
       </a>
-      <a href="#gallerySection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
-        <i class="ri-image-2-fill text-lg"></i>
-        <span class="text-[8px] font-bold tracking-tight mt-0.5">Gallery</span>
+      <a href="#feedbackSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-pink-600 transition active:scale-95">
+        <i class="ri-star-smile-fill text-lg text-amber-500"></i>
+        <span class="text-[8px] font-bold tracking-tight mt-0.5">Feedback</span>
       </a>
       <a href="#bookSection" class="flex flex-col items-center justify-center py-1 px-0.5 rounded-xl text-slate-600 hover:text-amber-600 transition active:scale-95">
         <i class="ri-mail-send-fill text-lg"></i>
@@ -558,8 +624,121 @@
           if (navLinksTab) navLinksTab.classList.add('hidden');
         }
 
+        // Fetch & Render Public Feedbacks
+        loadFeedbacks();
+
       } catch (err) {
         console.warn('Public site render fallback:', err);
+      }
+    }
+
+    // Interactive Star Rating Logic
+    let currentSelectedRating = 5;
+    const RATING_TEXTS = {
+      1: '1 / 5 - Needs Improvement',
+      2: '2 / 5 - Fair Experience',
+      3: '3 / 5 - Good',
+      4: '4 / 5 - Very Good',
+      5: '5 / 5 - Excellent!'
+    };
+
+    function selectStarRating(val) {
+      currentSelectedRating = val;
+      const stars = document.querySelectorAll('#starRatingGroup .star-item');
+      stars.forEach((star, idx) => {
+        if (idx < val) {
+          star.className = 'ri-star-fill star-item text-amber-400 hover:scale-110 transition-transform';
+        } else {
+          star.className = 'ri-star-line star-item text-slate-300 hover:scale-110 transition-transform';
+        }
+      });
+      const lbl = document.getElementById('starRatingLabel');
+      if (lbl) lbl.innerText = RATING_TEXTS[val] || `${val} / 5`;
+    }
+
+    async function loadFeedbacks() {
+      try {
+        const res = await fetch(`/api/website/public/${encodeURIComponent(slug)}/feedbacks`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const list = document.getElementById('publicFeedbacksList');
+        if (!list) return;
+
+        if (!data.feedbacks || data.feedbacks.length === 0) {
+          list.innerHTML = '<div class="text-[11px] text-slate-400 text-center py-2">No reviews yet. Be the first to share your feedback!</div>';
+          return;
+        }
+
+        list.innerHTML = data.feedbacks.map(f => {
+          const stars = Array.from({ length: 5 }, (_, i) => 
+            i < f.rating ? '<i class="ri-star-fill text-amber-400"></i>' : '<i class="ri-star-line text-slate-300"></i>'
+          ).join('');
+
+          return `
+            <div class="p-3 bg-white rounded-2xl border border-slate-100 shadow-xs space-y-1 text-left">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-slate-900 text-xs">${f.name}</span>
+                <div class="flex text-xs">${stars}</div>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed italic">"${f.comment}"</p>
+              <div class="text-[9px] text-slate-400 font-mono">${new Date(f.createdAt).toLocaleDateString()}</div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.warn('Feedbacks load:', err);
+      }
+    }
+
+    async function handleFeedbackSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('fbSubmitBtn');
+      const msg = document.getElementById('fbMsgBox');
+      btn.disabled = true;
+      btn.innerText = 'Submitting Feedback...';
+
+      const name = document.getElementById('fbCustName').value.trim();
+      const comment = document.getElementById('fbCustComment').value.trim();
+
+      try {
+        const res = await fetch(`/api/website/public/${encodeURIComponent(slug)}/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            comment,
+            rating: currentSelectedRating
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Submission failed');
+
+        // Check if business has a Google Review URL and customer gave positive rating (4 or 5 stars)
+        const googleUrl = data.googleReviewUrl || currentSiteData?.googleReviewUrl;
+        if (googleUrl && currentSelectedRating >= 4) {
+          msg.className = "text-xs block p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl space-y-2 text-center";
+          msg.innerHTML = `
+            <div>🎉 <strong>Thank you, ${name}!</strong> Your feedback has been recorded on our site.</div>
+            <div class="text-[11px] text-slate-600">Could you also take 5 seconds to post this on our official <strong>Google Reviews</strong> page?</div>
+            <a href="${googleUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs shadow transition mt-1">
+              <i class="ri-google-fill"></i> Post to Google Reviews <i class="ri-arrow-right-up-line"></i>
+            </a>
+          `;
+        } else {
+          msg.className = "text-xs block p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-center";
+          msg.innerText = "✅ Thank you! Your feedback has been submitted successfully.";
+        }
+
+        document.getElementById('fbCustName').value = '';
+        document.getElementById('fbCustComment').value = '';
+        loadFeedbacks();
+      } catch (err) {
+        msg.className = "text-xs block p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-center";
+        msg.innerText = `❌ ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Give Feedback';
       }
     }
 
